@@ -296,6 +296,16 @@ h3 {
   color: var(--muted);
 }
 
+.result-confidence {
+  margin: 0.7rem 0 0;
+  padding: 0.65rem 0.8rem;
+  border-left: 3px solid #b98f42;
+  background: #f8f2e2;
+  color: #57451f;
+  border-radius: 10px;
+  line-height: 1.5;
+}
+
 .detail {
   margin-top: 1rem;
   display: grid;

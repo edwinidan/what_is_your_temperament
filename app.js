@@ -1,13 +1,8 @@
 const PAGE_SIZE = 5;
+const STORAGE_KEY = "temperamentInsight.progress.v1";
+const VALID_DEPTHS = [20, 40, 60];
 
 const TEMPERAMENTS = ["Sanguine", "Choleric", "Melancholic", "Phlegmatic"];
-
-const RELATIONSHIPS = {
-  Sanguine: { ally: "Choleric", opposite: "Melancholic" },
-  Choleric: { ally: "Sanguine", opposite: "Phlegmatic" },
-  Melancholic: { ally: "Phlegmatic", opposite: "Sanguine" },
-  Phlegmatic: { ally: "Melancholic", opposite: "Choleric" },
-};
 
 const TEMPERAMENT_PROFILES = {
   Sanguine: {
@@ -366,6 +361,7 @@ const progressTrack = document.querySelector(".progress-track");
 const pageWarning = document.getElementById("page-warning");
 const resultTitle = document.getElementById("result-title");
 const resultShort = document.getElementById("result-short");
+const resultConfidence = document.getElementById("result-confidence");
 const detailToggle = document.getElementById("detail-toggle");
 const resultDetail = document.getElementById("result-detail");
 const detailStrengths = document.getElementById("detail-strengths");
@@ -376,6 +372,7 @@ startButton.addEventListener("click", startAssessment);
 prevButton.addEventListener("click", goToPreviousPage);
 nextButton.addEventListener("click", goToNextPage);
 detailToggle.addEventListener("click", toggleDetailView);
+restoreProgressIfAvailable();
 
 function startAssessment() {
   const selectedDepthInput = document.querySelector(
@@ -392,6 +389,7 @@ function startAssessment() {
   assessmentPanel.classList.remove("hidden");
 
   renderCurrentPage();
+  saveProgress();
 }
 
 function buildQuestionSet(depth) {
@@ -479,6 +477,7 @@ function bindQuestionListeners() {
       state.responses[name] = Number(value);
       pageWarning.classList.add("hidden");
       syncProgressOnly();
+      saveProgress();
     });
   });
 }
@@ -500,6 +499,7 @@ function goToPreviousPage() {
     return;
   }
   state.currentPage -= 1;
+  saveProgress();
   renderCurrentPage();
 }
 
@@ -512,6 +512,7 @@ function goToNextPage() {
   const totalPages = Math.ceil(state.questions.length / PAGE_SIZE);
   if (state.currentPage < totalPages - 1) {
     state.currentPage += 1;
+    saveProgress();
     renderCurrentPage();
     return;
   }
@@ -531,40 +532,56 @@ function scoreAssessment() {
     acc[temperament] = 0;
     return acc;
   }, {});
+  const signal = TEMPERAMENTS.reduce((acc, temperament) => {
+    acc[temperament] = 0;
+    return acc;
+  }, {});
 
   state.questions.forEach((question) => {
     const value = state.responses[question.id];
-    const links = RELATIONSHIPS[question.temperament];
-    scores[question.temperament] += value * 1.6;
-    scores[links.ally] += value * 0.7;
-    scores[links.opposite] += (6 - value) * 0.45;
+    const centered = toCenteredValue(value);
+    scores[question.temperament] += centered;
+    signal[question.temperament] += Math.abs(centered);
   });
 
   const ranked = TEMPERAMENTS.map((temperament) => ({
     temperament,
     score: scores[temperament],
+    signal: signal[temperament],
   })).sort((a, b) => {
     if (b.score === a.score) {
-      return TEMPERAMENTS.indexOf(a.temperament) - TEMPERAMENTS.indexOf(b.temperament);
+      if (b.signal === a.signal) {
+        return (
+          TEMPERAMENTS.indexOf(a.temperament) -
+          TEMPERAMENTS.indexOf(b.temperament)
+        );
+      }
+      return b.signal - a.signal;
     }
     return b.score - a.score;
   });
 
+  const topGap = ranked[0].score - ranked[1].score;
+  const confidence = getConfidenceLevel(topGap, state.selectedDepth);
+
   return {
     primary: ranked[0].temperament,
     secondary: ranked[1].temperament,
+    confidence,
   };
 }
 
-function renderResults({ primary, secondary }) {
+function renderResults({ primary, secondary, confidence }) {
   assessmentPanel.classList.add("hidden");
   resultsPanel.classList.remove("hidden");
+  clearProgress();
 
   const primaryProfile = TEMPERAMENT_PROFILES[primary];
   const secondaryProfile = TEMPERAMENT_PROFILES[secondary];
 
   resultTitle.textContent = `${primary} is your primary temperament, with ${secondary} as secondary influence.`;
   resultShort.textContent = `${primaryProfile.short} A secondary ${secondary.toLowerCase()} influence may add ${secondaryProfile.strengthFocus}.`;
+  resultConfidence.textContent = `Confidence: ${confidence.level}. ${confidence.message}`;
 
   const strengths = [...primaryProfile.strengths];
   strengths.push(`Secondary influence: ${secondaryProfile.strengthFocus}.`);
@@ -587,6 +604,123 @@ function toggleDetailView() {
   detailToggle.textContent = state.detailVisible
     ? "Hide Detailed Explanation"
     : "Show Detailed Explanation";
+}
+
+function toCenteredValue(value) {
+  return value - 3;
+}
+
+function getConfidenceLevel(scoreGap, depth) {
+  const perTemperamentCount = depth / TEMPERAMENTS.length;
+  const maxGap = perTemperamentCount * 4;
+  const normalizedGap = maxGap > 0 ? scoreGap / maxGap : 0;
+
+  if (normalizedGap >= 0.25) {
+    return {
+      level: "High",
+      message:
+        "Your top pattern is clearly distinct in this response set.",
+    };
+  }
+
+  if (normalizedGap >= 0.12) {
+    return {
+      level: "Medium",
+      message:
+        "Your leading pattern is present, with noticeable overlap from your secondary pattern.",
+    };
+  }
+
+  return {
+    level: "Low",
+    message:
+      "Your responses show a blended profile, so treat this as a starting reflection rather than a fixed label.",
+  };
+}
+
+function saveProgress() {
+  if (!state.questions.length) {
+    return;
+  }
+
+  const payload = {
+    selectedDepth: state.selectedDepth,
+    responses: state.responses,
+    currentPage: state.currentPage,
+  };
+
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  } catch (_error) {
+    // Ignore storage failures (e.g., private mode or blocked storage).
+  }
+}
+
+function restoreProgressIfAvailable() {
+  let raw = null;
+  try {
+    raw = localStorage.getItem(STORAGE_KEY);
+  } catch (_error) {
+    return;
+  }
+  if (!raw) {
+    return;
+  }
+
+  let saved;
+  try {
+    saved = JSON.parse(raw);
+  } catch (_error) {
+    clearProgress();
+    return;
+  }
+
+  if (!saved || !VALID_DEPTHS.includes(saved.selectedDepth)) {
+    clearProgress();
+    return;
+  }
+
+  const questions = buildQuestionSet(saved.selectedDepth);
+  const validIds = new Set(questions.map((question) => question.id));
+  const restoredResponses = {};
+
+  Object.entries(saved.responses || {}).forEach(([questionId, value]) => {
+    const numericValue = Number(value);
+    if (validIds.has(questionId) && numericValue >= 1 && numericValue <= 5) {
+      restoredResponses[questionId] = numericValue;
+    }
+  });
+
+  const totalPages = Math.ceil(questions.length / PAGE_SIZE);
+  state.selectedDepth = saved.selectedDepth;
+  state.questions = questions;
+  state.responses = restoredResponses;
+  state.currentPage = clamp(Number(saved.currentPage) || 0, 0, totalPages - 1);
+  state.detailVisible = false;
+
+  const depthInput = document.querySelector(
+    `input[name="depth"][value="${state.selectedDepth}"]`
+  );
+  if (depthInput) {
+    depthInput.checked = true;
+  }
+
+  introPanel.classList.add("hidden");
+  resultsPanel.classList.add("hidden");
+  assessmentPanel.classList.remove("hidden");
+  renderCurrentPage();
+}
+
+function clearProgress() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch (_error) {
+    // Ignore storage failures (e.g., private mode or blocked storage).
+  }
+}
+
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
 }
 
 function getScaleLabels(type) {

@@ -17,8 +17,10 @@ This MVP is for reflection and learning, not diagnosis.
 - Five-point response scale (label style varies by item type)
 - Pagination with 5 questions per page
 - Progress indicator
+- In-progress assessment persistence via `localStorage`
 - Internal weighted score accumulation
 - Primary and secondary temperament result output
+- Reflective confidence indicator (High / Medium / Low) based on score gap
 - Short summary by default
 - Optional detailed explanation:
   - strengths
