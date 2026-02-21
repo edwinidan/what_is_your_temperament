@@ -390,6 +390,7 @@ function startAssessment() {
 
   renderCurrentPage();
   saveProgress();
+  scrollToPanel(assessmentPanel, "smooth");
 }
 
 function buildQuestionSet(depth) {
@@ -628,6 +629,7 @@ function renderResults({ primary, secondary, confidence }) {
   state.detailVisible = false;
   resultDetail.classList.add("hidden");
   detailToggle.textContent = "Show Detailed Explanation";
+  scrollToPanel(resultsPanel, "smooth");
 }
 
 function toggleDetailView() {
@@ -741,6 +743,7 @@ function restoreProgressIfAvailable() {
   resultsPanel.classList.add("hidden");
   assessmentPanel.classList.remove("hidden");
   renderCurrentPage();
+  scrollToPanel(assessmentPanel, "auto");
 }
 
 function clearProgress() {
@@ -769,4 +772,12 @@ function getScaleLabels(type) {
     "Agree",
     "Strongly agree",
   ];
+}
+
+function scrollToPanel(panel, behavior) {
+  if (!panel || typeof panel.scrollIntoView !== "function") {
+    return;
+  }
+
+  panel.scrollIntoView({ behavior, block: "start" });
 }

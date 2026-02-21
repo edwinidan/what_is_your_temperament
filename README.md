@@ -48,6 +48,7 @@ Then visit `http://localhost:8000`.
 
 ## Project Files
 
-- `index.html` - structure and semantic sections
-- `styles.css` - styling, layout, responsive behavior
+- `index.html` - marketing-style homepage
+- `test-options.html` - test-length selection page and assessment/results UI
+- `styles.css` - shared styling for homepage, selection, and assessment views
 - `app.js` - question content, flow logic, scoring, and results rendering

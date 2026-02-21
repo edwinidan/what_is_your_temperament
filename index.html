@@ -3,114 +3,191 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Temperament Insight</title>
+    <title>Temperament Test - Home</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div class="grain"></div>
-    <main class="shell">
-      <section class="panel intro" id="intro-panel">
-        <p class="eyebrow">Educational Self-Awareness Assessment</p>
-        <h1>Understand your temperament pattern with reflection, not labels.</h1>
-        <p class="lead">
-          This assessment explores four classic temperament tendencies:
-          <strong>Sanguine, Choleric, Melancholic,</strong> and
-          <strong>Phlegmatic</strong>.
-        </p>
-        <p class="disclaimer">
-          This tool is for self-awareness and education only. It is not a
-          medical or psychological diagnosis.
-        </p>
+    <nav>
+      <a class="logo" href="index.html">What's your Temperament?</a>
+      <div class="nav-links">
+        <a href="#about">About</a>
+        <a href="#types">Types</a>
+        <a href="#insights">Insights</a>
+      </div>
+      <a href="test-options.html" class="nav-cta">Take the Test -></a>
+    </nav>
 
-        <div class="start-controls">
-          <fieldset class="depth-picker" aria-label="Choose assessment depth">
-            <legend>Select depth</legend>
-            <label>
-              <input type="radio" name="depth" value="20" checked />
-              20 questions
-              <span>Quick insight</span>
-            </label>
-            <label>
-              <input type="radio" name="depth" value="40" />
-              40 questions
-              <span>Deeper understanding</span>
-            </label>
-            <label>
-              <input type="radio" name="depth" value="60" />
-              60 questions
-              <span>Most detailed</span>
-            </label>
-          </fieldset>
-
-          <button id="start-btn" class="btn btn-primary" type="button">
-            Start Assessment
-          </button>
-        </div>
-      </section>
-
-      <section class="panel hidden" id="assessment-panel" aria-live="polite">
-        <header class="assessment-header">
-          <div>
-            <p class="eyebrow">Assessment In Progress</p>
-            <h2 id="progress-heading">Question 1 of 20</h2>
+    <main>
+      <section class="hero">
+        <div class="hero-inner">
+          <span class="hero-badge">Science-backed assessment</span>
+          <h1>Discover Your True<br /><em>Temperament</em></h1>
+          <p>
+            Unlock deep insights into why you think, feel, and act the way you
+            do - and how it shapes every relationship in your life.
+          </p>
+          <div class="btn-row">
+            <a href="test-options.html" class="btn btn-primary">Start Free Trial -></a>
+            <a href="#about" class="btn btn-secondary">Learn More</a>
           </div>
-          <p id="progress-meta">Answered 0 of 20</p>
-        </header>
 
-        <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-          <div class="progress-fill" id="progress-fill"></div>
-        </div>
-
-        <div id="question-page" class="question-page"></div>
-        <p id="page-warning" class="warning hidden" role="alert">
-          Please answer all questions on this page before continuing.
-        </p>
-
-        <div class="page-controls">
-          <button id="prev-btn" class="btn btn-ghost" type="button">Previous</button>
-          <button id="next-btn" class="btn btn-primary" type="button">Next</button>
+          <div class="social-proof">
+            <div class="avatars" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <span class="stars">*****</span>
+            <span>Used by learners in 40+ countries</span>
+          </div>
         </div>
       </section>
 
-      <section class="panel hidden" id="results-panel" aria-live="polite">
-        <p class="eyebrow">Your Temperament Reflection</p>
-        <h2 id="result-title"></h2>
-        <p id="result-short" class="result-short"></p>
-        <p id="result-confidence" class="result-confidence"></p>
-
-        <button id="detail-toggle" class="btn btn-ghost" type="button">
-          Show Detailed Explanation
-        </button>
-
-        <div id="result-detail" class="detail hidden">
-          <article>
-            <h3>Strengths</h3>
-            <ul id="detail-strengths"></ul>
+      <section class="section benefits" id="about">
+        <div class="section-title">
+          <h2>Why Take the Test?</h2>
+          <p>
+            Gain practical insights into your patterns and turn awareness into
+            action.
+          </p>
+        </div>
+        <div class="benefits-grid">
+          <article class="benefit-card">
+            <div class="benefit-icon" aria-hidden="true">SA</div>
+            <h3>Self-Awareness</h3>
+            <p>
+              Understand recurring thought and behavior patterns across your
+              daily decisions.
+            </p>
           </article>
-          <article>
-            <h3>Weaknesses</h3>
-            <ul id="detail-weaknesses"></ul>
+          <article class="benefit-card">
+            <div class="benefit-icon" aria-hidden="true">BR</div>
+            <h3>Better Relationships</h3>
+            <p>
+              Improve communication with friends, family, and teammates by
+              understanding differences.
+            </p>
           </article>
-          <article>
-            <h3>Communication Style</h3>
-            <p id="detail-communication"></p>
+          <article class="benefit-card">
+            <div class="benefit-icon" aria-hidden="true">PG</div>
+            <h3>Personal Growth</h3>
+            <p>
+              Identify strengths and blind spots so you can grow with clear,
+              specific direction.
+            </p>
           </article>
         </div>
+      </section>
 
-        <p class="disclaimer">
-          This is an educational reflection tool, not a medical or psychological
-          diagnosis. Temperament expression can change across contexts and life
-          stages, and people can grow over time.
-        </p>
+      <section class="section temperaments" id="types">
+        <div class="section-title">
+          <h2>The Four Temperaments</h2>
+          <p>Ancient model, modern reflection. Most people show a blend.</p>
+        </div>
+        <div class="temp-grid">
+          <article class="temp-card sanguine">
+            <div class="temp-img">
+              <img
+                src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600&auto=format&fit=crop"
+                alt="Sanguine temperament"
+              />
+            </div>
+            <div class="temp-color-bar"></div>
+            <div class="temp-body">
+              <h3>Sanguine</h3>
+              <span class="temp-tag">Enthusiastic - Social - Optimistic</span>
+              <p>
+                Warm, expressive, and energized by interaction and momentum.
+              </p>
+            </div>
+          </article>
+
+          <article class="temp-card choleric">
+            <div class="temp-img">
+              <img
+                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop"
+                alt="Choleric temperament"
+              />
+            </div>
+            <div class="temp-color-bar"></div>
+            <div class="temp-body">
+              <h3>Choleric</h3>
+              <span class="temp-tag">Driven - Leader - Decisive</span>
+              <p>
+                Goal-focused and direct, with strong initiative under pressure.
+              </p>
+            </div>
+          </article>
+
+          <article class="temp-card melancholic">
+            <div class="temp-img">
+              <img
+                src="https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600&auto=format&fit=crop"
+                alt="Melancholic temperament"
+              />
+            </div>
+            <div class="temp-color-bar"></div>
+            <div class="temp-body">
+              <h3>Melancholic</h3>
+              <span class="temp-tag">Analytical - Creative - Deep</span>
+              <p>
+                Reflective and detail-oriented, often guided by depth and
+                meaning.
+              </p>
+            </div>
+          </article>
+
+          <article class="temp-card phlegmatic">
+            <div class="temp-img">
+              <img
+                src="https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=600&auto=format&fit=crop"
+                alt="Phlegmatic temperament"
+              />
+            </div>
+            <div class="temp-color-bar"></div>
+            <div class="temp-body">
+              <h3>Phlegmatic</h3>
+              <span class="temp-tag">Calm - Reliable - Peaceful</span>
+              <p>
+                Steady and composed, often serving as a stabilizing influence.
+              </p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="stats-bar" id="insights">
+        <div class="stats-inner">
+          <div class="stat">
+            <span class="stat-num">20</span>
+            <span class="stat-label">Quick question mode</span>
+          </div>
+          <div class="stat">
+            <span class="stat-num">40</span>
+            <span class="stat-label">Balanced depth mode</span>
+          </div>
+          <div class="stat">
+            <span class="stat-num">60</span>
+            <span class="stat-label">Most detailed mode</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="cta-section">
+        <h2>Ready to discover your temperament?</h2>
+        <div class="checklist">
+          <span class="check-item">Takes less than 5 minutes</span>
+          <span class="check-item">No registration required</span>
+          <span class="check-item">Completely free</span>
+        </div>
+        <a href="test-options.html" class="btn-white">Start the Free Assessment -></a>
       </section>
     </main>
-
-    <script src="app.js"></script>
   </body>
 </html>
