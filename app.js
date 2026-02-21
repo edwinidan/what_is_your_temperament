@@ -789,8 +789,9 @@ function renderResults({ primary, secondary, confidence, ranked }) {
   confidenceLabel.textContent = confidenceLevel;
   confidenceRing.style.setProperty("--confidence-fill", confidencePercentValue);
   primaryPercentLabel.textContent = `${mixPercentages[primary]}%`;
-  renderTemperamentLegend(mixPercentages);
-  renderTemperamentDonut(mixPercentages);
+  const mixDisplayOrder = getTemperamentDisplayOrder(mixPercentages, ranked);
+  renderTemperamentLegend(mixPercentages, mixDisplayOrder);
+  renderTemperamentDonut(mixPercentages, mixDisplayOrder);
   renderScoreBars(mixPercentages, ranked);
 
   state.detailVisible = false;
@@ -1066,8 +1067,30 @@ function buildTemperamentMixPercentages(ranked) {
   }, {});
 }
 
-function renderTemperamentLegend(percentages) {
-  temperamentLegend.innerHTML = TEMPERAMENTS.map((temperament) => {
+function getTemperamentDisplayOrder(percentages, ranked) {
+  const rankingIndex = (ranked || []).reduce((acc, entry, index) => {
+    acc[entry.temperament] = index;
+    return acc;
+  }, {});
+
+  return [...TEMPERAMENTS].sort((a, b) => {
+    const diff = (percentages[b] ?? 0) - (percentages[a] ?? 0);
+    if (diff !== 0) {
+      return diff;
+    }
+
+    const rankA = rankingIndex[a];
+    const rankB = rankingIndex[b];
+    if (Number.isFinite(rankA) && Number.isFinite(rankB)) {
+      return rankA - rankB;
+    }
+
+    return TEMPERAMENTS.indexOf(a) - TEMPERAMENTS.indexOf(b);
+  });
+}
+
+function renderTemperamentLegend(percentages, displayOrder) {
+  temperamentLegend.innerHTML = displayOrder.map((temperament) => {
     const value = percentages[temperament];
     return `
       <div class="mix-legend-row">
@@ -1081,7 +1104,7 @@ function renderTemperamentLegend(percentages) {
   }).join("");
 }
 
-function renderTemperamentDonut(percentages) {
+function renderTemperamentDonut(percentages, displayOrder) {
   const canvas = document.getElementById("temperament-donut");
   if (!canvas || typeof window.Chart !== "function") {
     return;
@@ -1098,11 +1121,11 @@ function renderTemperamentDonut(percentages) {
   temperamentDonutChart = new window.Chart(context, {
     type: "doughnut",
     data: {
-      labels: TEMPERAMENTS,
+      labels: displayOrder,
       datasets: [
         {
-          data: TEMPERAMENTS.map((temperament) => percentages[temperament]),
-          backgroundColor: TEMPERAMENTS.map(
+          data: displayOrder.map((temperament) => percentages[temperament]),
+          backgroundColor: displayOrder.map(
             (temperament) => TEMPERAMENT_COLORS[temperament]
           ),
           borderWidth: 0,
@@ -1129,8 +1152,9 @@ function renderTemperamentDonut(percentages) {
 function renderScoreBars(percentages, ranked) {
   const scoreGrid = document.querySelector(".score-grid");
   if (scoreGrid) {
-    const rankingIndex = (ranked || []).reduce((acc, entry, index) => {
-      acc[entry.temperament] = index;
+    const displayOrder = getTemperamentDisplayOrder(percentages, ranked);
+    const orderIndex = displayOrder.reduce((acc, temperament, index) => {
+      acc[temperament] = index;
       return acc;
     }, {});
 
@@ -1139,21 +1163,7 @@ function renderScoreBars(percentages, ranked) {
       .sort((a, b) => {
         const tempA = a.dataset.temp;
         const tempB = b.dataset.temp;
-        const percentA = percentages[tempA] ?? 0;
-        const percentB = percentages[tempB] ?? 0;
-        const diff = percentB - percentA;
-
-        if (diff !== 0) {
-          return diff;
-        }
-
-        const rankA = rankingIndex[tempA];
-        const rankB = rankingIndex[tempB];
-        if (Number.isFinite(rankA) && Number.isFinite(rankB)) {
-          return rankA - rankB;
-        }
-
-        return TEMPERAMENTS.indexOf(tempA) - TEMPERAMENTS.indexOf(tempB);
+        return (orderIndex[tempA] ?? 0) - (orderIndex[tempB] ?? 0);
       })
       .forEach((column) => {
         scoreGrid.appendChild(column);
