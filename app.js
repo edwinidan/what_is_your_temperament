@@ -564,6 +564,7 @@ function goToPreviousPage() {
   state.currentPage -= 1;
   saveProgress();
   renderCurrentPage();
+  scrollToPanel(assessmentPanel, "smooth");
 }
 
 function goToNextPage() {
@@ -577,6 +578,7 @@ function goToNextPage() {
     state.currentPage += 1;
     saveProgress();
     renderCurrentPage();
+    scrollToPanel(assessmentPanel, "smooth");
     return;
   }
 
