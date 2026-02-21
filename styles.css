@@ -1458,14 +1458,22 @@ main {
   }
 
   .result-sidebar,
-  .score-grid,
   .comms-grid,
   .profile-columns {
     grid-template-columns: 1fr;
   }
 
+  .score-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .score-track {
     height: 160px;
+  }
+
+  .score-percent {
+    font-size: 0.78rem;
+    line-height: 1;
   }
 
   .page-controls {
