@@ -425,15 +425,17 @@ function renderCurrentPage() {
   const pageEnd = Math.min(startIndex + PAGE_SIZE, total);
 
   progressHeading.textContent = `Questions ${pageStart}-${pageEnd} of ${total}`;
-  progressMeta.textContent = `Answered ${answered} of ${total} | Page ${
-    state.currentPage + 1
-  } of ${pageCount}`;
+  progressMeta.textContent = `Answered ${answered} of ${total} | Page ${state.currentPage + 1
+    } of ${pageCount}`;
   progressFill.style.width = `${percent}%`;
   progressTrack.setAttribute("aria-valuenow", `${percent}`);
 
   questionPage.innerHTML = pageQuestions
     .map((question) => {
       const labels = getScaleLabels(question.type);
+      const currentValue = state.responses[question.id] || 3;
+      const hasResponse = !!state.responses[question.id];
+
       return `
         <article class="question-card">
           <div class="question-top">
@@ -441,22 +443,25 @@ function renderCurrentPage() {
             <span>Q${question.ordinal}</span>
           </div>
           <p class="question-text">${question.text}</p>
-          <div class="scale-grid">
-            ${labels
-              .map(
-                (label, index) => `
-              <label class="scale-option">
-                <input
-                  type="radio"
-                  name="${question.id}"
-                  value="${index + 1}"
-                  ${state.responses[question.id] === index + 1 ? "checked" : ""}
-                />
-                <span>${label}</span>
-              </label>
-            `
-              )
-              .join("")}
+          
+          <div class="slider-box">
+             <div class="slider-label-display" id="label-val-${question.id}">
+                ${hasResponse ? labels[currentValue - 1] : '<span class="prompt">Slide to select</span>'}
+             </div>
+             <input 
+               type="range" 
+               class="question-range" 
+               name="${question.id}" 
+               min="1" 
+               max="5" 
+               step="1" 
+               value="${currentValue}"
+               data-answered="${hasResponse}"
+             />
+             <div class="slider-extremes">
+               <span>${labels[0]}</span>
+               <span>${labels[4]}</span>
+             </div>
           </div>
         </article>
       `;
@@ -471,13 +476,40 @@ function renderCurrentPage() {
 }
 
 function bindQuestionListeners() {
-  questionPage.querySelectorAll('input[type="radio"]').forEach((input) => {
-    input.addEventListener("change", (event) => {
-      const { name, value } = event.target;
-      state.responses[name] = Number(value);
+  questionPage.querySelectorAll('.question-range').forEach((input) => {
+    const questionId = input.name;
+    const question = state.questions.find(q => q.id === questionId);
+    const labels = getScaleLabels(question.type);
+    const labelDisplay = document.getElementById(`label-val-${questionId}`);
+
+    const updateValue = (val) => {
+      state.responses[questionId] = Number(val);
+      labelDisplay.innerHTML = labels[val - 1];
+      input.setAttribute('data-answered', 'true');
       pageWarning.classList.add("hidden");
       syncProgressOnly();
       saveProgress();
+    };
+
+    input.addEventListener("input", (event) => {
+      const val = event.target.value;
+      labelDisplay.innerHTML = labels[val - 1];
+    });
+
+    input.addEventListener("change", (event) => {
+      updateValue(event.target.value);
+    });
+
+    // Handle clicks/touches that don't trigger "change" if the value stays the same but user intent was to select
+    input.addEventListener("mousedown", () => {
+      if (input.getAttribute('data-answered') === 'false') {
+        updateValue(input.value);
+      }
+    });
+    input.addEventListener("touchstart", () => {
+      if (input.getAttribute('data-answered') === 'false') {
+        updateValue(input.value);
+      }
     });
   });
 }
