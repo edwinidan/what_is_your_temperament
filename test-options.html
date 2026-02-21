@@ -16,6 +16,7 @@
     plausible.init = plausible.init || function (i) { plausible.o = i || {}; };
     plausible.init();
   </script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <link rel="stylesheet" href="styles.css" />
 </head>
 
@@ -118,42 +119,155 @@
     </section>
 
     <section class="section results-stage hidden" id="results-panel" aria-live="polite">
-      <div class="app-container narrow">
-        <div class="panel-card">
+      <div class="app-container result-container">
+        <div class="panel-card result-hero-card">
           <p class="eyebrow">Your Temperament Reflection</p>
-          <h2 id="result-title"></h2>
+          <span class="result-pill">Your Result Is In</span>
+          <h2 id="result-name" class="result-name"></h2>
+          <p id="result-tagline" class="result-tagline"></p>
           <p id="result-short" class="result-short"></p>
-          <p id="result-confidence" class="result-confidence"></p>
+          <div class="result-confidence-pill">
+            <span class="confidence-dot"></span>
+            <span id="result-confidence"></span>
+          </div>
+          <p id="result-title" class="sr-only"></p>
+        </div>
 
-          <button id="detail-toggle" class="btn btn-outline" type="button">
-            Show Detailed Explanation
-          </button>
+        <div class="result-profile-grid">
+          <article class="panel-card profile-main-card">
+            <div class="profile-image-wrap">
+              <img id="result-profile-image" src="" alt="Primary temperament profile" />
+              <div class="profile-image-overlay">
+                <h3 id="result-profile-name"></h3>
+                <p id="result-profile-summary"></p>
+              </div>
+            </div>
 
-          <div id="result-detail" class="detail hidden">
+            <div class="profile-columns">
+              <div class="result-list-col">
+                <h4>Strengths</h4>
+                <ul id="detail-strengths" class="result-list"></ul>
+              </div>
+              <div class="result-list-col">
+                <h4>Watch-outs</h4>
+                <ul id="detail-weaknesses" class="result-list"></ul>
+              </div>
+            </div>
+
+            <div class="growth-note">
+              <h4>Growth Area</h4>
+              <p id="result-growth"></p>
+            </div>
+
+            <div id="result-detail" class="detail hidden">
+              <article>
+                <h3>Detailed Communication Insight</h3>
+                <p id="detail-communication"></p>
+              </article>
+            </div>
+          </article>
+
+          <aside class="result-sidebar">
+            <article class="panel-card mix-card">
+              <h3>Temperament Mix</h3>
+              <div class="mix-donut">
+                <canvas id="temperament-donut"></canvas>
+                <div class="mix-donut-center">
+                  <span id="primary-percent-label">0%</span>
+                  <small>Primary</small>
+                </div>
+              </div>
+              <div id="temperament-legend" class="mix-legend"></div>
+            </article>
+
+            <article class="secondary-card">
+              <p class="secondary-eyebrow">Secondary Influence</p>
+              <h3 id="secondary-name"></h3>
+              <p id="secondary-desc"></p>
+              <p id="secondary-traits" class="secondary-traits"></p>
+            </article>
+
+            <div class="result-actions">
+              <button id="detail-toggle" class="btn btn-outline" type="button">
+                Show Detailed Explanation
+              </button>
+              <a href="test-options.html" class="btn btn-primary result-restart">
+                Take Another Test
+                <span aria-hidden="true">-></span>
+              </a>
+              <a href="index.html" class="btn btn-outline">Back Home</a>
+            </div>
+          </aside>
+        </div>
+
+        <div class="panel-card score-breakdown-card">
+          <p class="eyebrow">Score Breakdown</p>
+          <h3>How You Scored Across All Four</h3>
+          <div class="score-grid">
+            <div class="score-col" data-temp="Sanguine">
+              <div class="score-track"><div class="score-fill" id="bar-sanguine"></div></div>
+              <span class="score-percent" id="pct-sanguine">0%</span>
+              <span class="score-name">Sanguine</span>
+            </div>
+            <div class="score-col" data-temp="Choleric">
+              <div class="score-track"><div class="score-fill" id="bar-choleric"></div></div>
+              <span class="score-percent" id="pct-choleric">0%</span>
+              <span class="score-name">Choleric</span>
+            </div>
+            <div class="score-col" data-temp="Melancholic">
+              <div class="score-track"><div class="score-fill" id="bar-melancholic"></div></div>
+              <span class="score-percent" id="pct-melancholic">0%</span>
+              <span class="score-name">Melancholic</span>
+            </div>
+            <div class="score-col" data-temp="Phlegmatic">
+              <div class="score-track"><div class="score-fill" id="bar-phlegmatic"></div></div>
+              <span class="score-percent" id="pct-phlegmatic">0%</span>
+              <span class="score-name">Phlegmatic</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-card comms-card">
+          <p class="eyebrow">How You Connect</p>
+          <h3>Your Communication Style</h3>
+          <div class="comms-grid">
             <article>
-              <h3>Strengths</h3>
-              <ul id="detail-strengths"></ul>
+              <h4>Preferred Style</h4>
+              <p id="comms-preferred"></p>
             </article>
             <article>
-              <h3>Weaknesses</h3>
-              <ul id="detail-weaknesses"></ul>
+              <h4>As a Listener</h4>
+              <p id="comms-listener"></p>
             </article>
             <article>
-              <h3>Communication Style</h3>
-              <p id="detail-communication"></p>
+              <h4>Expressing Yourself</h4>
+              <p id="comms-expression"></p>
+            </article>
+            <article>
+              <h4>Under Pressure</h4>
+              <p id="comms-pressure"></p>
             </article>
           </div>
-
-          <p class="disclaimer">
-            This result is for educational self-reflection only and is not a
-            medical or psychological diagnosis.
-          </p>
-
-          <a href="test-options.html" class="btn btn-primary result-restart">
-            Take Another Test
-            <span aria-hidden="true">-></span>
-          </a>
         </div>
+
+        <div class="panel-card confidence-card">
+          <div class="confidence-copy">
+            <h3 id="confidence-title"></h3>
+            <p id="confidence-message"></p>
+          </div>
+          <div class="confidence-meter">
+            <div class="confidence-ring" id="confidence-ring">
+              <span id="confidence-percent">0%</span>
+            </div>
+            <span id="confidence-label" class="confidence-label"></span>
+          </div>
+        </div>
+
+        <p class="disclaimer">
+          This assessment is designed for personal reflection and educational
+          purposes only. It is not a clinical diagnostic tool and should not be
+          used as a substitute for professional advice.
+        </p>
       </div>
     </section>
   </main>

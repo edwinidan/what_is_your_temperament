@@ -10,6 +10,80 @@ const ANALYTICS_EVENTS = {
 };
 
 const TEMPERAMENTS = ["Sanguine", "Choleric", "Melancholic", "Phlegmatic"];
+const TEMPERAMENT_COLORS = {
+  Sanguine: "#d97706",
+  Choleric: "#b91c1c",
+  Melancholic: "#468254",
+  Phlegmatic: "#047857",
+};
+const TEMPERAMENT_VISUALS = {
+  Sanguine: {
+    tagline: "The Expressive Spark",
+    traits: "Warm · Social · Optimistic",
+    image:
+      "https://images.unsplash.com/photo-1625283518288-00362afc8663?w=900&auto=format&fit=crop",
+  },
+  Choleric: {
+    tagline: "The Driven Builder",
+    traits: "Decisive · Ambitious · Direct",
+    image:
+      "https://images.unsplash.com/photo-1758519291173-bb9fb3098e04?w=900&auto=format&fit=crop",
+  },
+  Melancholic: {
+    tagline: "The Thoughtful Soul",
+    traits: "Reflective · Precise · Deep",
+    image:
+      "https://images.unsplash.com/photo-1712229462114-dae7fa1d1bf1?w=900&auto=format&fit=crop",
+  },
+  Phlegmatic: {
+    tagline: "The Steady Anchor",
+    traits: "Calm · Reliable · Peaceful",
+    image:
+      "https://images.unsplash.com/photo-1557929878-b358f3bdbdd7?w=900&auto=format&fit=crop",
+  },
+};
+const TEMPERAMENT_COMMS = {
+  Sanguine: {
+    preferred:
+      "Energetic and collaborative conversations where ideas move quickly.",
+    listener:
+      "Encouraging and warm, often helping people feel accepted right away.",
+    expression:
+      "Expressive and spontaneous; stories and examples help you connect.",
+    pressure:
+      "Can move fast; clarity improves when you pause and confirm priorities.",
+  },
+  Choleric: {
+    preferred:
+      "Direct, goal-focused communication with clear decisions and ownership.",
+    listener:
+      "You listen for outcomes and next steps, especially under time pressure.",
+    expression:
+      "Concise and decisive; you prefer practical language over abstraction.",
+    pressure:
+      "May sound forceful; effectiveness rises when pace includes empathy.",
+  },
+  Melancholic: {
+    preferred:
+      "Thoughtful one-on-one exchanges with depth, context, and nuance.",
+    listener:
+      "Attentive and detail-sensitive, often hearing what others miss.",
+    expression:
+      "Carefully chosen words; you communicate with precision and meaning.",
+    pressure:
+      "Can withdraw to process; quality improves with space and structure.",
+  },
+  Phlegmatic: {
+    preferred:
+      "Calm, steady communication where people feel safe to share openly.",
+    listener:
+      "Patient and stabilizing, with strong focus on understanding both sides.",
+    expression:
+      "Measured and practical; you communicate with consistency over intensity.",
+    pressure:
+      "May avoid tension; momentum improves when needs are stated earlier.",
+  },
+};
 
 const TEMPERAMENT_PROFILES = {
   Sanguine: {
@@ -357,6 +431,7 @@ const state = {
   abandonmentTracked: false,
   resultMeta: null,
 };
+let temperamentDonutChart = null;
 
 const introPanel = document.getElementById("intro-panel");
 const assessmentPanel = document.getElementById("assessment-panel");
@@ -371,8 +446,28 @@ const progressFill = document.getElementById("progress-fill");
 const progressTrack = document.querySelector(".progress-track");
 const pageWarning = document.getElementById("page-warning");
 const resultTitle = document.getElementById("result-title");
+const resultName = document.getElementById("result-name");
+const resultTagline = document.getElementById("result-tagline");
+const resultProfileImage = document.getElementById("result-profile-image");
+const resultProfileName = document.getElementById("result-profile-name");
+const resultProfileSummary = document.getElementById("result-profile-summary");
+const resultGrowth = document.getElementById("result-growth");
 const resultShort = document.getElementById("result-short");
 const resultConfidence = document.getElementById("result-confidence");
+const primaryPercentLabel = document.getElementById("primary-percent-label");
+const temperamentLegend = document.getElementById("temperament-legend");
+const secondaryName = document.getElementById("secondary-name");
+const secondaryDesc = document.getElementById("secondary-desc");
+const secondaryTraits = document.getElementById("secondary-traits");
+const commsPreferred = document.getElementById("comms-preferred");
+const commsListener = document.getElementById("comms-listener");
+const commsExpression = document.getElementById("comms-expression");
+const commsPressure = document.getElementById("comms-pressure");
+const confidenceTitle = document.getElementById("confidence-title");
+const confidenceMessage = document.getElementById("confidence-message");
+const confidencePercent = document.getElementById("confidence-percent");
+const confidenceLabel = document.getElementById("confidence-label");
+const confidenceRing = document.getElementById("confidence-ring");
 const detailToggle = document.getElementById("detail-toggle");
 const resultDetail = document.getElementById("result-detail");
 const detailStrengths = document.getElementById("detail-strengths");
@@ -633,16 +728,22 @@ function scoreAssessment() {
     primary: ranked[0].temperament,
     secondary: ranked[1].temperament,
     confidence,
+    ranked,
   };
 }
 
-function renderResults({ primary, secondary, confidence }) {
+function renderResults({ primary, secondary, confidence, ranked }) {
   assessmentPanel.classList.add("hidden");
   resultsPanel.classList.remove("hidden");
 
   const primaryProfile = TEMPERAMENT_PROFILES[primary];
   const secondaryProfile = TEMPERAMENT_PROFILES[secondary];
+  const primaryVisual = TEMPERAMENT_VISUALS[primary];
+  const secondaryVisual = TEMPERAMENT_VISUALS[secondary];
+  const communicationProfile = TEMPERAMENT_COMMS[primary];
+  const mixPercentages = buildTemperamentMixPercentages(ranked);
   const confidenceLevel = normalizeConfidenceLevel(confidence.level);
+  const confidencePercentValue = getConfidencePercent(confidenceLevel);
   const durationSeconds = getDurationSeconds(state.startedAt);
 
   state.resultMeta = {
@@ -652,9 +753,17 @@ function renderResults({ primary, secondary, confidence }) {
   state.completionTracked = true;
   state.abandonmentTracked = false;
 
+  resultName.textContent = primary;
+  resultTagline.textContent = primaryVisual.tagline;
   resultTitle.textContent = `${primary} is your primary temperament, with ${secondary} as secondary influence.`;
   resultShort.textContent = `${primaryProfile.short} A secondary ${secondary.toLowerCase()} influence may add ${secondaryProfile.strengthFocus}.`;
-  resultConfidence.textContent = `Confidence: ${confidence.level}. ${confidence.message}`;
+  resultConfidence.textContent = `${confidence.level} confidence result`;
+
+  resultProfileImage.src = primaryVisual.image;
+  resultProfileImage.alt = `${primary} profile`;
+  resultProfileName.textContent = primary;
+  resultProfileSummary.textContent = primaryProfile.short;
+  resultGrowth.textContent = `Practice focus: ${primaryProfile.challengeFocus}. Secondary ${secondary.toLowerCase()} influence may add ${secondaryProfile.strengthFocus}.`;
 
   const strengths = [...primaryProfile.strengths];
   strengths.push(`Secondary influence: ${secondaryProfile.strengthFocus}.`);
@@ -665,6 +774,24 @@ function renderResults({ primary, secondary, confidence }) {
   detailStrengths.innerHTML = strengths.map((item) => `<li>${item}</li>`).join("");
   detailWeaknesses.innerHTML = weaknesses.map((item) => `<li>${item}</li>`).join("");
   detailCommunication.textContent = `${primaryProfile.communication} Secondary ${secondary.toLowerCase()} influence may also shape tone and pace in conversations.`;
+  secondaryName.textContent = secondary;
+  secondaryDesc.textContent = secondaryProfile.short;
+  secondaryTraits.textContent = secondaryVisual.traits;
+
+  commsPreferred.textContent = communicationProfile.preferred;
+  commsListener.textContent = communicationProfile.listener;
+  commsExpression.textContent = communicationProfile.expression;
+  commsPressure.textContent = communicationProfile.pressure;
+
+  confidenceTitle.textContent = `${confidence.level} Confidence`;
+  confidenceMessage.textContent = confidence.message;
+  confidencePercent.textContent = `${confidencePercentValue}%`;
+  confidenceLabel.textContent = confidenceLevel;
+  confidenceRing.style.setProperty("--confidence-fill", confidencePercentValue);
+  primaryPercentLabel.textContent = `${mixPercentages[primary]}%`;
+  renderTemperamentLegend(mixPercentages);
+  renderTemperamentDonut(mixPercentages);
+  renderScoreBars(mixPercentages);
 
   state.detailVisible = false;
   resultDetail.classList.add("hidden");
@@ -881,6 +1008,141 @@ function normalizeConfidenceLevel(level) {
     return normalized;
   }
   return "low";
+}
+
+function getConfidencePercent(level) {
+  if (level === "high") {
+    return 85;
+  }
+  if (level === "medium") {
+    return 68;
+  }
+  return 52;
+}
+
+function buildTemperamentMixPercentages(ranked) {
+  const maxAbsScore = (state.selectedDepth / TEMPERAMENTS.length) * 2;
+  const safeMax = maxAbsScore > 0 ? maxAbsScore : 1;
+  const weights = TEMPERAMENTS.reduce((acc, temperament) => {
+    const item = ranked.find((entry) => entry.temperament === temperament);
+    const score = item ? item.score : 0;
+    acc[temperament] = clamp((score + safeMax) / (safeMax * 2), 0, 1);
+    return acc;
+  }, {});
+
+  const rawPercentages = TEMPERAMENTS.map((temperament) => ({
+    temperament,
+    value: weights[temperament],
+  }));
+  const total = rawPercentages.reduce((sum, entry) => sum + entry.value, 0);
+  const normalized = rawPercentages.map((entry) => ({
+    temperament: entry.temperament,
+    raw: total > 0 ? (entry.value / total) * 100 : 25,
+  }));
+  const floors = normalized.map((entry) => ({
+    temperament: entry.temperament,
+    value: Math.floor(entry.raw),
+    fraction: entry.raw - Math.floor(entry.raw),
+  }));
+
+  let remainder =
+    100 - floors.reduce((sum, entry) => sum + entry.value, 0);
+  floors
+    .slice()
+    .sort((a, b) => b.fraction - a.fraction)
+    .forEach((entry) => {
+      if (remainder > 0) {
+        const target = floors.find(
+          (candidate) => candidate.temperament === entry.temperament
+        );
+        target.value += 1;
+        remainder -= 1;
+      }
+    });
+
+  return floors.reduce((acc, entry) => {
+    acc[entry.temperament] = entry.value;
+    return acc;
+  }, {});
+}
+
+function renderTemperamentLegend(percentages) {
+  temperamentLegend.innerHTML = TEMPERAMENTS.map((temperament) => {
+    const value = percentages[temperament];
+    return `
+      <div class="mix-legend-row">
+        <span class="mix-legend-name">
+          <span class="mix-legend-dot" style="background: ${TEMPERAMENT_COLORS[temperament]}"></span>
+          ${temperament}
+        </span>
+        <span class="mix-legend-val">${value}%</span>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderTemperamentDonut(percentages) {
+  const canvas = document.getElementById("temperament-donut");
+  if (!canvas || typeof window.Chart !== "function") {
+    return;
+  }
+  const context = canvas.getContext("2d");
+  if (!context) {
+    return;
+  }
+
+  if (temperamentDonutChart) {
+    temperamentDonutChart.destroy();
+  }
+
+  temperamentDonutChart = new window.Chart(context, {
+    type: "doughnut",
+    data: {
+      labels: TEMPERAMENTS,
+      datasets: [
+        {
+          data: TEMPERAMENTS.map((temperament) => percentages[temperament]),
+          backgroundColor: TEMPERAMENTS.map(
+            (temperament) => TEMPERAMENT_COLORS[temperament]
+          ),
+          borderWidth: 0,
+        },
+      ],
+    },
+    options: {
+      cutout: "72%",
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (context) => `${context.label}: ${context.parsed}%`,
+          },
+        },
+      },
+      animation: {
+        duration: 1000,
+      },
+    },
+  });
+}
+
+function renderScoreBars(percentages) {
+  TEMPERAMENTS.forEach((temperament) => {
+    const key = temperament.toLowerCase();
+    const bar = document.getElementById(`bar-${key}`);
+    const label = document.getElementById(`pct-${key}`);
+    const percent = percentages[temperament];
+
+    if (label) {
+      label.textContent = `${percent}%`;
+    }
+    if (bar) {
+      bar.style.height = "0%";
+      requestAnimationFrame(() => {
+        bar.style.height = `${percent}%`;
+      });
+    }
+  });
 }
 
 function trackEvent(name, props = {}) {
