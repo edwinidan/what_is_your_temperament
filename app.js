@@ -455,6 +455,7 @@ function renderCurrentPage() {
       const labels = getScaleLabels(question.type);
       const currentValue = state.responses[question.id] || 3;
       const hasResponse = !!state.responses[question.id];
+      const thumbScale = 1 + (Math.abs(currentValue - 3) * 0.15);
 
       return `
         <article class="question-card">
@@ -477,6 +478,7 @@ function renderCurrentPage() {
                step="1" 
                value="${currentValue}"
                data-answered="${hasResponse}"
+               style="--thumb-scale: ${thumbScale}"
              />
              <div class="slider-extremes">
                <span>${labels[0]}</span>
@@ -511,6 +513,8 @@ function bindQuestionListeners() {
       state.responses[questionId] = Number(val);
       labelDisplay.innerHTML = labels[val - 1];
       input.setAttribute('data-answered', 'true');
+      const scale = 1 + (Math.abs(val - 3) * 0.15);
+      input.style.setProperty('--thumb-scale', scale);
       pageWarning.classList.add("hidden");
       syncProgressOnly();
       saveProgress();
@@ -519,6 +523,8 @@ function bindQuestionListeners() {
     input.addEventListener("input", (event) => {
       const val = event.target.value;
       labelDisplay.innerHTML = labels[val - 1];
+      const scale = 1 + (Math.abs(val - 3) * 0.15);
+      input.style.setProperty('--thumb-scale', scale);
     });
 
     input.addEventListener("change", (event) => {
