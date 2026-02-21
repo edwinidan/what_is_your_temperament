@@ -7,55 +7,67 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body class="selection-page">
-    <nav>
-      <a class="logo" href="index.html">What's your Temperament?</a>
-      <div class="nav-links">
-        <a href="index.html#about">About</a>
-        <a href="index.html#types">Types</a>
-        <a href="index.html#insights">Insights</a>
+  <body class="site-selection">
+    <nav class="top-nav">
+      <div class="app-container nav-inner">
+        <a class="brand" href="index.html">
+          <span class="brand-mark" aria-hidden="true">T</span>
+          <span class="brand-text">Temperament<span>Test</span></span>
+        </a>
+        <div class="nav-links">
+          <a href="index.html#about">About</a>
+          <a href="index.html#types">Types</a>
+          <a href="index.html#contact">Contact</a>
+        </div>
+        <a href="#choose-depth" class="nav-cta">Choose Test</a>
       </div>
-      <a href="#choose-depth" class="nav-cta">Choose Test -></a>
     </nav>
 
     <main>
       <div id="intro-panel">
-        <section class="hero selection-hero">
-          <div class="hero-inner">
-            <span class="hero-badge">Free educational assessment</span>
-            <h1>Pick Your<br /><em>Test Length</em></h1>
-            <p>
-              Select how deep you want to go. You can take a quick snapshot or a
-              more detailed reflection.
+        <section class="hero hero-select">
+          <div class="blob blob-left" aria-hidden="true"></div>
+          <div class="blob blob-right" aria-hidden="true"></div>
+          <div class="app-container hero-content">
+            <h1>
+              Pick Your <br />
+              <span>Test Length</span>
+            </h1>
+            <p class="hero-copy">
+              Select 20, 40, or 60 questions. The longer options increase detail
+              and confidence in your final result.
             </p>
-            <div class="btn-row">
-              <a href="#choose-depth" class="btn btn-primary">Select Test Type -></a>
-              <a href="index.html" class="btn btn-secondary">Back to Home</a>
+            <div class="hero-actions">
+              <a href="#choose-depth" class="btn btn-primary">
+                Select Test Type
+                <span aria-hidden="true">-></span>
+              </a>
+              <a href="index.html" class="btn btn-outline">Back Home</a>
             </div>
           </div>
         </section>
 
-        <section class="section selection-section" id="choose-depth">
-          <div class="section-title">
-            <h2>Select Number of Questions</h2>
-            <p>Choose 20, 40, or 60 questions before starting your free trial.</p>
-          </div>
+        <section class="section" id="choose-depth">
+          <div class="app-container narrow">
+            <div class="section-head">
+              <h2>Select Number of Questions</h2>
+              <p>Choose your preferred depth before starting the assessment.</p>
+            </div>
 
-          <div class="selection-shell">
-            <fieldset class="depth-picker-modern" aria-label="Choose assessment depth">
+            <fieldset class="depth-grid" aria-label="Choose assessment depth">
               <legend class="sr-only">Choose assessment depth</legend>
 
               <label class="depth-card">
                 <input type="radio" name="depth" value="20" checked />
                 <span class="depth-content">
                   <span class="depth-title">20 Questions</span>
-                  <span class="depth-sub">Quick insight with core patterns</span>
-                  <span class="depth-meta">Estimated time: about 5 minutes</span>
+                  <span class="depth-sub">Fast overview with core personality signals.</span>
+                  <span class="depth-meta">About 5 minutes</span>
                 </span>
               </label>
 
@@ -63,8 +75,8 @@
                 <input type="radio" name="depth" value="40" />
                 <span class="depth-content">
                   <span class="depth-title">40 Questions</span>
-                  <span class="depth-sub">Balanced depth for stronger signal</span>
-                  <span class="depth-meta">Estimated time: about 9 minutes</span>
+                  <span class="depth-sub">Balanced depth for stronger confidence.</span>
+                  <span class="depth-meta">About 9 minutes</span>
                 </span>
               </label>
 
@@ -72,27 +84,28 @@
                 <input type="radio" name="depth" value="60" />
                 <span class="depth-content">
                   <span class="depth-title">60 Questions</span>
-                  <span class="depth-sub">Most detailed view of your blend</span>
-                  <span class="depth-meta">Estimated time: about 13 minutes</span>
+                  <span class="depth-sub">Most detailed view of your temperament blend.</span>
+                  <span class="depth-meta">About 13 minutes</span>
                 </span>
               </label>
             </fieldset>
 
             <div class="selection-actions">
               <button id="start-btn" class="btn btn-primary btn-start" type="button">
-                Start Free Trial ->
+                Start Free Test
+                <span aria-hidden="true">-></span>
               </button>
               <p class="selection-note">
-                No registration required. Educational use only, not diagnosis.
+                No account required. This is educational reflection, not diagnosis.
               </p>
             </div>
           </div>
         </section>
       </div>
 
-      <section class="section quiz-section hidden" id="assessment-panel" aria-live="polite">
-        <div class="selection-shell">
-          <div class="quiz-card">
+      <section class="section quiz-stage hidden" id="assessment-panel" aria-live="polite">
+        <div class="app-container narrow">
+          <div class="panel-card">
             <header class="assessment-header">
               <div>
                 <p class="eyebrow">Assessment In Progress</p>
@@ -117,26 +130,22 @@
             </p>
 
             <div class="page-controls">
-              <button id="prev-btn" class="btn btn-secondary" type="button">
-                Previous
-              </button>
-              <button id="next-btn" class="btn btn-primary" type="button">
-                Next
-              </button>
+              <button id="prev-btn" class="btn btn-outline" type="button">Previous</button>
+              <button id="next-btn" class="btn btn-primary" type="button">Next</button>
             </div>
           </div>
         </div>
       </section>
 
-      <section class="section results-section hidden" id="results-panel" aria-live="polite">
-        <div class="selection-shell">
-          <div class="result-card">
+      <section class="section results-stage hidden" id="results-panel" aria-live="polite">
+        <div class="app-container narrow">
+          <div class="panel-card">
             <p class="eyebrow">Your Temperament Reflection</p>
             <h2 id="result-title"></h2>
             <p id="result-short" class="result-short"></p>
             <p id="result-confidence" class="result-confidence"></p>
 
-            <button id="detail-toggle" class="btn btn-secondary" type="button">
+            <button id="detail-toggle" class="btn btn-outline" type="button">
               Show Detailed Explanation
             </button>
 
@@ -156,18 +165,48 @@
             </div>
 
             <p class="disclaimer">
-              This is an educational reflection tool, not a medical or
-              psychological diagnosis. Temperament expression can change across
-              contexts and life stages.
+              This result is for educational self-reflection only and is not a
+              medical or psychological diagnosis.
             </p>
 
             <a href="test-options.html" class="btn btn-primary result-restart">
-              Take Another Test ->
+              Take Another Test
+              <span aria-hidden="true">-></span>
             </a>
           </div>
         </div>
       </section>
     </main>
+
+    <footer class="site-footer">
+      <div class="app-container footer-grid">
+        <div class="footer-brand">
+          <a class="brand" href="index.html">
+            <span class="brand-mark" aria-hidden="true">T</span>
+            <span class="brand-text">Temperament<span>Test</span></span>
+          </a>
+          <p>Educational personality reflection based on classic temperament theory.</p>
+        </div>
+
+        <div class="footer-col">
+          <h3>Explore</h3>
+          <a href="index.html#about">About Types</a>
+          <a href="index.html#types">Temperaments</a>
+          <a href="test-options.html">Take the Test</a>
+        </div>
+
+        <div class="footer-col">
+          <h3>Contact</h3>
+          <a href="mailto:contact@temperamenttest.com">contact@temperamenttest.com</a>
+          <p>No registration required for assessment results.</p>
+        </div>
+      </div>
+      <div class="footer-base">
+        <div class="app-container">
+          <p>&copy; 2026 TemperamentTest. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
 
     <script src="app.js"></script>
   </body>
