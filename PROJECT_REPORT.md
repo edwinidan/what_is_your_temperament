@@ -40,6 +40,7 @@ Notable UX update: the intermediate "Pick Your Test Length" hero step was remove
   - Results panel container (`#results-panel`).
   - Back Home button and shared footer.
   - Loads Plausible analytics script in `<head>`.
+  - Loads Chart.js in `<head>` for the temperament mix donut chart.
 - `styles.css`
   - Shared styling system for homepage, selection screen, assessment, and results.
   - Responsive navigation, hero, card components, forms, and footer.
@@ -143,17 +144,36 @@ Output:
 - Medium: `>= 0.12`
 - Low: otherwise
 
+### 6.3 Mix Percentage Model (Results Visualization)
+
+For results visualization only (not scoring), temperament scores are transformed into normalized percentages:
+
+- Scores are shifted/scaled into safe non-negative weights.
+- Weights are normalized to 100%.
+- Integer rounding is handled with remainder distribution so totals remain exactly 100%.
+
+Display order is dominance-first:
+
+- Temperament Mix legend: highest percentage to lowest.
+- Temperament Mix donut dataset/labels: highest to lowest.
+- Score Breakdown bars: highest to lowest.
+
+Tie handling uses ranked temperament order for stable deterministic output.
+
 ## 7. Results UX
 
 Results panel includes:
 
-- Primary + secondary statement
-- Short interpretation
-- Confidence statement
-- Expandable detailed sections:
-  - strengths
-  - weaknesses
-  - communication style
+- Hero-style primary result summary (name, tagline, short interpretation, confidence badge)
+- Profile section with dynamic temperament image and growth focus
+- Strengths and watch-outs lists
+- Secondary influence card (name, description, key traits)
+- Temperament Mix donut + legend
+- Score Breakdown bars
+- Communication style cards
+- Confidence indicator ring
+- Expandable detailed communication explanation
+- Educational disclaimer
 
 On completion:
 
@@ -185,7 +205,7 @@ Recovery safeguards:
 
 ## 9. Design and Frontend Direction
 
-The current UI follows a modern blue-neutral visual language inspired by the provided design reference, implemented in pure HTML/CSS for low risk:
+The current UI follows a modern green/earth visual language aligned to the existing project branding, while adopting the richer results-page composition from the provided reference, implemented in pure HTML/CSS for low risk:
 
 - Fixed translucent nav
 - Gradient hero with soft animated blobs
@@ -193,6 +213,7 @@ The current UI follows a modern blue-neutral visual language inspired by the pro
 - Unified CTA treatment
 - Shared footer across pages
 - Mobile-responsive behavior with no framework dependency
+- Results dashboard components integrated into the same visual system
 
 Implementation decision:
 
@@ -240,6 +261,9 @@ Implemented:
 - Progress indicator and local persistence
 - Primary/secondary result model
 - Confidence labeling
+- Rich results dashboard (hero/profile/mix chart/breakdown/comms/confidence)
+- Dominance-first ordering in Mix and Score Breakdown sections
+- Mobile result breakdown optimization (2-column cards and smaller percentage labels)
 - Detailed expandable interpretation
 - Responsive redesign and direct-to-selection CTA flow
 - Privacy-friendly product analytics events
@@ -257,3 +281,4 @@ Not implemented:
 - Run by opening `index.html` directly or via a local static server.
 - Browser support relies on standard modern DOM/CSS features.
 - Ensure Plausible script remains present in both HTML files for analytics continuity.
+- Ensure Chart.js script remains present in `test-options.html` for donut chart rendering.

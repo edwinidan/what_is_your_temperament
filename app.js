@@ -438,6 +438,7 @@ const assessmentPanel = document.getElementById("assessment-panel");
 const resultsPanel = document.getElementById("results-panel");
 const startButton = document.getElementById("start-btn");
 const prevButton = document.getElementById("prev-btn");
+const simulateButton = document.getElementById("simulate-btn");
 const nextButton = document.getElementById("next-btn");
 const questionPage = document.getElementById("question-page");
 const progressHeading = document.getElementById("progress-heading");
@@ -476,6 +477,9 @@ const detailCommunication = document.getElementById("detail-communication");
 
 startButton.addEventListener("click", startAssessment);
 prevButton.addEventListener("click", goToPreviousPage);
+if (simulateButton) {
+  simulateButton.addEventListener("click", simulateAssessmentForResults);
+}
 nextButton.addEventListener("click", goToNextPage);
 detailToggle.addEventListener("click", toggleDetailView);
 window.addEventListener("pagehide", handlePageHide);
@@ -587,8 +591,10 @@ function renderCurrentPage() {
 
   bindQuestionListeners();
   prevButton.disabled = state.currentPage === 0;
+  nextButton.disabled = false;
   nextButton.textContent =
     state.currentPage === pageCount - 1 ? "View Results" : "Next";
+  updateSimulationButtonState();
   pageWarning.classList.add("hidden");
 
   trackEvent(ANALYTICS_EVENTS.assessmentPageViewed, {
@@ -660,6 +666,32 @@ function goToPreviousPage() {
   saveProgress();
   renderCurrentPage();
   scrollToPanel(assessmentPanel, "smooth");
+}
+
+function simulateAssessmentForResults() {
+  if (state.selectedDepth !== 20 || !state.questions.length) {
+    return;
+  }
+
+  const dominant = TEMPERAMENTS[Math.floor(Math.random() * TEMPERAMENTS.length)];
+  const secondaryPool = TEMPERAMENTS.filter(
+    (temperament) => temperament !== dominant
+  );
+  const secondary =
+    secondaryPool[Math.floor(Math.random() * secondaryPool.length)];
+
+  state.questions.forEach((question) => {
+    state.responses[question.id] = getSimulatedResponseValue(
+      question.temperament,
+      dominant,
+      secondary
+    );
+  });
+
+  saveProgress();
+  syncProgressOnly();
+  const outcome = scoreAssessment();
+  renderResults(outcome);
 }
 
 function goToNextPage() {
@@ -961,6 +993,30 @@ function getScaleLabels(type) {
     "Agree",
     "Strongly agree",
   ];
+}
+
+function updateSimulationButtonState() {
+  if (!simulateButton) {
+    return;
+  }
+
+  const shouldShow =
+    state.selectedDepth === 20 && !assessmentPanel.classList.contains("hidden");
+  simulateButton.classList.toggle("hidden", !shouldShow);
+  simulateButton.disabled = !shouldShow;
+}
+
+function getSimulatedResponseValue(temperament, dominant, secondary) {
+  let base = 2;
+  if (temperament === dominant) {
+    base = 4;
+  } else if (temperament === secondary) {
+    base = 3;
+  }
+
+  const jitterPool = [-1, 0, 0, 0, 1];
+  const jitter = jitterPool[Math.floor(Math.random() * jitterPool.length)];
+  return clamp(base + jitter, 1, 5);
 }
 
 function scrollToPanel(panel, behavior) {
