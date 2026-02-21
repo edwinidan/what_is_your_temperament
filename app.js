@@ -511,26 +511,50 @@ function startAssessment() {
   scrollToPanel(assessmentPanel, "smooth");
 }
 
-function buildQuestionSet(depth) {
+function buildQuestionSet(depth, questionOrder) {
   const perTemperament = depth / TEMPERAMENTS.length;
-  const chosenByTemperament = TEMPERAMENTS.reduce((acc, temperament) => {
-    acc[temperament] = QUESTION_BANK[temperament].slice(0, perTemperament);
+  const selectedQuestions = TEMPERAMENTS.flatMap((temperament) =>
+    QUESTION_BANK[temperament].slice(0, perTemperament)
+  );
+  const byId = selectedQuestions.reduce((acc, question) => {
+    acc[question.id] = question;
     return acc;
   }, {});
 
-  const interleaved = [];
-  for (let cycle = 0; cycle < perTemperament; cycle += 1) {
-    for (let t = 0; t < TEMPERAMENTS.length; t += 1) {
-      const temperament = TEMPERAMENTS[t];
-      const offsetIndex = (cycle + t) % perTemperament;
-      interleaved.push(chosenByTemperament[temperament][offsetIndex]);
-    }
+  let arrangedQuestions = [];
+  if (
+    Array.isArray(questionOrder) &&
+    questionOrder.length === selectedQuestions.length
+  ) {
+    const seen = new Set();
+    arrangedQuestions = questionOrder
+      .map((questionId) => {
+        if (seen.has(questionId)) {
+          return null;
+        }
+        seen.add(questionId);
+        return byId[questionId] || null;
+      })
+      .filter(Boolean);
   }
 
-  return interleaved.map((question, index) => ({
+  if (arrangedQuestions.length !== selectedQuestions.length) {
+    arrangedQuestions = shuffleArray(selectedQuestions);
+  }
+
+  return arrangedQuestions.map((question, index) => ({
     ...question,
     ordinal: index + 1,
   }));
+}
+
+function shuffleArray(items) {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const randomIndex = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[randomIndex]] = [copy[randomIndex], copy[i]];
+  }
+  return copy;
 }
 
 function renderCurrentPage() {
@@ -894,6 +918,7 @@ function saveProgress() {
     selectedDepth: state.selectedDepth,
     responses: state.responses,
     currentPage: state.currentPage,
+    questionOrder: state.questions.map((question) => question.id),
     startedAt: state.startedAt,
   };
 
@@ -928,7 +953,7 @@ function restoreProgressIfAvailable() {
     return;
   }
 
-  const questions = buildQuestionSet(saved.selectedDepth);
+  const questions = buildQuestionSet(saved.selectedDepth, saved.questionOrder);
   const validIds = new Set(questions.map((question) => question.id));
   const restoredResponses = {};
 
@@ -963,6 +988,7 @@ function restoreProgressIfAvailable() {
   introPanel.classList.add("hidden");
   resultsPanel.classList.add("hidden");
   assessmentPanel.classList.remove("hidden");
+  saveProgress();
   renderCurrentPage();
   scrollToPanel(assessmentPanel, "auto");
 }
