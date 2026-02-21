@@ -791,7 +791,7 @@ function renderResults({ primary, secondary, confidence, ranked }) {
   primaryPercentLabel.textContent = `${mixPercentages[primary]}%`;
   renderTemperamentLegend(mixPercentages);
   renderTemperamentDonut(mixPercentages);
-  renderScoreBars(mixPercentages);
+  renderScoreBars(mixPercentages, ranked);
 
   state.detailVisible = false;
   resultDetail.classList.add("hidden");
@@ -1126,7 +1126,40 @@ function renderTemperamentDonut(percentages) {
   });
 }
 
-function renderScoreBars(percentages) {
+function renderScoreBars(percentages, ranked) {
+  const scoreGrid = document.querySelector(".score-grid");
+  if (scoreGrid) {
+    const rankingIndex = (ranked || []).reduce((acc, entry, index) => {
+      acc[entry.temperament] = index;
+      return acc;
+    }, {});
+
+    const columns = Array.from(scoreGrid.querySelectorAll(".score-col"));
+    columns
+      .sort((a, b) => {
+        const tempA = a.dataset.temp;
+        const tempB = b.dataset.temp;
+        const percentA = percentages[tempA] ?? 0;
+        const percentB = percentages[tempB] ?? 0;
+        const diff = percentB - percentA;
+
+        if (diff !== 0) {
+          return diff;
+        }
+
+        const rankA = rankingIndex[tempA];
+        const rankB = rankingIndex[tempB];
+        if (Number.isFinite(rankA) && Number.isFinite(rankB)) {
+          return rankA - rankB;
+        }
+
+        return TEMPERAMENTS.indexOf(tempA) - TEMPERAMENTS.indexOf(tempB);
+      })
+      .forEach((column) => {
+        scoreGrid.appendChild(column);
+      });
+  }
+
   TEMPERAMENTS.forEach((temperament) => {
     const key = temperament.toLowerCase();
     const bar = document.getElementById(`bar-${key}`);
