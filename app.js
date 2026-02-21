@@ -11,10 +11,10 @@ const ANALYTICS_EVENTS = {
 
 const TEMPERAMENTS = ["Sanguine", "Choleric", "Melancholic", "Phlegmatic"];
 const TEMPERAMENT_COLORS = {
-  Sanguine: "#d97706",
-  Choleric: "#b91c1c",
-  Melancholic: "#468254",
-  Phlegmatic: "#047857",
+  Sanguine: "#D6A848",
+  Choleric: "#BC5C41",
+  Melancholic: "#3B4A54",
+  Phlegmatic: "#468254",
 };
 const TEMPERAMENT_VISUALS = {
   Sanguine: {
