@@ -1,221 +1,214 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Temperament Test - Home</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
-    <!-- Privacy-friendly analytics by Plausible -->
-    <script async src="https://plausible.io/js/pa-_qc7T854PUP4o3PSGZBHN.js"></script>
-    <script>
-      window.plausible = window.plausible || function () { (plausible.q = plausible.q || []).push(arguments); };
-      plausible.init = plausible.init || function (i) { plausible.o = i || {}; };
-      plausible.init();
-    </script>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body class="site-home">
-    <nav class="top-nav">
-      <div class="app-container nav-inner">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Temperament Test - Home</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <!-- Privacy-friendly analytics by Plausible -->
+  <script async src="https://plausible.io/js/pa-_qc7T854PUP4o3PSGZBHN.js"></script>
+  <script>
+    window.plausible = window.plausible || function () { (plausible.q = plausible.q || []).push(arguments); };
+    plausible.init = plausible.init || function (i) { plausible.o = i || {}; };
+    plausible.init();
+  </script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body class="site-home">
+  <nav class="top-nav">
+    <div class="app-container nav-inner">
+      <a class="brand" href="index.html">
+        <span class="brand-mark" aria-hidden="true">T</span>
+        <span class="brand-text">Temperament<span>Test</span></span>
+      </a>
+      <div class="nav-links">
+        <a href="#about">About</a>
+        <a href="#types">Types</a>
+        <a href="#contact">Contact</a>
+      </div>
+      <a href="test-options.html#choose-depth" class="nav-cta">Take Test</a>
+    </div>
+  </nav>
+
+  <main>
+    <section class="hero hero-home">
+      <div class="blob blob-left" aria-hidden="true"></div>
+      <div class="blob blob-right" aria-hidden="true"></div>
+      <div class="app-container hero-content">
+        <h1>
+          Discover Your True <br />
+          <span>Temperament</span>
+        </h1>
+        <p class="hero-copy">
+          Unlock the patterns behind how you think, react, and connect with
+          others through a clear, practical self-awareness assessment.
+        </p>
+        <div class="hero-actions">
+          <a href="test-options.html#choose-depth" class="btn btn-primary">
+            Start Free Test
+            <span aria-hidden="true">-></span>
+          </a>
+          <a href="#about" class="btn btn-outline">Learn More</a>
+        </div>
+        <p class="hero-meta">Takes less than 5 minutes. No registration required.</p>
+      </div>
+    </section>
+
+    <section class="section" id="about">
+      <div class="app-container">
+        <div class="section-head">
+          <h2>Why Take the Test?</h2>
+          <p>Gain deep insight into your behavioral patterns and communication style.</p>
+        </div>
+        <div class="feature-grid">
+          <article class="feature-card">
+            <div class="icon-chip" aria-hidden="true">SA</div>
+            <h3>Self-Awareness</h3>
+            <p>
+              Understand why you think and act the way you do across different
+              situations.
+            </p>
+          </article>
+          <article class="feature-card">
+            <div class="icon-chip" aria-hidden="true">BR</div>
+            <h3>Better Relationships</h3>
+            <p>
+              Learn how temperament differences affect communication at home,
+              work, and in teams.
+            </p>
+          </article>
+          <article class="feature-card">
+            <div class="icon-chip" aria-hidden="true">PG</div>
+            <h3>Personal Growth</h3>
+            <p>
+              Identify strengths, blind spots, and practical areas where you
+              can improve.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-muted" id="types">
+      <div class="app-container">
+        <div class="section-head">
+          <h2>The Four Temperaments</h2>
+          <p>Most people are a blend, with one primary and one secondary influence.</p>
+        </div>
+
+        <div class="temp-grid">
+          <article class="temp-card">
+            <div class="temp-img">
+              <img src="https://images.unsplash.com/photo-1625283518288-00362afc8663?w=900&auto=format&fit=crop"
+                alt="Sanguine temperament" />
+            </div>
+            <div class="temp-body">
+              <h3>Sanguine</h3>
+              <p class="temp-sub">Enthusiastic, Active, Social</p>
+              <p>
+                Optimistic and expressive, often energized by interaction and
+                variety.
+              </p>
+            </div>
+          </article>
+
+          <article class="temp-card">
+            <div class="temp-img">
+              <img src="https://images.unsplash.com/photo-1758519291173-bb9fb3098e04?w=900&auto=format&fit=crop"
+                alt="Choleric temperament" />
+            </div>
+            <div class="temp-body">
+              <h3>Choleric</h3>
+              <p class="temp-sub">Driven, Decisive, Goal-Oriented</p>
+              <p>
+                Results-focused and assertive, often stepping into leadership
+                naturally.
+              </p>
+            </div>
+          </article>
+
+          <article class="temp-card">
+            <div class="temp-img">
+              <img src="https://images.unsplash.com/photo-1712229462114-dae7fa1d1bf1?w=900&auto=format&fit=crop"
+                alt="Melancholic temperament" />
+            </div>
+            <div class="temp-body">
+              <h3>Melancholic</h3>
+              <p class="temp-sub">Analytical, Careful, Reflective</p>
+              <p>
+                Detail-oriented and thoughtful, with strong sensitivity to
+                quality and depth.
+              </p>
+            </div>
+          </article>
+
+          <article class="temp-card">
+            <div class="temp-img">
+              <img src="https://images.unsplash.com/photo-1557929878-b358f3bdbdd7?w=900&auto=format&fit=crop"
+                alt="Phlegmatic temperament" />
+            </div>
+            <div class="temp-body">
+              <h3>Phlegmatic</h3>
+              <p class="temp-sub">Steady, Calm, Reliable</p>
+              <p>
+                Consistent and diplomatic, often bringing stability and balance
+                to groups.
+              </p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section cta-band">
+      <div class="app-container cta-inner">
+        <h2>Ready to discover your temperament?</h2>
+        <a href="test-options.html#choose-depth" class="btn btn-light">
+          Start The Free Assessment
+          <span aria-hidden="true">-></span>
+        </a>
+        <p>Choose 20, 40, or 60 questions based on how deep you want to go.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer" id="contact">
+    <div class="app-container footer-grid">
+      <div class="footer-brand">
         <a class="brand" href="index.html">
           <span class="brand-mark" aria-hidden="true">T</span>
           <span class="brand-text">Temperament<span>Test</span></span>
         </a>
-        <div class="nav-links">
-          <a href="#about">About</a>
-          <a href="#types">Types</a>
-          <a href="#contact">Contact</a>
-        </div>
-        <a href="test-options.html#choose-depth" class="nav-cta">Take Test</a>
+        <p>
+          Educational self-reflection tool based on the four classic
+          temperament patterns.
+        </p>
       </div>
-    </nav>
 
-    <main>
-      <section class="hero hero-home">
-        <div class="blob blob-left" aria-hidden="true"></div>
-        <div class="blob blob-right" aria-hidden="true"></div>
-        <div class="app-container hero-content">
-          <h1>
-            Discover Your True <br />
-            <span>Temperament</span>
-          </h1>
-          <p class="hero-copy">
-            Unlock the patterns behind how you think, react, and connect with
-            others through a clear, practical self-awareness assessment.
-          </p>
-          <div class="hero-actions">
-            <a href="test-options.html#choose-depth" class="btn btn-primary">
-              Start Free Test
-              <span aria-hidden="true">-></span>
-            </a>
-            <a href="#about" class="btn btn-outline">Learn More</a>
-          </div>
-          <p class="hero-meta">Takes less than 5 minutes. No registration required.</p>
-        </div>
-      </section>
-
-      <section class="section" id="about">
-        <div class="app-container">
-          <div class="section-head">
-            <h2>Why Take the Test?</h2>
-            <p>Gain deep insight into your behavioral patterns and communication style.</p>
-          </div>
-          <div class="feature-grid">
-            <article class="feature-card">
-              <div class="icon-chip" aria-hidden="true">SA</div>
-              <h3>Self-Awareness</h3>
-              <p>
-                Understand why you think and act the way you do across different
-                situations.
-              </p>
-            </article>
-            <article class="feature-card">
-              <div class="icon-chip" aria-hidden="true">BR</div>
-              <h3>Better Relationships</h3>
-              <p>
-                Learn how temperament differences affect communication at home,
-                work, and in teams.
-              </p>
-            </article>
-            <article class="feature-card">
-              <div class="icon-chip" aria-hidden="true">PG</div>
-              <h3>Personal Growth</h3>
-              <p>
-                Identify strengths, blind spots, and practical areas where you
-                can improve.
-              </p>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section class="section section-muted" id="types">
-        <div class="app-container">
-          <div class="section-head">
-            <h2>The Four Temperaments</h2>
-            <p>Most people are a blend, with one primary and one secondary influence.</p>
-          </div>
-
-          <div class="temp-grid">
-            <article class="temp-card">
-              <div class="temp-img">
-                <img
-                  src="https://images.unsplash.com/photo-1625283518288-00362afc8663?w=900&auto=format&fit=crop"
-                  alt="Sanguine temperament"
-                />
-              </div>
-              <div class="temp-body">
-                <h3>Sanguine</h3>
-                <p class="temp-sub">Enthusiastic, Active, Social</p>
-                <p>
-                  Optimistic and expressive, often energized by interaction and
-                  variety.
-                </p>
-              </div>
-            </article>
-
-            <article class="temp-card">
-              <div class="temp-img">
-                <img
-                  src="https://images.unsplash.com/photo-1758519291173-bb9fb3098e04?w=900&auto=format&fit=crop"
-                  alt="Choleric temperament"
-                />
-              </div>
-              <div class="temp-body">
-                <h3>Choleric</h3>
-                <p class="temp-sub">Driven, Decisive, Goal-Oriented</p>
-                <p>
-                  Results-focused and assertive, often stepping into leadership
-                  naturally.
-                </p>
-              </div>
-            </article>
-
-            <article class="temp-card">
-              <div class="temp-img">
-                <img
-                  src="https://images.unsplash.com/photo-1712229462114-dae7fa1d1bf1?w=900&auto=format&fit=crop"
-                  alt="Melancholic temperament"
-                />
-              </div>
-              <div class="temp-body">
-                <h3>Melancholic</h3>
-                <p class="temp-sub">Analytical, Careful, Reflective</p>
-                <p>
-                  Detail-oriented and thoughtful, with strong sensitivity to
-                  quality and depth.
-                </p>
-              </div>
-            </article>
-
-            <article class="temp-card">
-              <div class="temp-img">
-                <img
-                  src="https://images.unsplash.com/photo-1557929878-b358f3bdbdd7?w=900&auto=format&fit=crop"
-                  alt="Phlegmatic temperament"
-                />
-              </div>
-              <div class="temp-body">
-                <h3>Phlegmatic</h3>
-                <p class="temp-sub">Steady, Calm, Reliable</p>
-                <p>
-                  Consistent and diplomatic, often bringing stability and balance
-                  to groups.
-                </p>
-              </div>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section class="section cta-band">
-        <div class="app-container cta-inner">
-          <h2>Ready to discover your temperament?</h2>
-          <a href="test-options.html#choose-depth" class="btn btn-light">
-            Start The Free Assessment
-            <span aria-hidden="true">-></span>
-          </a>
-          <p>Choose 20, 40, or 60 questions based on how deep you want to go.</p>
-        </div>
-      </section>
-    </main>
-
-    <footer class="site-footer" id="contact">
-      <div class="app-container footer-grid">
-        <div class="footer-brand">
-          <a class="brand" href="index.html">
-            <span class="brand-mark" aria-hidden="true">T</span>
-            <span class="brand-text">Temperament<span>Test</span></span>
-          </a>
-          <p>
-            Educational self-reflection tool based on the four classic
-            temperament patterns.
-          </p>
-        </div>
-
-        <div class="footer-col">
-          <h3>Explore</h3>
-          <a href="#about">About Types</a>
-          <a href="test-options.html#choose-depth">Take the Test</a>
-          <a href="#types">Temperament Guide</a>
-        </div>
-
-        <div class="footer-col">
-          <h3>Contact</h3>
-          <a href="mailto:contact@temperamenttest.com">contact@temperamenttest.com</a>
-          <p>Educational use only. Not medical diagnosis.</p>
-        </div>
+      <div class="footer-col">
+        <h3>Explore</h3>
+        <a href="#about">About Types</a>
+        <a href="test-options.html#choose-depth">Take the Test</a>
+        <a href="#types">Temperament Guide</a>
       </div>
-      <div class="footer-base">
-        <div class="app-container">
-          <p>&copy; 2026 TemperamentTest. All rights reserved.</p>
-        </div>
+
+      <div class="footer-col">
+        <h3>Contact</h3>
+        <a href="mailto:contact@temperamenttest.com">contact@temperamenttest.com</a>
+        <p>Educational use only. Not medical diagnosis.</p>
       </div>
-    </footer>
-  </body>
+    </div>
+    <div class="footer-base">
+      <div class="app-container">
+        <p>&copy; 2026 TemperamentTest. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+
 </html>
