@@ -32,18 +32,20 @@ Notable UX update: the intermediate "Pick Your Test Length" hero step was remove
 
 - `index.html`
   - Marketing homepage UI and CTAs.
+  - Loads Plausible analytics script in `<head>`.
   - Links directly to `test-options.html#choose-depth`.
 - `test-options.html`
   - Test depth selector section (`#choose-depth`).
   - Assessment panel container (`#assessment-panel`).
   - Results panel container (`#results-panel`).
   - Back Home button and shared footer.
+  - Loads Plausible analytics script in `<head>`.
 - `styles.css`
   - Shared styling system for homepage, selection screen, assessment, and results.
   - Responsive navigation, hero, card components, forms, and footer.
 - `app.js`
   - Assessment data, state machine, pagination, scoring, confidence logic, persistence.
-  - DOM binding for selection, assessment, and results sections.
+  - Privacy-friendly analytics event instrumentation.
 - `README.md`
   - Run instructions and high-level scope.
 
@@ -58,6 +60,10 @@ Notable UX update: the intermediate "Pick Your Test Length" hero step was remove
 - `responses`
 - `currentPage`
 - `detailVisible`
+- `startedAt`
+- `completionTracked`
+- `abandonmentTracked`
+- `resultMeta`
 
 ### 4.2 Initialization
 
@@ -65,6 +71,7 @@ On load:
 
 - DOM nodes are captured (`intro-panel`, `assessment-panel`, `results-panel`, controls, and result containers).
 - Event listeners are attached.
+- `pagehide` listener is attached for abandonment tracking.
 - `restoreProgressIfAvailable()` attempts to recover an in-progress assessment.
 
 ### 4.3 Assessment Start
@@ -73,8 +80,10 @@ On load:
 
 - Reads selected radio depth (`20`, `40`, `60`).
 - Builds the question set.
-- Resets state and switches visible panel from intro to assessment.
-- Saves progress and scrolls to active panel.
+- Resets assessment state.
+- Switches visible panel from intro to assessment.
+- Saves progress, scrolls to active panel.
+- Fires analytics event: `assessment_started`.
 
 ## 5. Question Delivery and Validation
 
@@ -98,6 +107,7 @@ Depth behavior:
 - Fixed `PAGE_SIZE = 5`.
 - `renderCurrentPage()` updates heading, metadata, progress bar, and 5 question cards.
 - Slider responses update labels live and persist to state/localStorage.
+- Fires analytics event on page render: `assessment_page_viewed`.
 
 ### 5.3 Completion Guard
 
@@ -145,7 +155,14 @@ Results panel includes:
   - weaknesses
   - communication style
 
-After result render, persisted progress is cleared.
+On completion:
+
+- Fires `assessment_completed` with depth, duration, confidence level.
+- Clears persisted progress.
+
+On detailed interpretation open:
+
+- Fires `detail_view_opened` with primary temperament.
 
 ## 8. Local Persistence and Recovery
 
@@ -156,12 +173,14 @@ Persisted fields:
 - `selectedDepth`
 - `responses`
 - `currentPage`
+- `startedAt`
 
 Recovery safeguards:
 
 - Validate saved depth against allowed values.
 - Validate response IDs and response range.
 - Clamp current page to valid bounds.
+- Fall back to current time if `startedAt` is missing/invalid.
 - Handle storage errors gracefully via `try/catch`.
 
 ## 9. Design and Frontend Direction
@@ -180,11 +199,37 @@ Implementation decision:
 - A React/TypeScript reference folder was reviewed but not integrated to avoid introducing build tooling and dependency risk.
 - Equivalent aesthetics were implemented in the existing static architecture.
 
-## 10. Safety and Positioning
+## 10. Privacy-Respecting Analytics
+
+Analytics is implemented with Plausible in a privacy-focused way:
+
+- No backend/database added.
+- No user accounts.
+- No PII fields collected.
+- Tracking calls fail silently if blocked.
+
+Tracked events:
+
+1. `assessment_started`
+   - `depth`
+2. `assessment_page_viewed`
+   - `depth`, `page_index`
+3. `assessment_completed`
+   - `depth`, `duration_seconds`, `confidence_level`
+4. `assessment_abandoned`
+   - `depth`, `last_page_index`
+5. `detail_view_opened`
+   - `primary_temperament`
+
+Abandonment detection:
+
+- Uses `pagehide` while assessment is active and not already completed.
+
+## 11. Safety and Positioning
 
 The product consistently frames output as educational reflection, not diagnosis. Disclaimers are present in the test experience and result page to reduce over-interpretation.
 
-## 11. Current Scope Status
+## 12. Current Scope Status
 
 Implemented:
 
@@ -197,6 +242,7 @@ Implemented:
 - Confidence labeling
 - Detailed expandable interpretation
 - Responsive redesign and direct-to-selection CTA flow
+- Privacy-friendly product analytics events
 
 Not implemented:
 
@@ -205,8 +251,9 @@ Not implemented:
 - Monetization/premium segmentation
 - Clinical/diagnostic claims or outputs
 
-## 12. Operational Notes
+## 13. Operational Notes
 
 - No build pipeline required.
 - Run by opening `index.html` directly or via a local static server.
 - Browser support relies on standard modern DOM/CSS features.
+- Ensure Plausible script remains present in both HTML files for analytics continuity.
