@@ -1,6 +1,13 @@
 const PAGE_SIZE = 5;
 const STORAGE_KEY = "temperamentInsight.progress.v1";
 const VALID_DEPTHS = [20, 40, 60];
+const ANALYTICS_EVENTS = {
+  assessmentStarted: "assessment_started",
+  assessmentPageViewed: "assessment_page_viewed",
+  assessmentCompleted: "assessment_completed",
+  assessmentAbandoned: "assessment_abandoned",
+  detailViewOpened: "detail_view_opened",
+};
 
 const TEMPERAMENTS = ["Sanguine", "Choleric", "Melancholic", "Phlegmatic"];
 
@@ -345,6 +352,10 @@ const state = {
   responses: {},
   currentPage: 0,
   detailVisible: false,
+  startedAt: null,
+  completionTracked: false,
+  abandonmentTracked: false,
+  resultMeta: null,
 };
 
 const introPanel = document.getElementById("intro-panel");
@@ -372,6 +383,7 @@ startButton.addEventListener("click", startAssessment);
 prevButton.addEventListener("click", goToPreviousPage);
 nextButton.addEventListener("click", goToNextPage);
 detailToggle.addEventListener("click", toggleDetailView);
+window.addEventListener("pagehide", handlePageHide);
 restoreProgressIfAvailable();
 
 function startAssessment() {
@@ -383,11 +395,18 @@ function startAssessment() {
   state.responses = {};
   state.currentPage = 0;
   state.detailVisible = false;
+  state.startedAt = Date.now();
+  state.completionTracked = false;
+  state.abandonmentTracked = false;
+  state.resultMeta = null;
 
   introPanel.classList.add("hidden");
   resultsPanel.classList.add("hidden");
   assessmentPanel.classList.remove("hidden");
 
+  trackEvent(ANALYTICS_EVENTS.assessmentStarted, {
+    depth: state.selectedDepth,
+  });
   renderCurrentPage();
   saveProgress();
   scrollToPanel(assessmentPanel, "smooth");
@@ -474,6 +493,11 @@ function renderCurrentPage() {
   nextButton.textContent =
     state.currentPage === pageCount - 1 ? "View Results" : "Next";
   pageWarning.classList.add("hidden");
+
+  trackEvent(ANALYTICS_EVENTS.assessmentPageViewed, {
+    depth: state.selectedDepth,
+    page_index: state.currentPage + 1,
+  });
 }
 
 function bindQuestionListeners() {
@@ -607,10 +631,18 @@ function scoreAssessment() {
 function renderResults({ primary, secondary, confidence }) {
   assessmentPanel.classList.add("hidden");
   resultsPanel.classList.remove("hidden");
-  clearProgress();
 
   const primaryProfile = TEMPERAMENT_PROFILES[primary];
   const secondaryProfile = TEMPERAMENT_PROFILES[secondary];
+  const confidenceLevel = normalizeConfidenceLevel(confidence.level);
+  const durationSeconds = getDurationSeconds(state.startedAt);
+
+  state.resultMeta = {
+    primary,
+    confidenceLevel,
+  };
+  state.completionTracked = true;
+  state.abandonmentTracked = false;
 
   resultTitle.textContent = `${primary} is your primary temperament, with ${secondary} as secondary influence.`;
   resultShort.textContent = `${primaryProfile.short} A secondary ${secondary.toLowerCase()} influence may add ${secondaryProfile.strengthFocus}.`;
@@ -629,6 +661,13 @@ function renderResults({ primary, secondary, confidence }) {
   state.detailVisible = false;
   resultDetail.classList.add("hidden");
   detailToggle.textContent = "Show Detailed Explanation";
+
+  trackEvent(ANALYTICS_EVENTS.assessmentCompleted, {
+    depth: state.selectedDepth,
+    duration_seconds: durationSeconds,
+    confidence_level: confidenceLevel,
+  });
+  clearProgress();
   scrollToPanel(resultsPanel, "smooth");
 }
 
@@ -638,6 +677,12 @@ function toggleDetailView() {
   detailToggle.textContent = state.detailVisible
     ? "Hide Detailed Explanation"
     : "Show Detailed Explanation";
+
+  if (state.detailVisible && state.resultMeta?.primary) {
+    trackEvent(ANALYTICS_EVENTS.detailViewOpened, {
+      primary_temperament: state.resultMeta.primary,
+    });
+  }
 }
 
 function toCenteredValue(value) {
@@ -681,6 +726,7 @@ function saveProgress() {
     selectedDepth: state.selectedDepth,
     responses: state.responses,
     currentPage: state.currentPage,
+    startedAt: state.startedAt,
   };
 
   try {
@@ -731,6 +777,13 @@ function restoreProgressIfAvailable() {
   state.responses = restoredResponses;
   state.currentPage = clamp(Number(saved.currentPage) || 0, 0, totalPages - 1);
   state.detailVisible = false;
+  state.startedAt =
+    Number.isFinite(saved.startedAt) && saved.startedAt > 0
+      ? saved.startedAt
+      : Date.now();
+  state.completionTracked = false;
+  state.abandonmentTracked = false;
+  state.resultMeta = null;
 
   const depthInput = document.querySelector(
     `input[name="depth"][value="${state.selectedDepth}"]`
@@ -780,4 +833,63 @@ function scrollToPanel(panel, behavior) {
   }
 
   panel.scrollIntoView({ behavior, block: "start" });
+}
+
+function handlePageHide() {
+  if (!shouldTrackAbandonment()) {
+    return;
+  }
+
+  state.abandonmentTracked = true;
+  trackEvent(ANALYTICS_EVENTS.assessmentAbandoned, {
+    depth: state.selectedDepth,
+    last_page_index: state.currentPage + 1,
+  });
+}
+
+function shouldTrackAbandonment() {
+  if (!state.questions.length) {
+    return false;
+  }
+  if (state.completionTracked || state.abandonmentTracked) {
+    return false;
+  }
+  if (assessmentPanel.classList.contains("hidden")) {
+    return false;
+  }
+  return true;
+}
+
+function getDurationSeconds(startedAt) {
+  if (!Number.isFinite(startedAt) || startedAt <= 0) {
+    return 0;
+  }
+  return Math.max(0, Math.round((Date.now() - startedAt) / 1000));
+}
+
+function normalizeConfidenceLevel(level) {
+  const normalized = String(level || "").toLowerCase();
+  if (normalized === "high" || normalized === "medium" || normalized === "low") {
+    return normalized;
+  }
+  return "low";
+}
+
+function trackEvent(name, props = {}) {
+  try {
+    if (typeof window === "undefined" || typeof window.plausible !== "function") {
+      return;
+    }
+
+    const normalizedProps = {};
+    Object.entries(props).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        normalizedProps[key] = value;
+      }
+    });
+
+    window.plausible(name, { props: normalizedProps });
+  } catch (_error) {
+    // Silent failure by design (ad blockers or script loading failures).
+  }
 }
