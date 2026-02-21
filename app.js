@@ -1,0 +1,606 @@
+const PAGE_SIZE = 5;
+
+const TEMPERAMENTS = ["Sanguine", "Choleric", "Melancholic", "Phlegmatic"];
+
+const RELATIONSHIPS = {
+  Sanguine: { ally: "Choleric", opposite: "Melancholic" },
+  Choleric: { ally: "Sanguine", opposite: "Phlegmatic" },
+  Melancholic: { ally: "Phlegmatic", opposite: "Sanguine" },
+  Phlegmatic: { ally: "Melancholic", opposite: "Choleric" },
+};
+
+const TEMPERAMENT_PROFILES = {
+  Sanguine: {
+    short:
+      "Your responses suggest an outward-facing style that often gains energy from interaction, momentum, and variety.",
+    strengths: [
+      "You can quickly build rapport and make social spaces feel welcoming.",
+      "You often adapt smoothly when circumstances shift.",
+      "You tend to bring visible encouragement to group environments.",
+    ],
+    weaknesses: [
+      "You may move into action before fully clarifying details.",
+      "Sustained repetition can feel draining and reduce focus.",
+      "High enthusiasm can occasionally overshadow quieter perspectives.",
+    ],
+    communication:
+      "You often communicate with warmth, spontaneity, and visible emotion. Clarity improves when you pause to organize key points before responding.",
+    strengthFocus: "additional decisiveness and forward movement",
+    challengeFocus: "a tendency to move quickly past details",
+  },
+  Choleric: {
+    short:
+      "Your responses suggest a goal-directed style that prefers initiative, structure, and measurable progress.",
+    strengths: [
+      "You often provide direction when situations are unclear.",
+      "You are comfortable making decisions and advancing priorities.",
+      "You tend to stay focused on outcomes under pressure.",
+    ],
+    weaknesses: [
+      "You may appear overly forceful when urgency is high.",
+      "Patience can drop when processes feel slow.",
+      "You may underemphasize emotional nuance during problem-solving.",
+    ],
+    communication:
+      "You typically communicate directly and concisely with clear expectations. Relational trust strengthens when directness is paired with space for others to process.",
+    strengthFocus: "greater social ease and expressive warmth",
+    challengeFocus: "more impatience under slow decision cycles",
+  },
+  Melancholic: {
+    short:
+      "Your responses suggest a reflective style that values depth, quality, consistency, and careful evaluation.",
+    strengths: [
+      "You often notice important details that others overlook.",
+      "You are motivated by accuracy and thoughtful preparation.",
+      "You tend to show steady responsibility toward commitments.",
+    ],
+    weaknesses: [
+      "You may remain on unresolved concerns for longer than needed.",
+      "Ambiguous expectations can increase internal strain.",
+      "Perfection pressure can delay completion or delegation.",
+    ],
+    communication:
+      "You often communicate thoughtfully, with careful wording and context. Shared understanding improves when you signal priorities before diving into details.",
+    strengthFocus: "added steadiness and interpersonal patience",
+    challengeFocus: "more withdrawal when situations feel overstimulating",
+  },
+  Phlegmatic: {
+    short:
+      "Your responses suggest a steady style that values calm, harmony, and consistent pacing across relationships and tasks.",
+    strengths: [
+      "You often remain composed during interpersonal tension.",
+      "You listen patiently and help stabilize group dynamics.",
+      "You provide reliable follow-through in ongoing responsibilities.",
+    ],
+    weaknesses: [
+      "You may delay difficult conversations to preserve harmony.",
+      "Fast pivots can feel disruptive and reduce engagement.",
+      "You may understate your needs in highly assertive environments.",
+    ],
+    communication:
+      "You typically communicate in a calm, measured way and create space for others to speak. Momentum increases when you state your preferences earlier in discussions.",
+    strengthFocus: "additional analytical depth and precision",
+    challengeFocus: "more hesitation in highly competitive settings",
+  },
+};
+
+const QUESTION_SEEDS = {
+  Sanguine: [
+    {
+      type: "situational",
+      text: "In new social settings, I usually start conversations early.",
+    },
+    {
+      type: "behavioral",
+      text: "I look for chances to keep group energy positive.",
+    },
+    {
+      type: "emotional",
+      text: "I feel energized when sharing experiences with others.",
+    },
+    {
+      type: "situational",
+      text: "When plans change suddenly, I can adapt and stay upbeat.",
+    },
+    {
+      type: "behavioral",
+      text: "I speak my thoughts before fully refining them.",
+    },
+    {
+      type: "emotional",
+      text: "Extended quiet periods leave me feeling restless.",
+    },
+    {
+      type: "situational",
+      text: "In team projects, I volunteer for outward-facing roles.",
+    },
+    {
+      type: "behavioral",
+      text: "I often use humor to ease tension in a room.",
+    },
+    {
+      type: "emotional",
+      text: "I recover quickly after minor social setbacks.",
+    },
+    {
+      type: "situational",
+      text: "I prefer activities with variety over strict routine.",
+    },
+    {
+      type: "behavioral",
+      text: "I maintain broad connections rather than a few deep ones.",
+    },
+    {
+      type: "emotional",
+      text: "I feel motivated by visible enthusiasm from people around me.",
+    },
+    {
+      type: "situational",
+      text: "During meetings, I am comfortable improvising.",
+    },
+    {
+      type: "behavioral",
+      text: "I decide quickly when an option seems exciting.",
+    },
+    {
+      type: "emotional",
+      text: "I feel constrained when interactions are highly formal.",
+    },
+  ],
+  Choleric: [
+    {
+      type: "situational",
+      text: "In uncertain situations, I naturally move toward taking charge.",
+    },
+    {
+      type: "behavioral",
+      text: "I set clear goals and push for measurable progress.",
+    },
+    {
+      type: "emotional",
+      text: "Slow decision-making around me can feel frustrating.",
+    },
+    {
+      type: "situational",
+      text: "When deadlines tighten, I become more directive.",
+    },
+    {
+      type: "behavioral",
+      text: "I challenge ideas directly when I see inefficiency.",
+    },
+    {
+      type: "emotional",
+      text: "I feel satisfied when effort leads to concrete results.",
+    },
+    {
+      type: "situational",
+      text: "In conflict, I focus first on resolution and action.",
+    },
+    {
+      type: "behavioral",
+      text: "I prioritize tasks by impact rather than comfort.",
+    },
+    {
+      type: "emotional",
+      text: "I remain confident when others hesitate.",
+    },
+    {
+      type: "situational",
+      text: "I prefer roles with authority over key decisions.",
+    },
+    {
+      type: "behavioral",
+      text: "I communicate expectations in a concise, firm way.",
+    },
+    {
+      type: "emotional",
+      text: "I feel restless when progress is unclear.",
+    },
+    {
+      type: "situational",
+      text: "In group work, I naturally track who owns each deliverable.",
+    },
+    {
+      type: "behavioral",
+      text: "I make decisions even with incomplete information.",
+    },
+    {
+      type: "emotional",
+      text: "I feel motivated by challenges that require persistence.",
+    },
+  ],
+  Melancholic: [
+    {
+      type: "situational",
+      text: "Before committing, I evaluate details carefully.",
+    },
+    {
+      type: "behavioral",
+      text: "I keep systems and plans organized.",
+    },
+    {
+      type: "emotional",
+      text: "I notice subtle emotional shifts in myself and others.",
+    },
+    {
+      type: "situational",
+      text: "I prepare alternatives before starting important tasks.",
+    },
+    {
+      type: "behavioral",
+      text: "I revise my work to improve accuracy.",
+    },
+    {
+      type: "emotional",
+      text: "Unresolved mistakes stay on my mind.",
+    },
+    {
+      type: "situational",
+      text: "I prefer clear expectations before beginning.",
+    },
+    {
+      type: "behavioral",
+      text: "I track commitments so nothing is overlooked.",
+    },
+    {
+      type: "emotional",
+      text: "I feel uneasy when standards are vague.",
+    },
+    {
+      type: "situational",
+      text: "In group decisions, I raise potential risks early.",
+    },
+    {
+      type: "behavioral",
+      text: "I think deeply before expressing strong opinions.",
+    },
+    {
+      type: "emotional",
+      text: "I feel responsible for the quality of outcomes.",
+    },
+    {
+      type: "situational",
+      text: "I favor planned schedules over spontaneous changes.",
+    },
+    {
+      type: "behavioral",
+      text: "I value thorough feedback, even when critical.",
+    },
+    {
+      type: "emotional",
+      text: "I take time to process emotional experiences fully.",
+    },
+  ],
+  Phlegmatic: [
+    {
+      type: "situational",
+      text: "During tension, I help keep interactions calm.",
+    },
+    {
+      type: "behavioral",
+      text: "I listen fully before responding.",
+    },
+    {
+      type: "emotional",
+      text: "I feel most comfortable in steady, predictable environments.",
+    },
+    {
+      type: "situational",
+      text: "In disagreements, I look for common ground.",
+    },
+    {
+      type: "behavioral",
+      text: "I support team needs consistently, even in background roles.",
+    },
+    {
+      type: "emotional",
+      text: "I remain composed when others become reactive.",
+    },
+    {
+      type: "situational",
+      text: "When priorities conflict, I seek balance rather than urgency.",
+    },
+    {
+      type: "behavioral",
+      text: "I prefer deliberate pacing over rapid shifts.",
+    },
+    {
+      type: "emotional",
+      text: "I value harmony more than being the center of attention.",
+    },
+    {
+      type: "situational",
+      text: "I adapt by observing first and acting after context is clear.",
+    },
+    {
+      type: "behavioral",
+      text: "I maintain routines that reduce unnecessary stress.",
+    },
+    {
+      type: "emotional",
+      text: "I feel drained by prolonged confrontation.",
+    },
+    {
+      type: "situational",
+      text: "I mediate when people have different working styles.",
+    },
+    {
+      type: "behavioral",
+      text: "I stay patient with repetitive or routine tasks.",
+    },
+    {
+      type: "emotional",
+      text: "I feel steady even when outcomes are uncertain.",
+    },
+  ],
+};
+
+const QUESTION_BANK = TEMPERAMENTS.reduce((acc, temperament) => {
+  acc[temperament] = QUESTION_SEEDS[temperament].map((seed, index) => ({
+    ...seed,
+    id: `${temperament.charAt(0)}-${index + 1}`,
+    temperament,
+  }));
+  return acc;
+}, {});
+
+const state = {
+  selectedDepth: 20,
+  questions: [],
+  responses: {},
+  currentPage: 0,
+  detailVisible: false,
+};
+
+const introPanel = document.getElementById("intro-panel");
+const assessmentPanel = document.getElementById("assessment-panel");
+const resultsPanel = document.getElementById("results-panel");
+const startButton = document.getElementById("start-btn");
+const prevButton = document.getElementById("prev-btn");
+const nextButton = document.getElementById("next-btn");
+const questionPage = document.getElementById("question-page");
+const progressHeading = document.getElementById("progress-heading");
+const progressMeta = document.getElementById("progress-meta");
+const progressFill = document.getElementById("progress-fill");
+const progressTrack = document.querySelector(".progress-track");
+const pageWarning = document.getElementById("page-warning");
+const resultTitle = document.getElementById("result-title");
+const resultShort = document.getElementById("result-short");
+const detailToggle = document.getElementById("detail-toggle");
+const resultDetail = document.getElementById("result-detail");
+const detailStrengths = document.getElementById("detail-strengths");
+const detailWeaknesses = document.getElementById("detail-weaknesses");
+const detailCommunication = document.getElementById("detail-communication");
+
+startButton.addEventListener("click", startAssessment);
+prevButton.addEventListener("click", goToPreviousPage);
+nextButton.addEventListener("click", goToNextPage);
+detailToggle.addEventListener("click", toggleDetailView);
+
+function startAssessment() {
+  const selectedDepthInput = document.querySelector(
+    'input[name="depth"]:checked'
+  );
+  state.selectedDepth = Number(selectedDepthInput.value);
+  state.questions = buildQuestionSet(state.selectedDepth);
+  state.responses = {};
+  state.currentPage = 0;
+  state.detailVisible = false;
+
+  introPanel.classList.add("hidden");
+  resultsPanel.classList.add("hidden");
+  assessmentPanel.classList.remove("hidden");
+
+  renderCurrentPage();
+}
+
+function buildQuestionSet(depth) {
+  const perTemperament = depth / TEMPERAMENTS.length;
+  const chosenByTemperament = TEMPERAMENTS.reduce((acc, temperament) => {
+    acc[temperament] = QUESTION_BANK[temperament].slice(0, perTemperament);
+    return acc;
+  }, {});
+
+  const interleaved = [];
+  for (let cycle = 0; cycle < perTemperament; cycle += 1) {
+    for (let t = 0; t < TEMPERAMENTS.length; t += 1) {
+      const temperament = TEMPERAMENTS[t];
+      const offsetIndex = (cycle + t) % perTemperament;
+      interleaved.push(chosenByTemperament[temperament][offsetIndex]);
+    }
+  }
+
+  return interleaved.map((question, index) => ({
+    ...question,
+    ordinal: index + 1,
+  }));
+}
+
+function renderCurrentPage() {
+  const total = state.questions.length;
+  const pageCount = Math.ceil(total / PAGE_SIZE);
+  const startIndex = state.currentPage * PAGE_SIZE;
+  const pageQuestions = state.questions.slice(startIndex, startIndex + PAGE_SIZE);
+  const answered = Object.keys(state.responses).length;
+  const percent = Math.round((answered / total) * 100);
+  const pageStart = startIndex + 1;
+  const pageEnd = Math.min(startIndex + PAGE_SIZE, total);
+
+  progressHeading.textContent = `Questions ${pageStart}-${pageEnd} of ${total}`;
+  progressMeta.textContent = `Answered ${answered} of ${total} | Page ${
+    state.currentPage + 1
+  } of ${pageCount}`;
+  progressFill.style.width = `${percent}%`;
+  progressTrack.setAttribute("aria-valuenow", `${percent}`);
+
+  questionPage.innerHTML = pageQuestions
+    .map((question) => {
+      const labels = getScaleLabels(question.type);
+      return `
+        <article class="question-card">
+          <div class="question-top">
+            <span class="question-type">${question.type}</span>
+            <span>Q${question.ordinal}</span>
+          </div>
+          <p class="question-text">${question.text}</p>
+          <div class="scale-grid">
+            ${labels
+              .map(
+                (label, index) => `
+              <label class="scale-option">
+                <input
+                  type="radio"
+                  name="${question.id}"
+                  value="${index + 1}"
+                  ${state.responses[question.id] === index + 1 ? "checked" : ""}
+                />
+                <span>${label}</span>
+              </label>
+            `
+              )
+              .join("")}
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+
+  bindQuestionListeners();
+  prevButton.disabled = state.currentPage === 0;
+  nextButton.textContent =
+    state.currentPage === pageCount - 1 ? "View Results" : "Next";
+  pageWarning.classList.add("hidden");
+}
+
+function bindQuestionListeners() {
+  questionPage.querySelectorAll('input[type="radio"]').forEach((input) => {
+    input.addEventListener("change", (event) => {
+      const { name, value } = event.target;
+      state.responses[name] = Number(value);
+      pageWarning.classList.add("hidden");
+      syncProgressOnly();
+    });
+  });
+}
+
+function syncProgressOnly() {
+  const answered = Object.keys(state.responses).length;
+  const total = state.questions.length;
+  const percent = Math.round((answered / total) * 100);
+  progressMeta.textContent = progressMeta.textContent.replace(
+    /Answered \d+ of \d+/,
+    `Answered ${answered} of ${total}`
+  );
+  progressFill.style.width = `${percent}%`;
+  progressTrack.setAttribute("aria-valuenow", `${percent}`);
+}
+
+function goToPreviousPage() {
+  if (state.currentPage === 0) {
+    return;
+  }
+  state.currentPage -= 1;
+  renderCurrentPage();
+}
+
+function goToNextPage() {
+  if (!isCurrentPageComplete()) {
+    pageWarning.classList.remove("hidden");
+    return;
+  }
+
+  const totalPages = Math.ceil(state.questions.length / PAGE_SIZE);
+  if (state.currentPage < totalPages - 1) {
+    state.currentPage += 1;
+    renderCurrentPage();
+    return;
+  }
+
+  const outcome = scoreAssessment();
+  renderResults(outcome);
+}
+
+function isCurrentPageComplete() {
+  const startIndex = state.currentPage * PAGE_SIZE;
+  const pageQuestions = state.questions.slice(startIndex, startIndex + PAGE_SIZE);
+  return pageQuestions.every((question) => state.responses[question.id]);
+}
+
+function scoreAssessment() {
+  const scores = TEMPERAMENTS.reduce((acc, temperament) => {
+    acc[temperament] = 0;
+    return acc;
+  }, {});
+
+  state.questions.forEach((question) => {
+    const value = state.responses[question.id];
+    const links = RELATIONSHIPS[question.temperament];
+    scores[question.temperament] += value * 1.6;
+    scores[links.ally] += value * 0.7;
+    scores[links.opposite] += (6 - value) * 0.45;
+  });
+
+  const ranked = TEMPERAMENTS.map((temperament) => ({
+    temperament,
+    score: scores[temperament],
+  })).sort((a, b) => {
+    if (b.score === a.score) {
+      return TEMPERAMENTS.indexOf(a.temperament) - TEMPERAMENTS.indexOf(b.temperament);
+    }
+    return b.score - a.score;
+  });
+
+  return {
+    primary: ranked[0].temperament,
+    secondary: ranked[1].temperament,
+  };
+}
+
+function renderResults({ primary, secondary }) {
+  assessmentPanel.classList.add("hidden");
+  resultsPanel.classList.remove("hidden");
+
+  const primaryProfile = TEMPERAMENT_PROFILES[primary];
+  const secondaryProfile = TEMPERAMENT_PROFILES[secondary];
+
+  resultTitle.textContent = `${primary} is your primary temperament, with ${secondary} as secondary influence.`;
+  resultShort.textContent = `${primaryProfile.short} A secondary ${secondary.toLowerCase()} influence may add ${secondaryProfile.strengthFocus}.`;
+
+  const strengths = [...primaryProfile.strengths];
+  strengths.push(`Secondary influence: ${secondaryProfile.strengthFocus}.`);
+
+  const weaknesses = [...primaryProfile.weaknesses];
+  weaknesses.push(`Possible watch-out: ${secondaryProfile.challengeFocus}.`);
+
+  detailStrengths.innerHTML = strengths.map((item) => `<li>${item}</li>`).join("");
+  detailWeaknesses.innerHTML = weaknesses.map((item) => `<li>${item}</li>`).join("");
+  detailCommunication.textContent = `${primaryProfile.communication} Secondary ${secondary.toLowerCase()} influence may also shape tone and pace in conversations.`;
+
+  state.detailVisible = false;
+  resultDetail.classList.add("hidden");
+  detailToggle.textContent = "Show Detailed Explanation";
+}
+
+function toggleDetailView() {
+  state.detailVisible = !state.detailVisible;
+  resultDetail.classList.toggle("hidden", !state.detailVisible);
+  detailToggle.textContent = state.detailVisible
+    ? "Hide Detailed Explanation"
+    : "Show Detailed Explanation";
+}
+
+function getScaleLabels(type) {
+  if (type === "emotional") {
+    return ["Not at all", "Slightly", "Moderately", "Mostly", "Very much"];
+  }
+  if (type === "situational") {
+    return ["Very unlikely", "Unlikely", "Unsure", "Likely", "Very likely"];
+  }
+  return [
+    "Strongly disagree",
+    "Disagree",
+    "Neutral",
+    "Agree",
+    "Strongly agree",
+  ];
+}

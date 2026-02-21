@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Temperament Insight</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="grain"></div>
+    <main class="shell">
+      <section class="panel intro" id="intro-panel">
+        <p class="eyebrow">Educational Self-Awareness Assessment</p>
+        <h1>Understand your temperament pattern with reflection, not labels.</h1>
+        <p class="lead">
+          This assessment explores four classic temperament tendencies:
+          <strong>Sanguine, Choleric, Melancholic,</strong> and
+          <strong>Phlegmatic</strong>.
+        </p>
+        <p class="disclaimer">
+          This tool is for self-awareness and education only. It is not a
+          medical or psychological diagnosis.
+        </p>
+
+        <div class="start-controls">
+          <fieldset class="depth-picker" aria-label="Choose assessment depth">
+            <legend>Select depth</legend>
+            <label>
+              <input type="radio" name="depth" value="20" checked />
+              20 questions
+              <span>Quick insight</span>
+            </label>
+            <label>
+              <input type="radio" name="depth" value="40" />
+              40 questions
+              <span>Deeper understanding</span>
+            </label>
+            <label>
+              <input type="radio" name="depth" value="60" />
+              60 questions
+              <span>Most detailed</span>
+            </label>
+          </fieldset>
+
+          <button id="start-btn" class="btn btn-primary" type="button">
+            Start Assessment
+          </button>
+        </div>
+      </section>
+
+      <section class="panel hidden" id="assessment-panel" aria-live="polite">
+        <header class="assessment-header">
+          <div>
+            <p class="eyebrow">Assessment In Progress</p>
+            <h2 id="progress-heading">Question 1 of 20</h2>
+          </div>
+          <p id="progress-meta">Answered 0 of 20</p>
+        </header>
+
+        <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+
+        <div id="question-page" class="question-page"></div>
+        <p id="page-warning" class="warning hidden" role="alert">
+          Please answer all questions on this page before continuing.
+        </p>
+
+        <div class="page-controls">
+          <button id="prev-btn" class="btn btn-ghost" type="button">Previous</button>
+          <button id="next-btn" class="btn btn-primary" type="button">Next</button>
+        </div>
+      </section>
+
+      <section class="panel hidden" id="results-panel" aria-live="polite">
+        <p class="eyebrow">Your Temperament Reflection</p>
+        <h2 id="result-title"></h2>
+        <p id="result-short" class="result-short"></p>
+
+        <button id="detail-toggle" class="btn btn-ghost" type="button">
+          Show Detailed Explanation
+        </button>
+
+        <div id="result-detail" class="detail hidden">
+          <article>
+            <h3>Strengths</h3>
+            <ul id="detail-strengths"></ul>
+          </article>
+          <article>
+            <h3>Weaknesses</h3>
+            <ul id="detail-weaknesses"></ul>
+          </article>
+          <article>
+            <h3>Communication Style</h3>
+            <p id="detail-communication"></p>
+          </article>
+        </div>
+
+        <p class="disclaimer">
+          This is an educational reflection tool, not a medical or psychological
+          diagnosis. Results describe tendencies, not fixed identity, and people
+          can adapt over time.
+        </p>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
