@@ -1857,3 +1857,14 @@ main {
     white-space: nowrap;
   }
 }
+
+/* Temperaments Page Layout Adjustment */
+.site-temperaments main {
+  padding-top: 100px;
+}
+
+@media (max-width: 768px) {
+  .site-temperaments main {
+    padding-top: 80px;
+  }
+}
