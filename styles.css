@@ -97,6 +97,22 @@ p {
   backdrop-filter: blur(10px);
 }
 
+.header-stack {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 100;
+  background: rgb(255 255 255 / 82%);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgb(226 232 240 / 90%);
+}
+
+.header-stack .top-nav {
+  position: static;
+  background: transparent;
+  backdrop-filter: none;
+  border-bottom: none;
+}
+
 .nav-inner {
   min-height: 72px;
   display: flex;
@@ -1686,31 +1702,21 @@ main {
   }
 }
 
-/* Temperaments Detail Page */
-.tabs-container {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 2.5rem;
-  position: sticky;
-  top: 90px;
-  z-index: 10;
+/* Temperaments Detail Page - New Tabs Bar */
+.tabs-bar {
+  padding: 0.5rem 0;
 }
 
 .tabs-nav {
-  display: inline-flex;
-  background: white;
-  padding: 0.45rem;
-  border-radius: 999px;
-  border: 1px solid var(--gray-200);
-  gap: 0.35rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
 .tab-btn {
   border: none;
   background: transparent;
-  padding: 0.7rem 1.5rem;
+  padding: 0.6rem 1.4rem;
   border-radius: 999px;
   font-family: inherit;
   font-weight: 700;
@@ -1718,16 +1724,32 @@ main {
   color: var(--gray-500);
   cursor: pointer;
   transition: all 0.25s ease;
+  white-space: nowrap;
 }
 
 .tab-btn:hover {
   color: var(--gray-900);
+  background: var(--gray-50);
 }
 
 .tab-btn.active {
   background: var(--primary-600);
   color: #fff;
-  box-shadow: 0 4px 15px rgba(70, 130, 84, 0.3);
+  box-shadow: 0 4px 12px rgba(70, 130, 84, 0.25);
+}
+
+@media (max-width: 768px) {
+  .tabs-bar .app-container {
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tabs-nav {
+    justify-content: flex-start;
+    width: max-content;
+    padding: 0 4px;
+  }
 }
 
 .temp-detail-grid {
@@ -1860,11 +1882,12 @@ main {
 
 /* Temperaments Page Layout Adjustment */
 .site-temperaments main {
-  padding-top: 100px;
+  padding-top: 132px;
+  /* Navbar (72px) + TabsBar (~50px) + Buffer */
 }
 
 @media (max-width: 768px) {
   .site-temperaments main {
-    padding-top: 80px;
+    padding-top: 110px;
   }
 }
