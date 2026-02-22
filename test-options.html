@@ -9,7 +9,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
     rel="stylesheet" />
-  <!-- Privacy-friendly analytics by Plausible -->
+
+  <!-- Privacy-friendly analytics script (Plausible) -->
   <script async src="https://plausible.io/js/pa-_qc7T854PUP4o3PSGZBHN.js"></script>
   <script>
     window.plausible = window.plausible || function () { (plausible.q = plausible.q || []).push(arguments); };
@@ -21,8 +22,12 @@
 </head>
 
 <body class="site-selection">
+  <!-- ===============================
+       TOP NAVIGATION BAR
+       =============================== -->
   <nav class="top-nav">
     <div class="app-container nav-inner">
+      <!-- Brand Logo / Name -->
       <a class="brand" href="index.html">
         <span class="brand-mark" aria-hidden="true">T</span>
         <span class="brand-text">Temperament<span>Test</span></span>
@@ -37,6 +42,10 @@
   </nav>
 
   <main>
+    <!-- ===============================
+         STAGE 1: INTRO & DEPTH SELECTION
+         This panel is visible when the user first arrives to select test length.
+         =============================== -->
     <div id="intro-panel">
       <section class="section selection-direct" id="choose-depth">
         <div class="app-container narrow">
@@ -90,6 +99,11 @@
       </section>
     </div>
 
+    <!-- ===============================
+         STAGE 2: ASSESSMENT IN PROGRESS
+         This panel holds the live test questions and tracking interface.
+         (Hidden by default, shown via app.js)
+         =============================== -->
     <section class="section quiz-stage hidden" id="assessment-panel" aria-live="polite">
       <div class="app-container narrow">
         <div class="panel-card">
@@ -125,8 +139,14 @@
       </div>
     </section>
 
+    <!-- ===============================
+         STAGE 3: RESULTS DASHBOARD
+         This panel renders the user's computed results after the test finishes,
+         or when loaded via a #result= shareable link.
+         =============================== -->
     <section class="section results-stage hidden" id="results-panel" aria-live="polite">
       <div class="app-container result-container">
+        <!-- Result Hero Banner -->
         <div class="panel-card result-hero-card">
           <div class="result-hero-mesh" aria-hidden="true">
             <div class="result-mesh-orb result-orb-phlegmatic"></div>
@@ -146,7 +166,10 @@
           <p id="result-title" class="sr-only"></p>
         </div>
 
+        <!-- Main Content Area: Profile and Sidebar -->
         <div class="result-profile-grid">
+
+          <!-- Primary Profile Detailed Display -->
           <article class="panel-card profile-main-card">
             <div class="profile-image-wrap">
               <img id="result-profile-image" src="" alt="Primary temperament profile" />
@@ -180,7 +203,10 @@
             </div>
           </article>
 
+          <!-- Sticky Sidebar Data -->
           <aside class="result-sidebar">
+
+            <!-- Temperament Mix Donut Chart -->
             <article class="panel-card mix-card">
               <h3>Temperament Mix</h3>
               <div class="mix-donut">
@@ -219,6 +245,7 @@
           </aside>
         </div>
 
+        <!-- Linear Score Breakdown -->
         <div class="panel-card score-breakdown-card">
           <p class="eyebrow">Score Breakdown</p>
           <h3>How You Scored Across All Four</h3>
@@ -254,6 +281,7 @@
           </div>
         </div>
 
+        <!-- Communication Style Grid -->
         <div class="panel-card comms-card">
           <p class="eyebrow">How You Connect</p>
           <h3>Your Communication Style</h3>
@@ -299,8 +327,12 @@
     </section>
   </main>
 
+  <!-- ===============================
+       SITE FOOTER
+       =============================== -->
   <footer class="site-footer">
     <div class="app-container footer-grid">
+      <!-- Footer Branding -->
       <div class="footer-brand">
         <a class="brand" href="index.html">
           <span class="brand-mark" aria-hidden="true">T</span>
