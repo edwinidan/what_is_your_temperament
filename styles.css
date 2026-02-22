@@ -1690,14 +1690,10 @@ main {
 .tabs-container {
   display: flex;
   justify-content: center;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
   position: sticky;
-  top: 72px;
-  /* Matching nav height */
+  top: 90px;
   z-index: 10;
-  padding: 1rem 0;
-  background: white;
-  /* Ensure it masks content while sticky */
 }
 
 .tabs-nav {
@@ -1864,15 +1860,11 @@ main {
 
 /* Temperaments Page Layout Adjustment */
 .site-temperaments main {
-  padding-top: 72px;
-}
-
-.site-temperaments .section:first-of-type {
-  padding-top: 2rem;
+  padding-top: 100px;
 }
 
 @media (max-width: 768px) {
   .site-temperaments main {
-    padding-top: 72px;
+    padding-top: 80px;
   }
 }
