@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Four Temperaments - Temperament Test</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body class="site-temperaments">
+    <nav class="top-nav">
+        <div class="app-container nav-inner">
+            <a class="brand" href="index.html">
+                <span class="brand-mark" aria-hidden="true">T</span>
+                <span class="brand-text">Temperament<span>Test</span></span>
+            </a>
+            <div class="nav-links">
+                <a href="index.html#about">About</a>
+                <a href="temperaments.html">Types</a>
+                <a href="index.html#contact">Contact</a>
+            </div>
+            <a href="test-options.html#choose-depth" class="nav-cta">Take Test</a>
+        </div>
+    </nav>
+
+    <main>
+        <section class="hero hero-select">
+            <div class="hero-mesh" aria-hidden="true">
+                <div class="mesh-orb orb-phlegmatic"></div>
+                <div class="mesh-orb orb-sanguine"></div>
+                <div class="mesh-orb orb-choleric"></div>
+                <div class="mesh-orb orb-melancholic"></div>
+            </div>
+            <div class="app-container hero-content">
+                <h1>
+                    The Four <span>Temperaments</span>
+                </h1>
+                <p class="hero-copy">
+                    Understand the classic behavioral patterns that shape our personalities.
+                </p>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="app-container">
+                <div class="tabs-container">
+                    <div class="tabs-nav" role="tablist">
+                        <button class="tab-btn active" data-target="sanguine" role="tab"
+                            aria-selected="true">Sanguine</button>
+                        <button class="tab-btn" data-target="choleric" role="tab"
+                            aria-selected="false">Choleric</button>
+                        <button class="tab-btn" data-target="melancholic" role="tab"
+                            aria-selected="false">Melancholic</button>
+                        <button class="tab-btn" data-target="phlegmatic" role="tab"
+                            aria-selected="false">Phlegmatic</button>
+                    </div>
+                </div>
+
+                <div class="temp-detail-grid">
+                    <!-- Sanguine -->
+                    <article id="sanguine" class="panel-card temp-detail-card card-sanguine active">
+                        <div class="temp-detail-header">
+                            <div class="icon-chip" aria-hidden="true">SA</div>
+                            <h2>Sanguine</h2>
+                            <p class="temp-sub">The Enthusiastic Extrovert</p>
+                        </div>
+                        <div class="temp-detail-body">
+                            <p>Sanguines are typically boisterous, bubbly, talkative, and extremely social. They are the
+                                life of the party and thrive on interactions with others. They are often optimistic and
+                                see the glass as half full.</p>
+
+                            <div class="detail-columns">
+                                <div class="detail-col">
+                                    <h3>Strengths</h3>
+                                    <ul>
+                                        <li>Highly social and outgoing</li>
+                                        <li>Creative and imaginative</li>
+                                        <li>Forgiving and doesn't hold grudges</li>
+                                        <li>Energetic and enthusiastic</li>
+                                    </ul>
+                                </div>
+                                <div class="detail-col">
+                                    <h3>Weaknesses</h3>
+                                    <ul>
+                                        <li>Can be disorganized or forgetful</li>
+                                        <li>Prone to over-committing</li>
+                                        <li>May struggle with follow-through</li>
+                                        <li>Highly sensitive to criticism</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="detail-meta-box">
+                                <h3>Communication Style</h3>
+                                <p>Expressive and animated. They use a lot of hand gestures and vocal variety. They love
+                                    storytelling and may often go off on tangents.</p>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Choleric -->
+                    <article id="choleric" class="panel-card temp-detail-card card-choleric">
+                        <div class="temp-detail-header">
+                            <div class="icon-chip" aria-hidden="true">CH</div>
+                            <h2>Choleric</h2>
+                            <p class="temp-sub">The Driven Leader</p>
+                        </div>
+                        <div class="temp-detail-body">
+                            <p>Cholerics are goal-oriented, decisive, and ambitious individuals. They are natural
+                                leaders who enjoy taking charge and making things happen. They are motivated by results
+                                and efficiency.</p>
+
+                            <div class="detail-columns">
+                                <div class="detail-col">
+                                    <h3>Strengths</h3>
+                                    <ul>
+                                        <li>Decisive and confident</li>
+                                        <li>Practical and problem-solver</li>
+                                        <li>Highly disciplined and focused</li>
+                                        <li>Strong leadership abilities</li>
+                                    </ul>
+                                </div>
+                                <div class="detail-col">
+                                    <h3>Weaknesses</h3>
+                                    <ul>
+                                        <li>Can be impatient or irritable</li>
+                                        <li>May come across as domineering</li>
+                                        <li>Prone to workaholism</li>
+                                        <li>Struggles with showing vulnerability</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="detail-meta-box">
+                                <h3>Communication Style</h3>
+                                <p>Direct and concise. They focus on the "what" and "when" rather than the "how" or
+                                    "why." They appreciate efficiency and getting straight to the point.</p>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Melancholic -->
+                    <article id="melancholic" class="panel-card temp-detail-card card-melancholic">
+                        <div class="temp-detail-header">
+                            <div class="icon-chip" aria-hidden="true">ME</div>
+                            <h2>Melancholic</h2>
+                            <p class="temp-sub">The Analytical Perfectionist</p>
+                        </div>
+                        <div class="temp-detail-body">
+                            <p>Melancholics are thoughtful, analytical, and detail-oriented. They value quality,
+                                accuracy, and deep meaning. They are often introspective and have a high standard for
+                                themselves and others.</p>
+
+                            <div class="detail-columns">
+                                <div class="detail-col">
+                                    <h3>Strengths</h3>
+                                    <ul>
+                                        <li>Highly analytical and detail-oriented</li>
+                                        <li>Reliable and conscientious</li>
+                                        <li>Deeply thoughtful and reflective</li>
+                                        <li>Self-disciplined and persistent</li>
+                                    </ul>
+                                </div>
+                                <div class="detail-col">
+                                    <h3>Weaknesses</h3>
+                                    <ul>
+                                        <li>Prone to perfectionism and over-thinking</li>
+                                        <li>Can be moody or pessimistic</li>
+                                        <li>Often overly self-critical</li>
+                                        <li>May struggle with change</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="detail-meta-box">
+                                <h3>Communication Style</h3>
+                                <p>Precise and accurate. They value data and facts. They listen carefully and often take
+                                    time to process information before responding.</p>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Phlegmatic -->
+                    <article id="phlegmatic" class="panel-card temp-detail-card card-phlegmatic">
+                        <div class="temp-detail-header">
+                            <div class="icon-chip" aria-hidden="true">PH</div>
+                            <h2>Phlegmatic</h2>
+                            <p class="temp-sub">The Peaceful Diplomat</p>
+                        </div>
+                        <div class="temp-detail-body">
+                            <p>Phlegmatics are calm, steady, and easy-going. They value peace and harmony in their
+                                environment and relationships. They are excellent listeners and often act as mediators
+                                in conflicts.</p>
+
+                            <div class="detail-columns">
+                                <div class="detail-col">
+                                    <h3>Strengths</h3>
+                                    <ul>
+                                        <li>Calm and composed under pressure</li>
+                                        <li>Dependable and consistent</li>
+                                        <li>Great listening and mediation skills</li>
+                                        <li>Patient and understanding</li>
+                                    </ul>
+                                </div>
+                                <div class="detail-col">
+                                    <h3>Weaknesses</h3>
+                                    <ul>
+                                        <li>Can be passive or indecisive</li>
+                                        <li>May avoid conflict at all costs</li>
+                                        <li>Prone to procrastination</li>
+                                        <li>Can seem unenthusiastic or detached</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="detail-meta-box">
+                                <h3>Communication Style</h3>
+                                <p>Soft-spoken and diplomatic. They avoid confrontation and use inclusive language. They
+                                    are attentive listeners who offer steady encouragement.</p>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+
+                <div class="temp-actions">
+                    <a href="test-options.html#choose-depth" class="btn btn-primary">
+                        Find Yours Now
+                        <span aria-hidden="true">-></span>
+                    </a>
+                    <a href="index.html" class="btn btn-outline">Back to Home</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer" id="contact">
+        <div class="app-container footer-grid">
+            <div class="footer-brand">
+                <a class="brand" href="index.html">
+                    <span class="brand-mark" aria-hidden="true">T</span>
+                    <span class="brand-text">Temperament<span>Test</span></span>
+                </a>
+                <p>
+                    Educational self-reflection tool based on the four classic
+                    temperament patterns.
+                </p>
+            </div>
+
+            <div class="footer-col">
+                <h3>Explore</h3>
+                <a href="index.html#about">About Types</a>
+                <a href="test-options.html#choose-depth">Take the Test</a>
+                <a href="temperaments.html">Temperament Guide</a>
+            </div>
+
+            <div class="footer-col">
+                <h3>Contact</h3>
+                <a href="mailto:contact@temperamenttest.com">contact@temperamenttest.com</a>
+                <p>Educational use only. Not medical diagnosis.</p>
+            </div>
+        </div>
+        <div class="footer-base">
+            <div class="app-container">
+                <p>&copy; 2026 TemperamentTest. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabs = document.querySelectorAll('.tab-btn');
+            const cards = document.querySelectorAll('.temp-detail-card');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const targetId = tab.getAttribute('data-target');
+
+                    // Update tabs
+                    tabs.forEach(t => {
+                        t.classList.remove('active');
+                        t.setAttribute('aria-selected', 'false');
+                    });
+                    tab.classList.add('active');
+                    tab.setAttribute('aria-selected', 'true');
+
+                    // Update cards
+                    cards.forEach(card => {
+                        if (card.id === targetId) {
+                            card.classList.add('active');
+                        } else {
+                            card.classList.remove('active');
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>
