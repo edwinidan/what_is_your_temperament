@@ -840,6 +840,9 @@ main {
   text-transform: uppercase;
   font-weight: 700;
   color: var(--primary-600);
+  min-width: 0;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
 }
 
 #assessment-panel .question-type {

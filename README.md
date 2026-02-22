@@ -13,12 +13,14 @@ This MVP is for reflection and learning, not diagnosis.
 
 - Public-use assessment flow
 - Test depth options: 20, 40, or 60 questions
-- Mixed question types: situational, behavioral, emotional
-- Five-point response scale (label style varies by item type)
+- 240-item question bank (`T001` to `T240`) across 4 temperaments
+- Dimension-based item model (3 dimensions per temperament, 20 items per dimension)
+- Five-point Likert response scale (`Strongly disagree` to `Strongly agree`)
+- Balanced-by-dimension sampling for each run
 - Pagination with 5 questions per page
 - Progress indicator
 - In-progress assessment persistence via `localStorage`
-- Internal weighted score accumulation
+- Reverse-scored item handling in score accumulation
 - Primary and secondary temperament result output
 - Reflective confidence indicator (High / Medium / Low) based on score gap
 - Short summary by default

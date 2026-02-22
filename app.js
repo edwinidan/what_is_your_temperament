@@ -160,265 +160,292 @@ const TEMPERAMENT_PROFILES = {
   },
 };
 
-const QUESTION_SEEDS = {
-  Sanguine: [
-    {
-      type: "situational",
-      text: "In new social settings, I usually start conversations early.",
-    },
-    {
-      type: "behavioral",
-      text: "I look for chances to keep group energy positive.",
-    },
-    {
-      type: "emotional",
-      text: "I feel energized when sharing experiences with others.",
-    },
-    {
-      type: "situational",
-      text: "When plans change suddenly, I can adapt and stay upbeat.",
-    },
-    {
-      type: "behavioral",
-      text: "I speak my thoughts before fully refining them.",
-    },
-    {
-      type: "emotional",
-      text: "Extended quiet periods leave me feeling restless.",
-    },
-    {
-      type: "situational",
-      text: "In team projects, I volunteer for outward-facing roles.",
-    },
-    {
-      type: "behavioral",
-      text: "I often use humor to ease tension in a room.",
-    },
-    {
-      type: "emotional",
-      text: "I recover quickly after minor social setbacks.",
-    },
-    {
-      type: "situational",
-      text: "I prefer activities with variety over strict routine.",
-    },
-    {
-      type: "behavioral",
-      text: "I maintain broad connections rather than a few deep ones.",
-    },
-    {
-      type: "emotional",
-      text: "I feel motivated by visible enthusiasm from people around me.",
-    },
-    {
-      type: "situational",
-      text: "During meetings, I am comfortable improvising.",
-    },
-    {
-      type: "behavioral",
-      text: "I decide quickly when an option seems exciting.",
-    },
-    {
-      type: "emotional",
-      text: "I feel constrained when interactions are highly formal.",
-    },
-  ],
-  Choleric: [
-    {
-      type: "situational",
-      text: "In uncertain situations, I naturally move toward taking charge.",
-    },
-    {
-      type: "behavioral",
-      text: "I set clear goals and push for measurable progress.",
-    },
-    {
-      type: "emotional",
-      text: "Slow decision-making around me can feel frustrating.",
-    },
-    {
-      type: "situational",
-      text: "When deadlines tighten, I become more directive.",
-    },
-    {
-      type: "behavioral",
-      text: "I challenge ideas directly when I see inefficiency.",
-    },
-    {
-      type: "emotional",
-      text: "I feel satisfied when effort leads to concrete results.",
-    },
-    {
-      type: "situational",
-      text: "In conflict, I focus first on resolution and action.",
-    },
-    {
-      type: "behavioral",
-      text: "I prioritize tasks by impact rather than comfort.",
-    },
-    {
-      type: "emotional",
-      text: "I remain confident when others hesitate.",
-    },
-    {
-      type: "situational",
-      text: "I prefer roles with authority over key decisions.",
-    },
-    {
-      type: "behavioral",
-      text: "I communicate expectations in a concise, firm way.",
-    },
-    {
-      type: "emotional",
-      text: "I feel restless when progress is unclear.",
-    },
-    {
-      type: "situational",
-      text: "In group work, I naturally track who owns each deliverable.",
-    },
-    {
-      type: "behavioral",
-      text: "I make decisions even with incomplete information.",
-    },
-    {
-      type: "emotional",
-      text: "I feel motivated by challenges that require persistence.",
-    },
-  ],
-  Melancholic: [
-    {
-      type: "situational",
-      text: "Before committing, I evaluate details carefully.",
-    },
-    {
-      type: "behavioral",
-      text: "I keep systems and plans organized.",
-    },
-    {
-      type: "emotional",
-      text: "I notice subtle emotional shifts in myself and others.",
-    },
-    {
-      type: "situational",
-      text: "I prepare alternatives before starting important tasks.",
-    },
-    {
-      type: "behavioral",
-      text: "I revise my work to improve accuracy.",
-    },
-    {
-      type: "emotional",
-      text: "Unresolved mistakes stay on my mind.",
-    },
-    {
-      type: "situational",
-      text: "I prefer clear expectations before beginning.",
-    },
-    {
-      type: "behavioral",
-      text: "I track commitments so nothing is overlooked.",
-    },
-    {
-      type: "emotional",
-      text: "I feel uneasy when standards are vague.",
-    },
-    {
-      type: "situational",
-      text: "In group decisions, I raise potential risks early.",
-    },
-    {
-      type: "behavioral",
-      text: "I think deeply before expressing strong opinions.",
-    },
-    {
-      type: "emotional",
-      text: "I feel responsible for the quality of outcomes.",
-    },
-    {
-      type: "situational",
-      text: "I favor planned schedules over spontaneous changes.",
-    },
-    {
-      type: "behavioral",
-      text: "I value thorough feedback, even when critical.",
-    },
-    {
-      type: "emotional",
-      text: "I take time to process emotional experiences fully.",
-    },
-  ],
-  Phlegmatic: [
-    {
-      type: "situational",
-      text: "During tension, I help keep interactions calm.",
-    },
-    {
-      type: "behavioral",
-      text: "I listen fully before responding.",
-    },
-    {
-      type: "emotional",
-      text: "I feel most comfortable in steady, predictable environments.",
-    },
-    {
-      type: "situational",
-      text: "In disagreements, I look for common ground.",
-    },
-    {
-      type: "behavioral",
-      text: "I support team needs consistently, even in background roles.",
-    },
-    {
-      type: "emotional",
-      text: "I remain composed when others become reactive.",
-    },
-    {
-      type: "situational",
-      text: "When priorities conflict, I seek balance rather than urgency.",
-    },
-    {
-      type: "behavioral",
-      text: "I prefer deliberate pacing over rapid shifts.",
-    },
-    {
-      type: "emotional",
-      text: "I value harmony more than being the center of attention.",
-    },
-    {
-      type: "situational",
-      text: "I adapt by observing first and acting after context is clear.",
-    },
-    {
-      type: "behavioral",
-      text: "I maintain routines that reduce unnecessary stress.",
-    },
-    {
-      type: "emotional",
-      text: "I feel drained by prolonged confrontation.",
-    },
-    {
-      type: "situational",
-      text: "I mediate when people have different working styles.",
-    },
-    {
-      type: "behavioral",
-      text: "I stay patient with repetitive or routine tasks.",
-    },
-    {
-      type: "emotional",
-      text: "I feel steady even when outcomes are uncertain.",
-    },
-  ],
-};
+const QUESTION_BANK_CSV = `
+id,temperament,dimension,item_text,reverse_scored,scoring_rule
+T001,Sanguine,Sociability,I easily strike up conversations with strangers.,false,Likert 1-5
+T002,Sanguine,Sociability,I am usually the life of the party.,false,Likert 1-5
+T003,Sanguine,Sociability,I thrive in environments with lots of people.,false,Likert 1-5
+T004,Sanguine,Sociability,I feel energized after a large social gathering.,false,Likert 1-5
+T005,Sanguine,Sociability,I love being the center of attention.,false,Likert 1-5
+T006,Sanguine,Sociability,I quickly make new friends wherever I go.,false,Likert 1-5
+T007,Sanguine,Sociability,I enjoy entertaining others with stories.,false,Likert 1-5
+T008,Sanguine,Sociability,I actively seek out networking opportunities.,false,Likert 1-5
+T009,Sanguine,Sociability,I prefer to spend my free time with a large group of friends.,false,Likert 1-5
+T010,Sanguine,Sociability,I find it easy to mingle at social events.,false,Likert 1-5
+T011,Sanguine,Sociability,I prefer to be left alone most of the time.,true,Likert 1-5
+T012,Sanguine,Sociability,I feel exhausted by small talk.,true,Likert 1-5
+T013,Sanguine,Sociability,I actively avoid crowded places.,true,Likert 1-5
+T014,Sanguine,Sociability,I am hard to get to know.,true,Likert 1-5
+T015,Sanguine,Sociability,I keep people at a distance until I know them well.,true,Likert 1-5
+T016,Sanguine,Sociability,I dislike introducing myself to new people.,true,Likert 1-5
+T017,Sanguine,Sociability,I prefer quiet nights at home over going out.,true,Likert 1-5
+T018,Sanguine,Sociability,I find social gatherings highly draining.,true,Likert 1-5
+T019,Sanguine,Sociability,I rarely start conversations voluntarily.,true,Likert 1-5
+T020,Sanguine,Sociability,I feel uncomfortable when too many people are looking at me.,true,Likert 1-5
+T021,Sanguine,Excitement-Seeking,I love trying thrilling new activities.,false,Likert 1-5
+T022,Sanguine,Excitement-Seeking,I constantly look for new adventures.,false,Likert 1-5
+T023,Sanguine,Excitement-Seeking,I enjoy taking spontaneous road trips.,false,Likert 1-5
+T024,Sanguine,Excitement-Seeking,"I crave fast-paced, high-energy environments.",false,Likert 1-5
+T025,Sanguine,Excitement-Seeking,I quickly get bored if things stay the same.,false,Likert 1-5
+T026,Sanguine,Excitement-Seeking,I am drawn to bright lights and loud music.,false,Likert 1-5
+T027,Sanguine,Excitement-Seeking,I enjoy doing things on the spur of the moment.,false,Likert 1-5
+T028,Sanguine,Excitement-Seeking,I like taking risks for the fun of it.,false,Likert 1-5
+T029,Sanguine,Excitement-Seeking,I am willing to try anything once.,false,Likert 1-5
+T030,Sanguine,Excitement-Seeking,I love the rush of unpredictable situations.,false,Likert 1-5
+T031,Sanguine,Excitement-Seeking,I avoid activities that involve physical risks.,true,Likert 1-5
+T032,Sanguine,Excitement-Seeking,"I strongly prefer predictable, familiar routines.",true,Likert 1-5
+T033,Sanguine,Excitement-Seeking,I dislike surprises of any kind.,true,Likert 1-5
+T034,Sanguine,Excitement-Seeking,"I find loud, chaotic environments deeply unpleasant.",true,Likert 1-5
+T035,Sanguine,Excitement-Seeking,I carefully plan everything to avoid unexpected events.,true,Likert 1-5
+T036,Sanguine,Excitement-Seeking,I have no interest in extreme sports or thrills.,true,Likert 1-5
+T037,Sanguine,Excitement-Seeking,"I prefer a slow, relaxed pace of life.",true,Likert 1-5
+T038,Sanguine,Excitement-Seeking,I rarely act without thinking things through first.,true,Likert 1-5
+T039,Sanguine,Excitement-Seeking,I stick to the hobbies and places I already know.,true,Likert 1-5
+T040,Sanguine,Excitement-Seeking,I feel stressed when forced to make a spontaneous decision.,true,Likert 1-5
+T041,Sanguine,Cheerfulness,I naturally look on the bright side of things.,false,Likert 1-5
+T042,Sanguine,Cheerfulness,I am known for my contagious laughter.,false,Likert 1-5
+T043,Sanguine,Cheerfulness,I bounce back quickly from minor disappointments.,false,Likert 1-5
+T044,Sanguine,Cheerfulness,I love to joke around and make others smile.,false,Likert 1-5
+T045,Sanguine,Cheerfulness,I wake up feeling energetic and joyful.,false,Likert 1-5
+T046,Sanguine,Cheerfulness,I see the positive potential in almost any situation.,false,Likert 1-5
+T047,Sanguine,Cheerfulness,I find it easy to celebrate the successes of others.,false,Likert 1-5
+T048,Sanguine,Cheerfulness,I enthusiastically embrace new ideas.,false,Likert 1-5
+T049,Sanguine,Cheerfulness,I am a generally lighthearted person.,false,Likert 1-5
+T050,Sanguine,Cheerfulness,I use humor to defuse tense situations.,false,Likert 1-5
+T051,Sanguine,Cheerfulness,I rarely feel cheerful or optimistic.,true,Likert 1-5
+T052,Sanguine,Cheerfulness,I tend to expect the worst to happen.,true,Likert 1-5
+T053,Sanguine,Cheerfulness,I am not easily amused by jokes.,true,Likert 1-5
+T054,Sanguine,Cheerfulness,I find it hard to maintain a positive attitude.,true,Likert 1-5
+T055,Sanguine,Cheerfulness,I am often told that I look serious or severe.,true,Likert 1-5
+T056,Sanguine,Cheerfulness,I focus on the flaws rather than the positives.,true,Likert 1-5
+T057,Sanguine,Cheerfulness,I rarely laugh out loud.,true,Likert 1-5
+T058,Sanguine,Cheerfulness,I find overly enthusiastic people annoying.,true,Likert 1-5
+T059,Sanguine,Cheerfulness,I dwell on past mistakes for a long time.,true,Likert 1-5
+T060,Sanguine,Cheerfulness,I seldom express joy openly.,true,Likert 1-5
+T061,Choleric,Assertiveness,I am naturally inclined to take charge of a group.,false,Likert 1-5
+T062,Choleric,Assertiveness,I express my opinions firmly and confidently.,false,Likert 1-5
+T063,Choleric,Assertiveness,I have no problem telling people exactly what I want.,false,Likert 1-5
+T064,Choleric,Assertiveness,I easily take control in chaotic situations.,false,Likert 1-5
+T065,Choleric,Assertiveness,I demand respect from my peers.,false,Likert 1-5
+T066,Choleric,Assertiveness,I speak loud enough to ensure everyone hears my ideas.,false,Likert 1-5
+T067,Choleric,Assertiveness,I actively step up when a leader is needed.,false,Likert 1-5
+T068,Choleric,Assertiveness,I am comfortable giving orders to others.,false,Likert 1-5
+T069,Choleric,Assertiveness,I push back when someone tries to override my decisions.,false,Likert 1-5
+T070,Choleric,Assertiveness,I confront problems head-on without hesitation.,false,Likert 1-5
+T071,Choleric,Assertiveness,I prefer to follow rather than lead.,true,Likert 1-5
+T072,Choleric,Assertiveness,I often keep my opinions to myself to avoid arguments.,true,Likert 1-5
+T073,Choleric,Assertiveness,I find it very difficult to give people instructions.,true,Likert 1-5
+T074,Choleric,Assertiveness,I wait for someone else to make the final decision.,true,Likert 1-5
+T075,Choleric,Assertiveness,I let others dominate the conversation.,true,Likert 1-5
+T076,Choleric,Assertiveness,I hesitate to assert my authority.,true,Likert 1-5
+T077,Choleric,Assertiveness,I back down quickly when challenged.,true,Likert 1-5
+T078,Choleric,Assertiveness,I struggle to stand up for my own interests.,true,Likert 1-5
+T079,Choleric,Assertiveness,I prefer to stay in the background during group work.,true,Likert 1-5
+T080,Choleric,Assertiveness,I avoid confrontations at all costs.,true,Likert 1-5
+T081,Choleric,Achievement,I set highly ambitious goals for my future.,false,Likert 1-5
+T082,Choleric,Achievement,I work harder than most people to achieve success.,false,Likert 1-5
+T083,Choleric,Achievement,I am deeply driven to rise to the top of my field.,false,Likert 1-5
+T084,Choleric,Achievement,I measure my worth by the tangible results I produce.,false,Likert 1-5
+T085,Choleric,Achievement,I thrive on competition and the desire to win.,false,Likert 1-5
+T086,Choleric,Achievement,I push through obstacles no matter how difficult they are.,false,Likert 1-5
+T087,Choleric,Achievement,I focus intensely on completing my objectives.,false,Likert 1-5
+T088,Choleric,Achievement,I view failure merely as a stepping stone to success.,false,Likert 1-5
+T089,Choleric,Achievement,I am constantly looking for ways to improve my efficiency.,false,Likert 1-5
+T090,Choleric,Achievement,I feel restless if I am not actively accomplishing something.,false,Likert 1-5
+T091,Choleric,Achievement,I am content with just getting by in life.,true,Likert 1-5
+T092,Choleric,Achievement,I lack a strong sense of ambition.,true,Likert 1-5
+T093,Choleric,Achievement,I easily give up when a task becomes too difficult.,true,Likert 1-5
+T094,Choleric,Achievement,I have no desire to be in a position of power.,true,Likert 1-5
+T095,Choleric,Achievement,I avoid competitive situations whenever possible.,true,Likert 1-5
+T096,Choleric,Achievement,I rarely set long-term career goals.,true,Likert 1-5
+T097,Choleric,Achievement,I prefer easy tasks that require little effort.,true,Likert 1-5
+T098,Choleric,Achievement,I do not feel the need to prove my capabilities to others.,true,Likert 1-5
+T099,Choleric,Achievement,I prioritize relaxation heavily over hard work.,true,Likert 1-5
+T100,Choleric,Achievement,I am not motivated by external success or recognition.,true,Likert 1-5
+T101,Choleric,Dominance,I believe my solutions are usually the most logical.,false,Likert 1-5
+T102,Choleric,Dominance,I expect others to work at my fast pace.,false,Likert 1-5
+T103,Choleric,Dominance,I have little patience for inefficiency.,false,Likert 1-5
+T104,Choleric,Dominance,I will argue my point aggressively if I know I am right.,false,Likert 1-5
+T105,Choleric,Dominance,"I focus entirely on the facts, even if it hurts someone's feelings.",false,Likert 1-5
+T106,Choleric,Dominance,I view emotional decision-making as a weakness.,false,Likert 1-5
+T107,Choleric,Dominance,I quickly dismiss ideas that are not practical.,false,Likert 1-5
+T108,Choleric,Dominance,I am completely comfortable making unpopular decisions.,false,Likert 1-5
+T109,Choleric,Dominance,I easily separate my emotions from my professional duties.,false,Likert 1-5
+T110,Choleric,Dominance,I believe strong leadership requires being tough.,false,Likert 1-5
+T111,Choleric,Dominance,I easily yield to the preferences of the group.,true,Likert 1-5
+T112,Choleric,Dominance,I soften my words to avoid offending others.,true,Likert 1-5
+T113,Choleric,Dominance,I let others set the pace of a project.,true,Likert 1-5
+T114,Choleric,Dominance,I value group harmony more than getting the task done efficiently.,true,Likert 1-5
+T115,Choleric,Dominance,I am very patient with people who learn slowly.,true,Likert 1-5
+T116,Choleric,Dominance,I frequently second-guess my own logic.,true,Likert 1-5
+T117,Choleric,Dominance,I avoid taking stances that might upset people.,true,Likert 1-5
+T118,Choleric,Dominance,I find it difficult to fire or discipline someone.,true,Likert 1-5
+T119,Choleric,Dominance,I let my emotions guide my important decisions.,true,Likert 1-5
+T120,Choleric,Dominance,I am overly concerned with what others think of my choices.,true,Likert 1-5
+T121,Melancholic,Orderliness,I keep my living space meticulously organized.,false,Likert 1-5
+T122,Melancholic,Orderliness,I strictly follow schedules and to-do lists.,false,Likert 1-5
+T123,Melancholic,Orderliness,I believe there is a proper place for everything.,false,Likert 1-5
+T124,Melancholic,Orderliness,I prefer to plan my activities well in advance.,false,Likert 1-5
+T125,Melancholic,Orderliness,I always read the instructions before starting a task.,false,Likert 1-5
+T126,Melancholic,Orderliness,I double-check my work multiple times to ensure accuracy.,false,Likert 1-5
+T127,Melancholic,Orderliness,I feel at peace when everything is neat and tidy.,false,Likert 1-5
+T128,Melancholic,Orderliness,I excel at creating systems and structures.,false,Likert 1-5
+T129,Melancholic,Orderliness,I demand high levels of precision in my work.,false,Likert 1-5
+T130,Melancholic,Orderliness,I notice minor details that other people completely miss.,false,Likert 1-5
+T131,Melancholic,Orderliness,I leave my belongings scattered around the house.,true,Likert 1-5
+T132,Melancholic,Orderliness,I rarely use a calendar to plan my day.,true,Likert 1-5
+T133,Melancholic,Orderliness,I am comfortable working in a cluttered environment.,true,Likert 1-5
+T134,Melancholic,Orderliness,I easily lose track of my personal items.,true,Likert 1-5
+T135,Melancholic,Orderliness,I start projects without a clear plan of action.,true,Likert 1-5
+T136,Melancholic,Orderliness,I gloss over small errors if the main point is clear.,true,Likert 1-5
+T137,Melancholic,Orderliness,I find strict rules and procedures highly restrictive.,true,Likert 1-5
+T138,Melancholic,Orderliness,"I have a very flexible, unpredictable daily routine.",true,Likert 1-5
+T139,Melancholic,Orderliness,I am satisfied with work that is just good enough.,true,Likert 1-5
+T140,Melancholic,Orderliness,I hate dealing with precise details.,true,Likert 1-5
+T141,Melancholic,Sensitivity,I tend to analyze situations deeply before speaking.,false,Likert 1-5
+T142,Melancholic,Sensitivity,I hold myself to incredibly high standards.,false,Likert 1-5
+T143,Melancholic,Sensitivity,I feel things much more deeply than most people.,false,Likert 1-5
+T144,Melancholic,Sensitivity,I often reflect on the deeper meaning of life.,false,Likert 1-5
+T145,Melancholic,Sensitivity,I take criticism very personally.,false,Likert 1-5
+T146,Melancholic,Sensitivity,I am highly attuned to the aesthetic beauty of art and nature.,false,Likert 1-5
+T147,Melancholic,Sensitivity,I spend a lot of time introspecting and understanding my emotions.,false,Likert 1-5
+T148,Melancholic,Sensitivity,I am deeply moved by sad movies or music.,false,Likert 1-5
+T149,Melancholic,Sensitivity,"I prefer deep, meaningful one-on-one conversations.",false,Likert 1-5
+T150,Melancholic,Sensitivity,I hold grudges for a long time when I am betrayed.,false,Likert 1-5
+T151,Melancholic,Sensitivity,I rarely think about my own internal motivations.,true,Likert 1-5
+T152,Melancholic,Sensitivity,I easily shrug off insults or harsh criticism.,true,Likert 1-5
+T153,Melancholic,Sensitivity,I am not easily moved to tears by art or tragedy.,true,Likert 1-5
+T154,Melancholic,Sensitivity,I forgive and forget betrayals very quickly.,true,Likert 1-5
+T155,Melancholic,Sensitivity,"I prefer light, superficial conversations over deep philosophy.",true,Likert 1-5
+T156,Melancholic,Sensitivity,I do not care much about the aesthetic design of things.,true,Likert 1-5
+T157,Melancholic,Sensitivity,I rarely experience deep emotional highs or lows.,true,Likert 1-5
+T158,Melancholic,Sensitivity,I am completely comfortable with my own flaws.,true,Likert 1-5
+T159,Melancholic,Sensitivity,I act without overthinking the emotional consequences.,true,Likert 1-5
+T160,Melancholic,Sensitivity,I rarely reflect on past events.,true,Likert 1-5
+T161,Melancholic,Cautiousness,I anticipate what could go wrong before I make a decision.,false,Likert 1-5
+T162,Melancholic,Cautiousness,I worry about things outside of my control.,false,Likert 1-5
+T163,Melancholic,Cautiousness,I am very cautious when trusting new people.,false,Likert 1-5
+T164,Melancholic,Cautiousness,I mentally rehearse conversations before they happen.,false,Likert 1-5
+T165,Melancholic,Cautiousness,I find unexpected changes to my plans highly stressful.,false,Likert 1-5
+T166,Melancholic,Cautiousness,I calculate all potential risks before taking action.,false,Likert 1-5
+T167,Melancholic,Cautiousness,I prefer to have a backup plan for every scenario.,false,Likert 1-5
+T168,Melancholic,Cautiousness,I often fear that my work is not perfect yet.,false,Likert 1-5
+T169,Melancholic,Cautiousness,I need to know all the facts before giving an answer.,false,Likert 1-5
+T170,Melancholic,Cautiousness,I am highly loyal to a small circle of trusted friends.,false,Likert 1-5
+T171,Melancholic,Cautiousness,I rarely worry about what might happen tomorrow.,true,Likert 1-5
+T172,Melancholic,Cautiousness,I trust people almost immediately upon meeting them.,true,Likert 1-5
+T173,Melancholic,Cautiousness,I jump into new projects without considering the risks.,true,Likert 1-5
+T174,Melancholic,Cautiousness,I easily adapt when my plans are ruined.,true,Likert 1-5
+T175,Melancholic,Cautiousness,I never feel the need to create a backup plan.,true,Likert 1-5
+T176,Melancholic,Cautiousness,I make important decisions based on my gut feeling.,true,Likert 1-5
+T177,Melancholic,Cautiousness,I am not anxious about making mistakes.,true,Likert 1-5
+T178,Melancholic,Cautiousness,I gladly embrace completely unknown situations.,true,Likert 1-5
+T179,Melancholic,Cautiousness,I speak my mind instantly without practicing it first.,true,Likert 1-5
+T180,Melancholic,Cautiousness,I have many acquaintances but few deep loyalties.,true,Likert 1-5
+T181,Phlegmatic,Calmness,I am generally relaxed and unbothered by daily stress.,false,Likert 1-5
+T182,Phlegmatic,Calmness,"I rarely lose my temper, even when provoked.",false,Likert 1-5
+T183,Phlegmatic,Calmness,I maintain a steady mood throughout the day.,false,Likert 1-5
+T184,Phlegmatic,Calmness,"I approach crises with a cool, level head.",false,Likert 1-5
+T185,Phlegmatic,Calmness,"I am content with a simple, unhurried life.",false,Likert 1-5
+T186,Phlegmatic,Calmness,I can easily brush off minor annoyances.,false,Likert 1-5
+T187,Phlegmatic,Calmness,"I speak in a calm, soothing tone of voice.",false,Likert 1-5
+T188,Phlegmatic,Calmness,"I fall asleep easily, without my mind racing.",false,Likert 1-5
+T189,Phlegmatic,Calmness,I am rarely overwhelmed by my emotions.,false,Likert 1-5
+T190,Phlegmatic,Calmness,I project a sense of peace to the people around me.,false,Likert 1-5
+T191,Phlegmatic,Calmness,I get stressed out extremely easily.,true,Likert 1-5
+T192,Phlegmatic,Calmness,I have a very short fuse when I am frustrated.,true,Likert 1-5
+T193,Phlegmatic,Calmness,My moods fluctuate wildly from hour to hour.,true,Likert 1-5
+T194,Phlegmatic,Calmness,I panic when faced with an unexpected emergency.,true,Likert 1-5
+T195,Phlegmatic,Calmness,I am constantly fidgeting or feeling restless.,true,Likert 1-5
+T196,Phlegmatic,Calmness,I let small irritations ruin my entire day.,true,Likert 1-5
+T197,Phlegmatic,Calmness,I frequently yell when I am upset.,true,Likert 1-5
+T198,Phlegmatic,Calmness,I lie awake at night due to anxiety.,true,Likert 1-5
+T199,Phlegmatic,Calmness,I easily succumb to feelings of overwhelm.,true,Likert 1-5
+T200,Phlegmatic,Calmness,"I radiate intense, chaotic energy.",true,Likert 1-5
+T201,Phlegmatic,Cooperation,I prioritize keeping the peace over winning an argument.,false,Likert 1-5
+T202,Phlegmatic,Cooperation,I am willing to compromise to make others happy.,false,Likert 1-5
+T203,Phlegmatic,Cooperation,I act as a mediator when my friends are fighting.,false,Likert 1-5
+T204,Phlegmatic,Cooperation,I naturally look for common ground in disagreements.,false,Likert 1-5
+T205,Phlegmatic,Cooperation,I prefer to work cooperatively rather than competitively.,false,Likert 1-5
+T206,Phlegmatic,Cooperation,I often let others choose what we do for fun.,false,Likert 1-5
+T207,Phlegmatic,Cooperation,I am highly accommodating to the needs of my coworkers.,false,Likert 1-5
+T208,Phlegmatic,Cooperation,"I dislike offending anyone, so I choose my words carefully.",false,Likert 1-5
+T209,Phlegmatic,Cooperation,I am a loyal follower who supports the group's decisions.,false,Likert 1-5
+T210,Phlegmatic,Cooperation,I find it easy to agree with others just to move forward.,false,Likert 1-5
+T211,Phlegmatic,Cooperation,I will argue fiercely until my point is accepted.,true,Likert 1-5
+T212,Phlegmatic,Cooperation,I refuse to compromise on my core beliefs.,true,Likert 1-5
+T213,Phlegmatic,Cooperation,I enjoy playing devil's advocate to stir up debate.,true,Likert 1-5
+T214,Phlegmatic,Cooperation,I avoid mediating other people's problems.,true,Likert 1-5
+T215,Phlegmatic,Cooperation,I strongly prefer to work independently.,true,Likert 1-5
+T216,Phlegmatic,Cooperation,I insist on doing things my way.,true,Likert 1-5
+T217,Phlegmatic,Cooperation,I rarely change my mind just to please someone else.,true,Likert 1-5
+T218,Phlegmatic,Cooperation,"I speak bluntly, regardless of who gets offended.",true,Likert 1-5
+T219,Phlegmatic,Cooperation,I frequently challenge the consensus of the group.,true,Likert 1-5
+T220,Phlegmatic,Cooperation,I see teamwork as a hindrance to my personal success.,true,Likert 1-5
+T221,Phlegmatic,Empathy,I am a patient and attentive listener.,false,Likert 1-5
+T222,Phlegmatic,Empathy,I naturally sympathize with the struggles of others.,false,Likert 1-5
+T223,Phlegmatic,Empathy,I give people the benefit of the doubt.,false,Likert 1-5
+T224,Phlegmatic,Empathy,"I am perfectly fine doing repetitive, steady tasks.",false,Likert 1-5
+T225,Phlegmatic,Empathy,I offer a comforting presence to those in distress.,false,Likert 1-5
+T226,Phlegmatic,Empathy,I accept people exactly as they are without trying to change them.,false,Likert 1-5
+T227,Phlegmatic,Empathy,I am highly reliable when someone needs a favor.,false,Likert 1-5
+T228,Phlegmatic,Empathy,I wait my turn patiently without complaining.,false,Likert 1-5
+T229,Phlegmatic,Empathy,I value stability and consistency above excitement.,false,Likert 1-5
+T230,Phlegmatic,Empathy,I am slow to judge the mistakes of others.,false,Likert 1-5
+T231,Phlegmatic,Empathy,I frequently interrupt people when they are talking.,true,Likert 1-5
+T232,Phlegmatic,Empathy,I feel little sympathy for people who bring trouble upon themselves.,true,Likert 1-5
+T233,Phlegmatic,Empathy,I am highly suspicious of people's motives.,true,Likert 1-5
+T234,Phlegmatic,Empathy,I become deeply frustrated if I have to repeat a task.,true,Likert 1-5
+T235,Phlegmatic,Empathy,I avoid comforting emotional people.,true,Likert 1-5
+T236,Phlegmatic,Empathy,I constantly try to fix or change the people around me.,true,Likert 1-5
+T237,Phlegmatic,Empathy,I often fail to follow through on favors I promised.,true,Likert 1-5
+T238,Phlegmatic,Empathy,I hate waiting in lines and will leave if it takes too long.,true,Likert 1-5
+T239,Phlegmatic,Empathy,"I despise living a predictable, stable lifestyle.",true,Likert 1-5
+T240,Phlegmatic,Empathy,I am quick to harshly criticize people who make errors.,true,Likert 1-5
+`.trim();
 
-const QUESTION_BANK = TEMPERAMENTS.reduce((acc, temperament) => {
-  acc[temperament] = QUESTION_SEEDS[temperament].map((seed, index) => ({
-    ...seed,
-    id: `${temperament.charAt(0)}-${index + 1}`,
+const QUESTION_BANK_ROWS = parseQuestionBankCsv(QUESTION_BANK_CSV).map(
+  ({ id, temperament, dimension, item_text, reverse_scored, scoring_rule }) => ({
+    id,
     temperament,
-  }));
+    dimension,
+    text: item_text,
+    reverseScored: reverse_scored === "true",
+    scoringRule: scoring_rule,
+  })
+);
+
+const QUESTION_BY_ID = QUESTION_BANK_ROWS.reduce((acc, question) => {
+  acc[question.id] = question;
   return acc;
 }, {});
+
+const QUESTION_BANK_BY_TEMPERAMENT = TEMPERAMENTS.reduce((acc, temperament) => {
+  acc[temperament] = QUESTION_BANK_ROWS.filter(
+    (question) => question.temperament === temperament
+  );
+  return acc;
+}, {});
+
+const QUESTION_BANK_BY_TEMPERAMENT_DIMENSION = TEMPERAMENTS.reduce(
+  (acc, temperament) => {
+    const byDimension = QUESTION_BANK_BY_TEMPERAMENT[temperament].reduce(
+      (dimensionAcc, question) => {
+        if (!dimensionAcc[question.dimension]) {
+          dimensionAcc[question.dimension] = [];
+        }
+        dimensionAcc[question.dimension].push(question);
+        return dimensionAcc;
+      },
+      {}
+    );
+    acc[temperament] = byDimension;
+    return acc;
+  },
+  {}
+);
+
+validateQuestionBank(QUESTION_BANK_ROWS);
 
 const state = {
   selectedDepth: 20,
@@ -512,40 +539,207 @@ function startAssessment() {
 }
 
 function buildQuestionSet(depth, questionOrder) {
+  if (isValidSavedQuestionOrder(questionOrder, depth)) {
+    return questionOrder.map((questionId, index) => ({
+      ...QUESTION_BY_ID[questionId],
+      ordinal: index + 1,
+    }));
+  }
+
   const perTemperament = depth / TEMPERAMENTS.length;
   const selectedQuestions = TEMPERAMENTS.flatMap((temperament) =>
-    QUESTION_BANK[temperament].slice(0, perTemperament)
+    sampleBalancedQuestions(temperament, perTemperament)
   );
-  const byId = selectedQuestions.reduce((acc, question) => {
-    acc[question.id] = question;
-    return acc;
-  }, {});
-
-  let arrangedQuestions = [];
-  if (
-    Array.isArray(questionOrder) &&
-    questionOrder.length === selectedQuestions.length
-  ) {
-    const seen = new Set();
-    arrangedQuestions = questionOrder
-      .map((questionId) => {
-        if (seen.has(questionId)) {
-          return null;
-        }
-        seen.add(questionId);
-        return byId[questionId] || null;
-      })
-      .filter(Boolean);
-  }
-
-  if (arrangedQuestions.length !== selectedQuestions.length) {
-    arrangedQuestions = shuffleArray(selectedQuestions);
-  }
+  const arrangedQuestions = shuffleArray(selectedQuestions);
 
   return arrangedQuestions.map((question, index) => ({
     ...question,
     ordinal: index + 1,
   }));
+}
+
+function isValidSavedQuestionOrder(questionOrder, depth) {
+  if (!Array.isArray(questionOrder) || questionOrder.length !== depth) {
+    return false;
+  }
+
+  const seen = new Set();
+  for (const questionId of questionOrder) {
+    if (seen.has(questionId) || !QUESTION_BY_ID[questionId]) {
+      return false;
+    }
+    seen.add(questionId);
+  }
+  return true;
+}
+
+function sampleBalancedQuestions(temperament, perTemperament) {
+  const byDimension = QUESTION_BANK_BY_TEMPERAMENT_DIMENSION[temperament];
+  const dimensions = shuffleArray(Object.keys(byDimension));
+  const base = Math.floor(perTemperament / dimensions.length);
+  const remainder = perTemperament % dimensions.length;
+  const picks = [];
+
+  dimensions.forEach((dimension, index) => {
+    const required = base + (index < remainder ? 1 : 0);
+    const pool = byDimension[dimension] || [];
+    if (pool.length < required) {
+      throw new Error(
+        `Question bank underflow for ${temperament}/${dimension}: needed ${required}, found ${pool.length}.`
+      );
+    }
+
+    picks.push(...shuffleArray(pool).slice(0, required));
+  });
+
+  return picks;
+}
+
+function validateQuestionBank(questionBankRows) {
+  if (questionBankRows.length !== 240) {
+    throw new Error(
+      `Question bank must contain exactly 240 items, found ${questionBankRows.length}.`
+    );
+  }
+
+  const seenIds = new Set();
+  const temperamentCounts = TEMPERAMENTS.reduce((acc, temperament) => {
+    acc[temperament] = 0;
+    return acc;
+  }, {});
+  const dimensionCounts = TEMPERAMENTS.reduce((acc, temperament) => {
+    acc[temperament] = {};
+    return acc;
+  }, {});
+
+  questionBankRows.forEach((question) => {
+    if (seenIds.has(question.id)) {
+      throw new Error(`Duplicate question id detected: ${question.id}`);
+    }
+    seenIds.add(question.id);
+
+    if (!TEMPERAMENTS.includes(question.temperament)) {
+      throw new Error(
+        `Invalid temperament '${question.temperament}' for question ${question.id}.`
+      );
+    }
+    if (typeof question.reverseScored !== "boolean") {
+      throw new Error(
+        `Invalid reverseScored value for question ${question.id}; expected boolean.`
+      );
+    }
+    if (question.scoringRule !== "Likert 1-5") {
+      throw new Error(
+        `Invalid scoring rule for question ${question.id}; expected 'Likert 1-5'.`
+      );
+    }
+
+    temperamentCounts[question.temperament] += 1;
+    const tempDimensionCounts = dimensionCounts[question.temperament];
+    tempDimensionCounts[question.dimension] =
+      (tempDimensionCounts[question.dimension] || 0) + 1;
+  });
+
+  for (let i = 1; i <= 240; i += 1) {
+    const expectedId = `T${String(i).padStart(3, "0")}`;
+    if (!seenIds.has(expectedId)) {
+      throw new Error(`Missing expected question id: ${expectedId}`);
+    }
+  }
+
+  TEMPERAMENTS.forEach((temperament) => {
+    if (temperamentCounts[temperament] !== 60) {
+      throw new Error(
+        `${temperament} must have exactly 60 items, found ${temperamentCounts[temperament]}.`
+      );
+    }
+
+    const temperamentDimensions = dimensionCounts[temperament];
+    const dimensionNames = Object.keys(temperamentDimensions);
+    if (dimensionNames.length !== 3) {
+      throw new Error(
+        `${temperament} must have exactly 3 dimensions, found ${dimensionNames.length}.`
+      );
+    }
+
+    dimensionNames.forEach((dimension) => {
+      if (temperamentDimensions[dimension] !== 20) {
+        throw new Error(
+          `${temperament}/${dimension} must have 20 items, found ${temperamentDimensions[dimension]}.`
+        );
+      }
+    });
+  });
+}
+
+function parseQuestionBankCsv(csvText) {
+  const lines = csvText
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (!lines.length) {
+    return [];
+  }
+
+  const headers = parseCsvLine(lines[0]);
+  const expectedHeaders = [
+    "id",
+    "temperament",
+    "dimension",
+    "item_text",
+    "reverse_scored",
+    "scoring_rule",
+  ];
+  const hasExpectedHeaders =
+    headers.length === expectedHeaders.length &&
+    headers.every((header, index) => header === expectedHeaders[index]);
+  if (!hasExpectedHeaders) {
+    throw new Error("Question bank CSV headers are invalid.");
+  }
+
+  return lines.slice(1).map((line, index) => {
+    const values = parseCsvLine(line);
+    if (values.length !== headers.length) {
+      throw new Error(
+        `Invalid CSV row at line ${index + 2}: expected ${headers.length} fields, found ${values.length}.`
+      );
+    }
+
+    return headers.reduce((acc, header, fieldIndex) => {
+      acc[header] = values[fieldIndex];
+      return acc;
+    }, {});
+  });
+}
+
+function parseCsvLine(line) {
+  const fields = [];
+  let current = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i += 1) {
+    const char = line[i];
+    if (char === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"';
+        i += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+
+    if (char === "," && !inQuotes) {
+      fields.push(current);
+      current = "";
+      continue;
+    }
+
+    current += char;
+  }
+
+  fields.push(current);
+  return fields;
 }
 
 function shuffleArray(items) {
@@ -575,7 +769,7 @@ function renderCurrentPage() {
 
   questionPage.innerHTML = pageQuestions
     .map((question) => {
-      const labels = getScaleLabels(question.type);
+      const labels = getScaleLabels(question.scoringRule);
       const currentValue = state.responses[question.id] || 3;
       const hasResponse = !!state.responses[question.id];
       const thumbScale = 1 + (Math.abs(currentValue - 3) * 0.15);
@@ -583,7 +777,7 @@ function renderCurrentPage() {
       return `
         <article class="question-card">
           <div class="question-top">
-            <span class="question-type">${question.type}</span>
+            <span class="question-type">${question.dimension}</span>
             <span>Q${question.ordinal}</span>
           </div>
           <p class="question-text">${question.text}</p>
@@ -630,16 +824,16 @@ function renderCurrentPage() {
 function bindQuestionListeners() {
   questionPage.querySelectorAll('.question-range').forEach((input) => {
     const questionId = input.name;
-    const question = state.questions.find(q => q.id === questionId);
-    const labels = getScaleLabels(question.type);
+    const question = state.questions.find((q) => q.id === questionId);
+    const labels = getScaleLabels(question.scoringRule);
     const labelDisplay = document.getElementById(`label-val-${questionId}`);
 
     const updateValue = (val) => {
       state.responses[questionId] = Number(val);
       labelDisplay.innerHTML = labels[val - 1];
-      input.setAttribute('data-answered', 'true');
+      input.setAttribute("data-answered", "true");
       const scale = 1 + (Math.abs(val - 3) * 0.15);
-      input.style.setProperty('--thumb-scale', scale);
+      input.style.setProperty("--thumb-scale", scale);
       pageWarning.classList.add("hidden");
       syncProgressOnly();
       saveProgress();
@@ -658,12 +852,12 @@ function bindQuestionListeners() {
 
     // Handle clicks/touches that don't trigger "change" if the value stays the same but user intent was to select
     input.addEventListener("mousedown", () => {
-      if (input.getAttribute('data-answered') === 'false') {
+      if (input.getAttribute("data-answered") === "false") {
         updateValue(input.value);
       }
     });
     input.addEventListener("touchstart", () => {
-      if (input.getAttribute('data-answered') === 'false') {
+      if (input.getAttribute("data-answered") === "false") {
         updateValue(input.value);
       }
     });
@@ -706,7 +900,7 @@ function simulateAssessmentForResults() {
 
   state.questions.forEach((question) => {
     state.responses[question.id] = getSimulatedResponseValue(
-      question.temperament,
+      question,
       dominant,
       secondary
     );
@@ -756,8 +950,9 @@ function scoreAssessment() {
   state.questions.forEach((question) => {
     const value = state.responses[question.id];
     const centered = toCenteredValue(value);
-    scores[question.temperament] += centered;
-    signal[question.temperament] += Math.abs(centered);
+    const signed = question.reverseScored ? -centered : centered;
+    scores[question.temperament] += signed;
+    signal[question.temperament] += Math.abs(signed);
   });
 
   const ranked = TEMPERAMENTS.map((temperament) => ({
@@ -1005,12 +1200,15 @@ function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 
-function getScaleLabels(type) {
-  if (type === "emotional") {
-    return ["Not at all", "Slightly", "Moderately", "Mostly", "Very much"];
-  }
-  if (type === "situational") {
-    return ["Very unlikely", "Unlikely", "Unsure", "Likely", "Very likely"];
+function getScaleLabels(scoringRule) {
+  if (scoringRule !== "Likert 1-5") {
+    return [
+      "Strongly disagree",
+      "Disagree",
+      "Neutral",
+      "Agree",
+      "Strongly agree",
+    ];
   }
   return [
     "Strongly disagree",
@@ -1032,17 +1230,17 @@ function updateSimulationButtonState() {
   simulateButton.disabled = !shouldShow;
 }
 
-function getSimulatedResponseValue(temperament, dominant, secondary) {
-  let base = 2;
-  if (temperament === dominant) {
-    base = 4;
-  } else if (temperament === secondary) {
-    base = 3;
+function getSimulatedResponseValue(question, dominant, secondary) {
+  let traitBase = 2;
+  if (question.temperament === dominant) {
+    traitBase = 4;
+  } else if (question.temperament === secondary) {
+    traitBase = 3;
   }
-
   const jitterPool = [-1, 0, 0, 0, 1];
   const jitter = jitterPool[Math.floor(Math.random() * jitterPool.length)];
-  return clamp(base + jitter, 1, 5);
+  const traitValue = clamp(traitBase + jitter, 1, 5);
+  return question.reverseScored ? 6 - traitValue : traitValue;
 }
 
 function scrollToPanel(panel, behavior) {

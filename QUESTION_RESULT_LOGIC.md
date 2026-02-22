@@ -10,23 +10,56 @@ This document explains how the assessment currently works in `app.js`: how quest
 
 ## 2. Question Source
 
-Questions are defined in `QUESTION_SEEDS` by temperament.
+Questions are defined in `QUESTION_BANK_CSV` and parsed at startup into `QUESTION_BANK_ROWS`.
 
-- Each temperament has 15 seed questions.
-- Each seed has:
-  - `type` (`situational`, `behavioral`, `emotional`)
-  - `text`
+Each question has:
 
-At startup, seeds are converted into `QUESTION_BANK` with:
+- `id` (format: `T001` ... `T240`)
+- `temperament`
+- `dimension`
+- `text` (from `item_text`)
+- `reverseScored` (boolean)
+- `scoringRule` (`Likert 1-5`)
 
-- `id` (format: first temperament letter + index, e.g. `S-1`, `C-4`)
-- `temperament` (owner of the question)
+Derived indexes:
 
-## 3. How Questions Are Generated Per Test
+- `QUESTION_BY_ID`
+- `QUESTION_BANK_BY_TEMPERAMENT`
+- `QUESTION_BANK_BY_TEMPERAMENT_DIMENSION`
+
+## 3. Startup Validation
+
+`validateQuestionBank()` runs at load time and throws on invalid data.
+
+It validates:
+
+- total item count is exactly `240`
+- all IDs are unique
+- all expected IDs `T001` through `T240` exist
+- temperament is one of the four supported types
+- `reverseScored` is boolean
+- `scoringRule` is `Likert 1-5`
+- each temperament has `60` items
+- each temperament has exactly `3` dimensions with `20` items each
+
+## 4. How Questions Are Generated Per Test
 
 Function: `buildQuestionSet(depth, questionOrder)`
 
-### 3.1 Equal distribution by temperament
+### 4.1 Resume-first restore behavior
+
+If `questionOrder` is valid, questions are rebuilt directly by ID in that saved order.
+
+`questionOrder` is valid when:
+
+- it is an array
+- length equals `depth`
+- IDs are unique
+- every ID exists in `QUESTION_BY_ID`
+
+This prevents resume breakage when selection is randomized.
+
+### 4.2 Balanced distribution by temperament
 
 `perTemperament = depth / 4`
 
@@ -36,29 +69,32 @@ So:
 - 40-question test -> 10 per temperament
 - 60-question test -> 15 per temperament
 
-The app selects the first `perTemperament` questions from each temperament bank.
+### 4.3 Balanced sampling by dimension
 
-### 3.2 Random order on new tests
+Within each temperament:
 
-If there is no valid saved order, selected questions are shuffled using Fisher-Yates (`shuffleArray`).
+- dimensions are shuffled
+- `base = floor(perTemperament / 3)`
+- `remainder = perTemperament % 3`
+- each dimension receives `base`
+- the first `remainder` shuffled dimensions receive `+1`
+- items are sampled without replacement from each dimension pool
 
-This means each new test start gets a different question arrangement.
+Resulting per-temperament dimension splits:
 
-### 3.3 Stable order on resumed tests
+- 20 depth (`5`) -> `2 / 2 / 1` (dimension order varies)
+- 40 depth (`10`) -> `4 / 3 / 3`
+- 60 depth (`15`) -> `5 / 5 / 5`
 
-If `questionOrder` is provided from localStorage and valid:
+### 4.4 Random order on new tests
 
-- same length as selected question count
-- no duplicate IDs
-- IDs map to existing selected questions
+After per-temperament selection, all selected items are shuffled with Fisher-Yates (`shuffleArray`).
 
-then that saved order is reused so resume behavior stays consistent.
-
-### 3.4 Display ordinal
+### 4.5 Display ordinal
 
 After ordering, each question is assigned `ordinal: index + 1` for display (`Q1`, `Q2`, etc.).
 
-## 4. Progress Persistence (Resume Behavior)
+## 5. Progress Persistence (Resume Behavior)
 
 Storage key: `temperamentInsight.progress.v1`
 
@@ -67,21 +103,29 @@ Saved payload includes:
 - `selectedDepth`
 - `responses`
 - `currentPage`
-- `questionOrder` (array of question IDs in active order)
+- `questionOrder` (array of question IDs like `T001`)
 - `startedAt`
 
 On restore:
 
 - depth is validated against `VALID_DEPTHS`
-- question set is rebuilt with saved `questionOrder`
-- responses are filtered to valid question IDs and numeric range `1..5`
+- question set is rebuilt with `buildQuestionSet(savedDepth, savedOrder)`
+- responses are filtered to valid IDs in `1..5`
 - page index is clamped to valid bounds
 
-## 5. Response Model
+Legacy saved IDs not present in the new bank are ignored safely.
 
-Each question is answered on a 1..5 slider.
+## 6. Response Model
 
-The raw value is centered for scoring:
+Each question is answered on a 1..5 slider using Likert labels:
+
+- Strongly disagree
+- Disagree
+- Neutral
+- Agree
+- Strongly agree
+
+Centered score:
 
 - `toCenteredValue(value) = value - 3`
 - mapping:
@@ -91,19 +135,28 @@ The raw value is centered for scoring:
   - `4 -> +1`
   - `5 -> +2`
 
-## 6. Result Scoring
+## 7. Reverse-Scored Contribution
+
+For each response:
+
+- `centered = value - 3`
+- `signed = question.reverseScored ? -centered : centered`
+
+`signed` is used for temperament score accumulation.
+
+## 8. Result Scoring
 
 Function: `scoreAssessment()`
 
 For each answered question:
 
-1. convert value to centered score
-2. add to its temperament total (`scores[temperament]`)
+1. compute `signed` score (reverse-aware)
+2. add to temperament total (`scores[temperament]`)
 3. add absolute contribution to temperament signal (`signal[temperament]`)
 
 `signal` is used for tie-break strength.
 
-## 7. Ranking Logic
+## 9. Ranking Logic
 
 Temperaments are ranked by:
 
@@ -117,7 +170,7 @@ Output:
 - `secondary` = rank 2 temperament
 - full `ranked` array
 
-## 8. Confidence Logic
+## 10. Confidence Logic
 
 Function: `getConfidenceLevel(scoreGap, depth)`
 
@@ -131,7 +184,7 @@ Thresholds:
 - `Medium` if `normalizedGap >= 0.12`
 - `Low` otherwise
 
-## 9. Mix Percentage Model (for Result Visuals)
+## 11. Mix Percentage Model (for Result Visuals)
 
 Function: `buildTemperamentMixPercentages(ranked)`
 
@@ -146,22 +199,7 @@ Steps:
 
 Result: integer percentages summing to exactly `100`.
 
-## 10. Dominance-First Display Order
-
-Function: `getTemperamentDisplayOrder(percentages, ranked)`
-
-Display order for legend/chart/bars is:
-
-1. percentage descending
-2. ranked order as tie-break
-
-Used by:
-
-- temperament mix legend
-- temperament donut chart
-- score breakdown bars
-
-## 11. Completion Rule
+## 12. Completion Rule
 
 The user cannot move to the next page unless all questions on the current page are answered (`isCurrentPageComplete()`).
 
@@ -170,4 +208,3 @@ When the final page is complete:
 1. scoring runs
 2. results are rendered with primary/secondary/confidence
 3. progress storage is cleared
-

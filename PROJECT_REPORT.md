@@ -93,8 +93,10 @@ On load:
 `buildQuestionSet(depth)`:
 
 - Uses equal counts per temperament (`depth / 4`).
-- Slices the per-temperament banks.
-- Interleaves temperament questions for variety.
+- Uses a 240-item bank (`T001`-`T240`) with 3 dimensions per temperament.
+- Samples each temperament with dimension-balanced quotas (`2/2/1`, `4/3/3`, `5/5/5` by depth).
+- Samples without replacement from shuffled dimension pools.
+- Shuffles the final selected set for variety.
 - Adds ordinal numbers for display.
 
 Depth behavior:
@@ -102,6 +104,10 @@ Depth behavior:
 - 20 mode: 5 per temperament
 - 40 mode: 10 per temperament
 - 60 mode: 15 per temperament
+
+Resume behavior:
+
+- If a valid saved `questionOrder` exists, the question set is rebuilt directly from saved IDs instead of re-sampling.
 
 ### 5.2 Pagination and Rendering
 
@@ -122,7 +128,8 @@ For each response (1 to 5):
 
 - Convert to centered value: `response - 3`.
 - Mapping is `-2` to `+2`.
-- Add to that question's temperament score.
+- If `reverseScored` is true, invert centered contribution sign before accumulation.
+- Add signed contribution to that question's temperament score.
 - Track absolute signal for tie handling.
 
 Ranking:
@@ -193,6 +200,7 @@ Persisted fields:
 - `selectedDepth`
 - `responses`
 - `currentPage`
+- `questionOrder` (question IDs in active order)
 - `startedAt`
 
 Recovery safeguards:
@@ -256,7 +264,8 @@ Implemented:
 
 - Public static assessment flow
 - Depth options (20/40/60)
-- Balanced multi-temperament question distribution
+- 240-item temperament question bank with dimension-balanced sampling
+- Reverse-scored item handling in scoring
 - 5-question pagination and validation gates
 - Progress indicator and local persistence
 - Primary/secondary result model
