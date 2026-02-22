@@ -503,6 +503,8 @@ const resultDetail = document.getElementById("result-detail");
 const detailStrengths = document.getElementById("detail-strengths");
 const detailWeaknesses = document.getElementById("detail-weaknesses");
 const detailCommunication = document.getElementById("detail-communication");
+const copySummaryBtn = document.getElementById("copy-summary-btn");
+const copyLinkBtn = document.getElementById("copy-link-btn");
 
 startButton.addEventListener("click", startAssessment);
 prevButton.addEventListener("click", goToPreviousPage);
@@ -511,7 +513,8 @@ if (simulateButton) {
 }
 nextButton.addEventListener("click", goToNextPage);
 detailToggle.addEventListener("click", toggleDetailView);
-detailToggle.addEventListener("click", toggleDetailView);
+if (copySummaryBtn) copySummaryBtn.addEventListener("click", copyResultSummary);
+if (copyLinkBtn) copyLinkBtn.addEventListener("click", copyShareLink);
 window.addEventListener("pagehide", handlePageHide);
 
 // Entry point behavior
@@ -1102,6 +1105,54 @@ function toggleDetailView() {
       primary_temperament: state.resultMeta.primary,
     });
   }
+}
+
+async function copyShareLink() {
+  if (!state.shareUrl) return;
+  const link = `${window.location.origin}${window.location.pathname}#result=${state.shareUrl}`;
+  try {
+    await navigator.clipboard.writeText(link);
+    showCopiedFeedback(copyLinkBtn, "Copy Share Link");
+  } catch (err) {
+    console.error("Failed to copy link: ", err);
+  }
+}
+
+async function copyResultSummary() {
+  if (!state.shareUrl || !state.resultMeta) return;
+
+  const primary = state.resultMeta.primary;
+  const confidence = state.resultMeta.confidenceLevel;
+  // We can derive secondary from the DOM or state. It is safely rendered right now.
+  const secondary = secondaryName.textContent;
+  const link = `${window.location.origin}${window.location.pathname}#result=${state.shareUrl}`;
+
+  const summaryText = `My Temperament Insight Result!
+Primary: ${primary}
+Secondary Influence: ${secondary}
+Confidence: ${confidence.charAt(0).toUpperCase() + confidence.slice(1)}
+
+Check out my full profile:
+${link}
+  `.trim();
+
+  try {
+    await navigator.clipboard.writeText(summaryText);
+    showCopiedFeedback(copySummaryBtn, "Copy Result Summary");
+  } catch (err) {
+    console.error("Failed to copy summary: ", err);
+  }
+}
+
+function showCopiedFeedback(btnEl, originalText) {
+  if (!btnEl) return;
+  btnEl.textContent = "Copied!";
+  btnEl.classList.add("copied");
+
+  setTimeout(() => {
+    btnEl.textContent = originalText;
+    btnEl.classList.remove("copied");
+  }, 2000);
 }
 
 function toCenteredValue(value) {
