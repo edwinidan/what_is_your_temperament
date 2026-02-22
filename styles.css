@@ -1799,6 +1799,49 @@ main {
   margin-bottom: 2rem;
 }
 
+#sanguine .temp-detail-body.sanguine-longform {
+  color: var(--gray-700);
+  line-height: 1.7;
+}
+
+#sanguine .sanguine-longform-title {
+  font-size: clamp(1.5rem, 3vw, 1.9rem);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--gray-900);
+}
+
+#sanguine .sanguine-section {
+  margin-top: 1.85rem;
+}
+
+#sanguine .sanguine-section h3 {
+  font-size: 1.2rem;
+  line-height: 1.35;
+  color: var(--gray-900);
+}
+
+#sanguine .sanguine-section p {
+  margin-top: 0.8rem;
+}
+
+#sanguine .sanguine-section ul {
+  margin: 0.85rem 0 0;
+  padding-left: 1.25rem;
+}
+
+#sanguine .sanguine-section li {
+  margin-bottom: 0.55rem;
+}
+
+#sanguine .sanguine-section li:last-child {
+  margin-bottom: 0;
+}
+
+#sanguine .sanguine-section strong {
+  color: var(--gray-900);
+}
+
 .detail-columns {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -1877,6 +1920,18 @@ main {
     padding: 0.6rem 1rem;
     font-size: 0.85rem;
     white-space: nowrap;
+  }
+
+  #sanguine .sanguine-longform-title {
+    font-size: 1.35rem;
+  }
+
+  #sanguine .sanguine-section {
+    margin-top: 1.45rem;
+  }
+
+  #sanguine .sanguine-section h3 {
+    font-size: 1.07rem;
   }
 }
 
