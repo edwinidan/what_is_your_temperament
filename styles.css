@@ -1842,6 +1842,135 @@ main {
   color: var(--gray-900);
 }
 
+#choleric .temp-detail-body.choleric-longform {
+  color: var(--gray-700);
+  line-height: 1.7;
+}
+
+#choleric .choleric-longform-title {
+  font-size: clamp(1.5rem, 3vw, 1.9rem);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--gray-900);
+}
+
+#choleric .choleric-section {
+  margin-top: 1.85rem;
+}
+
+#choleric .choleric-section h3 {
+  font-size: 1.2rem;
+  line-height: 1.35;
+  color: var(--gray-900);
+}
+
+#choleric .choleric-section p {
+  margin-top: 0.8rem;
+}
+
+#choleric .choleric-section ul {
+  margin: 0.85rem 0 0;
+  padding-left: 1.25rem;
+}
+
+#choleric .choleric-section li {
+  margin-bottom: 0.55rem;
+}
+
+#choleric .choleric-section li:last-child {
+  margin-bottom: 0;
+}
+
+#choleric .choleric-section strong {
+  color: var(--gray-900);
+}
+
+#melancholic .temp-detail-body.melancholic-longform {
+  color: var(--gray-700);
+  line-height: 1.7;
+}
+
+#melancholic .melancholic-longform-title {
+  font-size: clamp(1.5rem, 3vw, 1.9rem);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--gray-900);
+}
+
+#melancholic .melancholic-section {
+  margin-top: 1.85rem;
+}
+
+#melancholic .melancholic-section h3 {
+  font-size: 1.2rem;
+  line-height: 1.35;
+  color: var(--gray-900);
+}
+
+#melancholic .melancholic-section p {
+  margin-top: 0.8rem;
+}
+
+#melancholic .melancholic-section ul {
+  margin: 0.85rem 0 0;
+  padding-left: 1.25rem;
+}
+
+#melancholic .melancholic-section li {
+  margin-bottom: 0.55rem;
+}
+
+#melancholic .melancholic-section li:last-child {
+  margin-bottom: 0;
+}
+
+#melancholic .melancholic-section strong {
+  color: var(--gray-900);
+}
+
+#phlegmatic .temp-detail-body.phlegmatic-longform {
+  color: var(--gray-700);
+  line-height: 1.7;
+}
+
+#phlegmatic .phlegmatic-longform-title {
+  font-size: clamp(1.5rem, 3vw, 1.9rem);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--gray-900);
+}
+
+#phlegmatic .phlegmatic-section {
+  margin-top: 1.85rem;
+}
+
+#phlegmatic .phlegmatic-section h3 {
+  font-size: 1.2rem;
+  line-height: 1.35;
+  color: var(--gray-900);
+}
+
+#phlegmatic .phlegmatic-section p {
+  margin-top: 0.8rem;
+}
+
+#phlegmatic .phlegmatic-section ul {
+  margin: 0.85rem 0 0;
+  padding-left: 1.25rem;
+}
+
+#phlegmatic .phlegmatic-section li {
+  margin-bottom: 0.55rem;
+}
+
+#phlegmatic .phlegmatic-section li:last-child {
+  margin-bottom: 0;
+}
+
+#phlegmatic .phlegmatic-section strong {
+  color: var(--gray-900);
+}
+
 .detail-columns {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -1931,6 +2060,42 @@ main {
   }
 
   #sanguine .sanguine-section h3 {
+    font-size: 1.07rem;
+  }
+
+  #choleric .choleric-longform-title {
+    font-size: 1.35rem;
+  }
+
+  #choleric .choleric-section {
+    margin-top: 1.45rem;
+  }
+
+  #choleric .choleric-section h3 {
+    font-size: 1.07rem;
+  }
+
+  #melancholic .melancholic-longform-title {
+    font-size: 1.35rem;
+  }
+
+  #melancholic .melancholic-section {
+    margin-top: 1.45rem;
+  }
+
+  #melancholic .melancholic-section h3 {
+    font-size: 1.07rem;
+  }
+
+  #phlegmatic .phlegmatic-longform-title {
+    font-size: 1.35rem;
+  }
+
+  #phlegmatic .phlegmatic-section {
+    margin-top: 1.45rem;
+  }
+
+  #phlegmatic .phlegmatic-section h3 {
     font-size: 1.07rem;
   }
 }
