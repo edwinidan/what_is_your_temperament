@@ -514,6 +514,11 @@ const detailWeaknesses = document.getElementById("detail-weaknesses");
 const detailCommunication = document.getElementById("detail-communication");
 const copySummaryBtn = document.getElementById("copy-summary-btn");
 const copyLinkBtn = document.getElementById("copy-link-btn");
+const shareCardBtn = document.getElementById("share-card-btn");
+const shareCardPreview = document.getElementById("share-card-preview");
+const shareCardCanvas = document.getElementById("share-card-canvas");
+const downloadCardBtn = document.getElementById("download-card-btn");
+const shareCardNativeBtn = document.getElementById("share-card-native-btn");
 
 // ==========================================
 // 4. INITIALIZATION & EVENT LISTENERS
@@ -527,6 +532,15 @@ nextButton.addEventListener("click", goToNextPage);
 detailToggle.addEventListener("click", toggleDetailView);
 if (copySummaryBtn) copySummaryBtn.addEventListener("click", copyResultSummary);
 if (copyLinkBtn) copyLinkBtn.addEventListener("click", copyShareLink);
+if (shareCardBtn) shareCardBtn.addEventListener("click", generateShareCard);
+if (downloadCardBtn) downloadCardBtn.addEventListener("click", () => downloadCanvasPNG(shareCardCanvas, "Temperament-Insight-Result.png"));
+if (shareCardNativeBtn) {
+  if (navigator.share) {
+    shareCardNativeBtn.addEventListener("click", () => shareCanvasImage(shareCardCanvas));
+  } else {
+    shareCardNativeBtn.style.display = 'none';
+  }
+}
 window.addEventListener("pagehide", handlePageHide);
 
 // Entry point behavior
@@ -1799,4 +1813,279 @@ function renderSharedResults(payload) {
     restartButton.href = "test-options.html";
     // The regular href cleans the hash simply by reloading cleanly.
   }
+}
+
+// ==========================================
+// 8. SHARE CARD CANVAS RENDERING
+// ==========================================
+
+async function generateShareCard() {
+  if (!state.resultMeta || !state.shareUrl || !shareCardCanvas) {
+    return;
+  }
+
+  const originalText = shareCardBtn.textContent;
+  shareCardBtn.textContent = "Generating...";
+  shareCardBtn.disabled = true;
+
+  try {
+    await document.fonts.ready;
+
+    const fullLink = new URL(`#result=${state.shareUrl}`, window.location.origin + window.location.pathname).toString();
+    const shortSummary = TEMPERAMENT_PROFILES[state.resultMeta.primary]?.short || "";
+
+    // Decode stored mix percentages from URL token
+    const decodedPayload = decodeSharePayload(state.shareUrl);
+    const mixPercents = decodedPayload?.mix || {};
+
+    const cardData = {
+      primary: state.resultMeta.primary,
+      secondary: state.resultMeta.secondary || secondaryName.textContent,
+      confidence: state.resultMeta.confidenceLevel,
+      summary: shortSummary,
+      link: fullLink,
+      mix: {
+        Sanguine: mixPercents.sanguine || 0,
+        Choleric: mixPercents.choleric || 0,
+        Melancholic: mixPercents.melancholic || 0,
+        Phlegmatic: mixPercents.phlegmatic || 0
+      }
+    };
+
+    drawShareCard(shareCardCanvas, cardData);
+
+    shareCardPreview.classList.remove("hidden");
+    shareCardBtn.classList.add("hidden");
+
+    trackEvent("share_card_generated", {
+      primary_temperament: cardData.primary,
+      confidence_level: cardData.confidence
+    });
+
+  } catch (err) {
+    console.error("Failed to generate share card", err);
+    shareCardBtn.textContent = "Failed to generate";
+    setTimeout(() => {
+      shareCardBtn.textContent = originalText;
+      shareCardBtn.disabled = false;
+    }, 2000);
+  }
+}
+
+function drawShareCard(canvas, data) {
+  const ctx = canvas.getContext("2d");
+
+  // High DPI Setup
+  const width = 1080;
+  const height = 1350;
+  const scale = window.devicePixelRatio || 1;
+  const renderScale = 2; // For forced sharpness on export
+
+  canvas.width = width * renderScale;
+  canvas.height = height * renderScale;
+  canvas.style.width = "100%"; // Let CSS handle display width
+
+  // Scale the context to match the render scale
+  ctx.scale(renderScale, renderScale);
+  ctx.textBaseline = "top";
+
+  // 1. Background
+  ctx.fillStyle = "#F5F7FA"; // Match var(--bg-body) roughly
+  ctx.fillRect(0, 0, width, height);
+
+  // Add subtle gradient/mesh circle in top right
+  const gradient = ctx.createRadialGradient(width - 200, 200, 0, width - 200, 200, 600);
+  gradient.addColorStop(0, TEMPERAMENT_COLORS[data.primary] + "22"); // 22 is hex alpha
+  gradient.addColorStop(1, "rgba(245, 247, 250, 0)");
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, width, height);
+
+  // 2. Main Card Container
+  const cardMargin = 80;
+  const cardWidth = width - (cardMargin * 2);
+  const cardHeight = height - (cardMargin * 2.5);
+
+  ctx.fillStyle = "#FFFFFF";
+  ctx.shadowColor = "rgba(0, 0, 0, 0.08)";
+  ctx.shadowBlur = 40;
+  ctx.shadowOffsetY = 20;
+  ctx.beginPath();
+  ctx.roundRect(cardMargin, cardMargin, cardWidth, cardHeight, 32);
+  ctx.fill();
+
+  ctx.shadowColor = "transparent";
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetY = 0;
+
+  // 3. App Brand Header
+  let contentY = cardMargin + 80;
+  const contentX = cardMargin + 80;
+  const innerWidth = cardWidth - 160;
+
+  ctx.fillStyle = "#4a5568";
+  ctx.font = "bold 28px Manrope, sans-serif";
+  ctx.fillText("TEMPERAMENT INSIGHT", contentX, contentY);
+
+  // 4. Primary Temperament
+  contentY += 60;
+  ctx.fillStyle = TEMPERAMENT_COLORS[data.primary] || "#1a202c";
+  ctx.font = "800 110px Manrope, sans-serif";
+  ctx.fillText(data.primary, contentX - 5, contentY);
+
+  // 5. Secondary & Confidence
+  contentY += 130;
+  ctx.fillStyle = "#2d3748";
+  ctx.font = "600 36px Manrope, sans-serif";
+  ctx.fillText(`Secondary: ${data.secondary}`, contentX, contentY);
+
+  ctx.font = "500 36px Manrope, sans-serif";
+  ctx.fillStyle = "#718096";
+  ctx.fillText(` •  Confidence: ${data.confidence.charAt(0).toUpperCase() + data.confidence.slice(1)}`, contentX + ctx.measureText(`Secondary: ${data.secondary}`).width, contentY);
+
+  // 6. Summary Text
+  contentY += 90;
+  ctx.fillStyle = "#4a5568";
+  ctx.font = "400 36px Manrope, sans-serif";
+  const lineHeight = 54;
+  contentY = wrapText(ctx, data.summary, contentX, contentY, innerWidth, lineHeight, 4);
+
+  // 7. Mix Breakdown (Bars)
+  contentY += 80;
+  ctx.fillStyle = "#1a202c";
+  ctx.font = "bold 32px Manrope, sans-serif";
+  ctx.fillText("Temperament Mix", contentX, contentY);
+
+  contentY += 60;
+  const barMaxWidth = innerWidth - 150;
+
+  const mixEntries = Object.entries(data.mix).sort((a, b) => b[1] - a[1]);
+
+  mixEntries.forEach(([temp, pct]) => {
+    ctx.fillStyle = "#4a5568";
+    ctx.font = "600 28px Manrope, sans-serif";
+    ctx.fillText(temp, contentX, contentY + 10);
+
+    const barX = contentX + 200;
+    ctx.fillStyle = "#EDF2F7";
+    ctx.beginPath();
+    ctx.roundRect(barX, contentY + 12, barMaxWidth, 24, 12);
+    ctx.fill();
+
+    const fillWidth = (pct / 100) * barMaxWidth;
+    ctx.fillStyle = TEMPERAMENT_COLORS[temp] || "#A0AEC0";
+    if (fillWidth > 0) {
+      ctx.beginPath();
+      ctx.roundRect(barX, contentY + 12, Math.max(fillWidth, 24), 24, 12);
+      ctx.fill();
+    }
+
+    ctx.fillStyle = "#2d3748";
+    ctx.font = "bold 28px Manrope, sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillText(`${pct}%`, contentX + innerWidth, contentY + 10);
+    ctx.textAlign = "left";
+
+    contentY += 60;
+  });
+
+  // 8. Link & Footer
+  const linkBoxH = 120;
+  const linkBoxY = cardMargin + cardHeight - linkBoxH - 60;
+
+  ctx.fillStyle = "#EDF2F7";
+  ctx.beginPath();
+  ctx.roundRect(contentX, linkBoxY, innerWidth, linkBoxH, 24);
+  ctx.fill();
+
+  ctx.fillStyle = "#718096";
+  ctx.font = "500 24px Manrope, sans-serif";
+  ctx.fillText("View my full interactive profile:", contentX + 40, linkBoxY + 30);
+
+  ctx.fillStyle = "#2b6cb0";
+  ctx.font = "600 28px Manrope, sans-serif";
+
+  let displayLink = data.link;
+  if (ctx.measureText(displayLink).width > innerWidth - 80) {
+    displayLink = displayLink.substring(0, 50) + "...";
+  }
+  ctx.fillText(displayLink, contentX + 40, linkBoxY + 70);
+
+  ctx.fillStyle = "#A0AEC0";
+  ctx.font = "400 24px Manrope, sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("Educational reflection, not a clinical diagnosis. Take the test at whatismytemperament.com", width / 2, height - cardMargin + 30);
+  ctx.textAlign = "left";
+}
+
+function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines) {
+  const words = text.split(' ');
+  let line = '';
+  let lineCount = 1;
+  let currentY = y;
+
+  for (let n = 0; n < words.length; n++) {
+    const testLine = line + words[n] + ' ';
+    const metrics = ctx.measureText(testLine);
+    const testWidth = metrics.width;
+
+    if (testWidth > maxWidth && n > 0) {
+      if (lineCount >= maxLines) {
+        ctx.fillText(line.trim() + '...', x, currentY);
+        return currentY + lineHeight;
+      } else {
+        ctx.fillText(line, x, currentY);
+        line = words[n] + ' ';
+        currentY += lineHeight;
+        lineCount++;
+      }
+    } else {
+      line = testLine;
+    }
+  }
+  ctx.fillText(line, x, currentY);
+  return currentY + lineHeight;
+}
+
+function downloadCanvasPNG(canvas, filename) {
+  if (!canvas) return;
+  const dataPath = canvas.toDataURL("image/png");
+  const a = document.createElement("a");
+  a.href = dataPath;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  if (state.resultMeta) {
+    trackEvent("share_card_downloaded", {
+      primary_temperament: state.resultMeta.primary
+    });
+  }
+}
+
+async function shareCanvasImage(canvas) {
+  if (!canvas) return;
+
+  canvas.toBlob(async (blob) => {
+    if (!blob) return;
+    const file = new File([blob], "Temperament-Insight-Result.png", { type: "image/png" });
+    const shareData = {
+      files: [file],
+      title: 'My Temperament Insight Result',
+      text: 'Check out my temperament profile!'
+    };
+
+    try {
+      await navigator.share(shareData);
+      if (state.resultMeta) {
+        trackEvent("share_card_shared", {
+          primary_temperament: state.resultMeta.primary
+        });
+      }
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        console.error("Error sharing canvas image:", err);
+      }
+    }
+  }, "image/png");
 }
