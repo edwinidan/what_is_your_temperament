@@ -1158,31 +1158,68 @@
     </footer>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const tabs = document.querySelectorAll('.tab-btn');
-            const cards = document.querySelectorAll('.temp-detail-card');
+            const tabs = Array.from(document.querySelectorAll('.tab-btn'));
+            const cards = Array.from(document.querySelectorAll('.temp-detail-card'));
+            const validTargets = new Set(
+                tabs
+                    .map((tab) => tab.getAttribute('data-target'))
+                    .filter(Boolean)
+            );
 
-            tabs.forEach(tab => {
+            function activateTemperament(targetId, options = {}) {
+                const { updateHash = false } = options;
+                if (!validTargets.has(targetId)) {
+                    return false;
+                }
+
+                tabs.forEach((tab) => {
+                    const isActive = tab.getAttribute('data-target') === targetId;
+                    tab.classList.toggle('active', isActive);
+                    tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                });
+
+                cards.forEach((card) => {
+                    card.classList.toggle('active', card.id === targetId);
+                });
+
+                if (updateHash && window.location.hash !== `#${targetId}`) {
+                    window.location.hash = targetId;
+                }
+
+                return true;
+            }
+
+            function getHashTarget() {
+                return decodeURIComponent(window.location.hash.replace(/^#/, ''));
+            }
+
+            const defaultTarget =
+                tabs.find((tab) => tab.classList.contains('active'))?.getAttribute('data-target') ||
+                tabs[0]?.getAttribute('data-target') ||
+                '';
+
+            function syncFromHash() {
+                const hashTarget = getHashTarget();
+                if (hashTarget && activateTemperament(hashTarget)) {
+                    return;
+                }
+                if (defaultTarget) {
+                    activateTemperament(defaultTarget);
+                }
+            }
+
+            tabs.forEach((tab) => {
                 tab.addEventListener('click', () => {
                     const targetId = tab.getAttribute('data-target');
-
-                    // Update tabs
-                    tabs.forEach(t => {
-                        t.classList.remove('active');
-                        t.setAttribute('aria-selected', 'false');
-                    });
-                    tab.classList.add('active');
-                    tab.setAttribute('aria-selected', 'true');
-
-                    // Update cards
-                    cards.forEach(card => {
-                        if (card.id === targetId) {
-                            card.classList.add('active');
-                        } else {
-                            card.classList.remove('active');
-                        }
-                    });
+                    if (!targetId) {
+                        return;
+                    }
+                    activateTemperament(targetId, { updateHash: true });
                 });
             });
+
+            window.addEventListener('hashchange', syncFromHash);
+            syncFromHash();
         });
     </script>
 </body>

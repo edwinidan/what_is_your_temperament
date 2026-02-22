@@ -484,9 +484,20 @@ main {
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
+.temp-card-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
 .temp-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 20px 30px rgb(15 23 42 / 11%);
+}
+
+.temp-card-link:focus-visible {
+  outline: 3px solid rgb(70 130 84 / 38%);
+  outline-offset: 2px;
 }
 
 .temp-img {
