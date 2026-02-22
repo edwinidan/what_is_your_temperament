@@ -457,6 +457,8 @@ const state = {
   completionTracked: false,
   abandonmentTracked: false,
   resultMeta: null,
+  shareUrl: null,
+  sharedView: false,
 };
 let temperamentDonutChart = null;
 
@@ -509,8 +511,24 @@ if (simulateButton) {
 }
 nextButton.addEventListener("click", goToNextPage);
 detailToggle.addEventListener("click", toggleDetailView);
+detailToggle.addEventListener("click", toggleDetailView);
 window.addEventListener("pagehide", handlePageHide);
-restoreProgressIfAvailable();
+
+// Entry point behavior
+if (window.location.hash.startsWith("#result=")) {
+  const token = window.location.hash.replace("#result=", "");
+  const payload = decodeSharePayload(token);
+  if (payload) {
+    state.sharedView = true;
+    renderSharedResults(payload);
+  } else {
+    // Fail silently on invalid/tampered token and fall back
+    window.location.hash = "";
+    restoreProgressIfAvailable();
+  }
+} else {
+  restoreProgressIfAvailable();
+}
 
 function startAssessment() {
   const selectedDepthInput = document.querySelector(
@@ -1004,6 +1022,20 @@ function renderResults({ primary, secondary, confidence, ranked }) {
   state.completionTracked = true;
   state.abandonmentTracked = false;
 
+  const sharePayload = {
+    v: 1,
+    p: primary,
+    s: secondary,
+    c: confidence.level.toLowerCase(),
+    mix: {
+      sanguine: mixPercentages["Sanguine"],
+      choleric: mixPercentages["Choleric"],
+      melancholic: mixPercentages["Melancholic"],
+      phlegmatic: mixPercentages["Phlegmatic"]
+    }
+  };
+  state.shareUrl = encodeSharePayload(sharePayload);
+
   resultName.textContent = primary;
   resultTagline.textContent = primaryVisual.tagline;
   resultTitle.textContent = `${primary} is your primary temperament, with ${secondary} as secondary influence.`;
@@ -1484,5 +1516,215 @@ function trackEvent(name, props = {}) {
     window.plausible(name, { props: normalizedProps });
   } catch (_error) {
     // Silent failure by design (ad blockers or script loading failures).
+  }
+}
+
+// --- Shareable Result URL Feature Utilities ---
+
+/**
+ * Encodes a JSON payload into a base64url string.
+ * Uses TextEncoder for UTF-8 and safely converts to URL-friendly base64.
+ *
+ * @param {Object} payload 
+ * @returns {string} base64url encoded string
+ */
+function encodeSharePayload(payload) {
+  try {
+    const jsonStr = JSON.stringify(payload);
+    const bytes = new TextEncoder().encode(jsonStr);
+    let binary = "";
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    const base64 = window.btoa(binary);
+    // Convert base64 to base64url
+    return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  } catch (_error) {
+    return null;
+  }
+}
+
+/**
+ * Decodes a base64url string back into a JSON payload.
+ * Validates the minimum expected schema.
+ *
+ * @param {string} token 
+ * @returns {Object|null} Validated payload or null on any error
+ */
+function decodeSharePayload(token) {
+  if (!token || typeof token !== "string") {
+    return null;
+  }
+
+  try {
+    // Convert base64url to base64
+    let base64 = token.replace(/-/g, "+").replace(/_/g, "/");
+    // Pad with '='
+    while (base64.length % 4) {
+      base64 += "=";
+    }
+
+    const binary = window.atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    const jsonStr = new TextDecoder().decode(bytes);
+    const payload = JSON.parse(jsonStr);
+
+    // Validate payload shape
+    if (payload.v !== 1) return null;
+    if (!TEMPERAMENTS.includes(payload.p)) return null;
+    if (!TEMPERAMENTS.includes(payload.s)) return null;
+    if (!["high", "medium", "low"].includes(payload.c)) return null;
+    if (!payload.mix || typeof payload.mix !== "object") return null;
+
+    // Validate mix sum and properties
+    let mixSum = 0;
+    for (const t of TEMPERAMENTS) {
+      const val = payload.mix[t.toLowerCase()];
+      if (typeof val !== "number") return null;
+      mixSum += val;
+    }
+    if (mixSum !== 100) return null;
+
+    return payload;
+  } catch (_error) {
+    // Fail silently on decoding, parsing, or validation errors
+    return null;
+  }
+}
+
+/**
+ * Renders the results panel using a decoded share payload.
+ * Bypasses the assessment flow completely.
+ *
+ * @param {Object} payload 
+ */
+function renderSharedResults(payload) {
+  introPanel.classList.add("hidden");
+  assessmentPanel.classList.add("hidden");
+  resultsPanel.classList.remove("hidden");
+
+  const primary = payload.p;
+  const secondary = payload.s;
+  const confidenceLevelFromPayload = payload.c; // "high", "medium", "low"
+
+  const primaryProfile = TEMPERAMENT_PROFILES[primary];
+  const secondaryProfile = TEMPERAMENT_PROFILES[secondary];
+  const primaryVisual = TEMPERAMENT_VISUALS[primary];
+  const secondaryVisual = TEMPERAMENT_VISUALS[secondary];
+  const communicationProfile = TEMPERAMENT_COMMS[primary];
+
+  // Re-map the payload mix to exactly match TEMPERAMENTS keys structure
+  const mixPercentages = {
+    Sanguine: payload.mix.sanguine,
+    Choleric: payload.mix.choleric,
+    Melancholic: payload.mix.melancholic,
+    Phlegmatic: payload.mix.phlegmatic
+  };
+
+  const confidenceLevel = normalizeConfidenceLevel(confidenceLevelFromPayload);
+  const confidencePercentValue = getConfidencePercent(confidenceLevel);
+
+  // Capitalize confidence representation
+  const confidenceDisplayLevel = confidenceLevel.charAt(0).toUpperCase() + confidenceLevel.slice(1);
+
+  resultName.textContent = primary;
+  resultTagline.textContent = primaryVisual.tagline;
+  resultTitle.textContent = `${primary} is your primary temperament, with ${secondary} as secondary influence.`;
+  resultShort.textContent = `${primaryProfile.short} A secondary ${secondary.toLowerCase()} influence may add ${secondaryProfile.strengthFocus}.`;
+  resultConfidence.textContent = `${confidenceDisplayLevel} confidence result`;
+
+  resultProfileImage.src = primaryVisual.image;
+  resultProfileImage.alt = `${primary} profile`;
+  resultProfileName.textContent = primary;
+  resultProfileSummary.textContent = primaryProfile.short;
+  resultGrowth.textContent = `Practice focus: ${primaryProfile.challengeFocus}. Secondary ${secondary.toLowerCase()} influence may add ${secondaryProfile.strengthFocus}.`;
+
+  const strengths = [...primaryProfile.strengths];
+  strengths.push(`Secondary influence: ${secondaryProfile.strengthFocus}.`);
+
+  const weaknesses = [...primaryProfile.weaknesses];
+  weaknesses.push(`Possible watch-out: ${secondaryProfile.challengeFocus}.`);
+
+  detailStrengths.innerHTML = strengths.map((item) => `<li>${item}</li>`).join("");
+  detailWeaknesses.innerHTML = weaknesses.map((item) => `<li>${item}</li>`).join("");
+  detailCommunication.textContent = `${primaryProfile.communication} Secondary ${secondary.toLowerCase()} influence may also shape tone and pace in conversations.`;
+  secondaryName.textContent = secondary;
+  secondaryDesc.textContent = secondaryProfile.short;
+  secondaryTraits.textContent = secondaryVisual.traits;
+
+  commsPreferred.textContent = communicationProfile.preferred;
+  commsListener.textContent = communicationProfile.listener;
+  commsExpression.textContent = communicationProfile.expression;
+  commsPressure.textContent = communicationProfile.pressure;
+
+  confidenceTitle.textContent = `${confidenceDisplayLevel} Confidence`;
+  // Construct simple valid string message matching original logic's tone based on the label.
+  if (confidenceLevel === "high") {
+    confidenceMessage.textContent = "Your top pattern is clearly distinct in this response set.";
+  } else if (confidenceLevel === "medium") {
+    confidenceMessage.textContent = "Your leading pattern is present, with noticeable overlap from your secondary pattern.";
+  } else {
+    confidenceMessage.textContent = "Your responses show a blended profile, so treat this as a starting reflection rather than a fixed label.";
+  }
+  confidencePercent.textContent = `${confidencePercentValue}%`;
+  confidenceLabel.textContent = confidenceLevel;
+  confidenceRing.style.setProperty("--confidence-fill", confidencePercentValue);
+  primaryPercentLabel.textContent = `${mixPercentages[primary]}%`;
+
+  // We explicitly bypass getting ranked data since we don't have it natively, so we just sort the mix percentages array.
+  const displayOrder = [...TEMPERAMENTS].sort((a, b) => mixPercentages[b] - mixPercentages[a]);
+
+  renderTemperamentLegend(mixPercentages, displayOrder);
+  renderTemperamentDonut(mixPercentages, displayOrder);
+
+  // Custom score bar rendering for shared results because rank logic is circumvented
+  const scoreGrid = document.querySelector(".score-grid");
+  if (scoreGrid) {
+    const orderIndex = displayOrder.reduce((acc, temperament, index) => {
+      acc[temperament] = index;
+      return acc;
+    }, {});
+
+    const columns = Array.from(scoreGrid.querySelectorAll(".score-col"));
+    columns
+      .sort((a, b) => {
+        const tempA = a.dataset.temp;
+        const tempB = b.dataset.temp;
+        return (orderIndex[tempA] ?? 0) - (orderIndex[tempB] ?? 0);
+      })
+      .forEach((column) => {
+        scoreGrid.appendChild(column);
+      });
+  }
+
+  TEMPERAMENTS.forEach((temperament) => {
+    const key = temperament.toLowerCase();
+    const bar = document.getElementById(`bar-${key}`);
+    const label = document.getElementById(`pct-${key}`);
+    const percent = mixPercentages[temperament];
+
+    if (label) {
+      label.textContent = `${percent}%`;
+    }
+    if (bar) {
+      bar.style.height = "0%";
+      requestAnimationFrame(() => {
+        bar.style.height = `${percent}%`;
+      });
+    }
+  });
+
+  state.detailVisible = false;
+  resultDetail.classList.add("hidden");
+  detailToggle.textContent = "Show Detailed Explanation";
+
+  // Hide the "Take Another Test" button or modify its behavior to clear hash and restart to avoid taking another test within hash context, we just hide the restart controls natively.
+  const restartButton = document.querySelector(".result-restart");
+  if (restartButton) {
+    restartButton.href = "test-options.html";
+    // The regular href cleans the hash simply by reloading cleanly.
   }
 }

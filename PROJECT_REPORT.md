@@ -291,3 +291,19 @@ Not implemented:
 - Browser support relies on standard modern DOM/CSS features.
 - Ensure Plausible script remains present in both HTML files for analytics continuity.
 - Ensure Chart.js script remains present in `test-options.html` for donut chart rendering.
+
+## 14. Version 2 Updates (Recent Enhancements)
+
+Date: February 22, 2026
+
+The project has undergone several significant User Experience (UX) and content upgrades to form Version 2:
+
+### 14.1 Interactive Input Modernization
+- **Slider-based Question Selection:** The previous button-based inputs for question responses have been replaced with smooth, interactive slider inputs.
+- **Improved Styling:** The styling of the questions and slider track has been refined to provide better visual feedback and a more engaging assessment experience. The question text is now clearly presented above the corresponding slider.
+
+### 14.2 Comprehensive Temperament Profiles
+- **New Page Addition (`temperaments.html`):** A dedicated HTML page has been added to house in-depth information about each temperament.
+- **Detailed Psychological Profiles:** The brief summaries for Choleric, Melancholic, and Phlegmatic temperaments have been expanded into comprehensive, detailed psychological profiles.
+- **CSS Enhancements:** `styles.css` was updated to properly style these new, longer profile sections, ensuring readability and visual consistency across all temperament details.
+

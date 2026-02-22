@@ -208,3 +208,16 @@ When the final page is complete:
 1. scoring runs
 2. results are rendered with primary/secondary/confidence
 3. progress storage is cleared
+
+## 13. Version 2 Updates (Recent Enhancements)
+
+Date: February 22, 2026
+
+During the transition to Version 2, the core mathematical models, question generation algorithms, and score ranking logic *remained entirely unchanged*. 
+
+The specific updates that touch upon the assessment flow are primarily UI-focused:
+
+- **Response Model UI (Section 6 Update):** The interface for gathering responses was updated from discrete clickable buttons to interactive **sliders**. 
+- **Underlying Likert Scale Unchanged:** Despite the visual change to sliders, the underlying data structure remains a strict 5-point Likert scale (`1` to `5`).
+- **Scoring Translation Unchanged:** The mathematical translation of slider values (`toCenteredValue(value) = value - 3`) and the handling of reverse-scored items function exactly as they did in Version 1.
+- **Detailed Profiles:** While not affecting the calculation logic, the `temperaments.html` page was added to offer much more comprehensive descriptions of the final results calculated by the aforementioned logic.
