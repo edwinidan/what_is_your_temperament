@@ -1,3 +1,6 @@
+// ==========================================
+// 1. CONSTANTS & CONFIGURATION
+// ==========================================
 const PAGE_SIZE = 5;
 const STORAGE_KEY = "temperamentInsight.progress.v1";
 const VALID_DEPTHS = [20, 40, 60];
@@ -160,6 +163,9 @@ const TEMPERAMENT_PROFILES = {
   },
 };
 
+// ==========================================
+// 2. QUESTION BANK DATA
+// ==========================================
 const QUESTION_BANK_CSV = `
 id,temperament,dimension,item_text,reverse_scored,scoring_rule
 T001,Sanguine,Sociability,I easily strike up conversations with strangers.,false,Likert 1-5
@@ -447,6 +453,9 @@ const QUESTION_BANK_BY_TEMPERAMENT_DIMENSION = TEMPERAMENTS.reduce(
 
 validateQuestionBank(QUESTION_BANK_ROWS);
 
+// ==========================================
+// 3. APPLICATION STATE & DOM ELEMENTS
+// ==========================================
 const state = {
   selectedDepth: 20,
   questions: [],
@@ -506,6 +515,9 @@ const detailCommunication = document.getElementById("detail-communication");
 const copySummaryBtn = document.getElementById("copy-summary-btn");
 const copyLinkBtn = document.getElementById("copy-link-btn");
 
+// ==========================================
+// 4. INITIALIZATION & EVENT LISTENERS
+// ==========================================
 startButton.addEventListener("click", startAssessment);
 prevButton.addEventListener("click", goToPreviousPage);
 if (simulateButton) {
@@ -533,6 +545,9 @@ if (window.location.hash.startsWith("#result=")) {
   restoreProgressIfAvailable();
 }
 
+// ==========================================
+// 5. CORE ASSESSMENT FLOW & LOGIC
+// ==========================================
 function startAssessment() {
   const selectedDepthInput = document.querySelector(
     'input[name="depth"]:checked'
@@ -958,6 +973,9 @@ function isCurrentPageComplete() {
   return pageQuestions.every((question) => state.responses[question.id]);
 }
 
+// ==========================================
+// 6. SCORING & RESULTS RENDERING
+// ==========================================
 function scoreAssessment() {
   const scores = TEMPERAMENTS.reduce((acc, temperament) => {
     acc[temperament] = 0;
@@ -1155,6 +1173,9 @@ function showCopiedFeedback(btnEl, originalText) {
   }, 2000);
 }
 
+// ==========================================
+// 7. UTILITIES & DATA STORAGE
+// ==========================================
 function toCenteredValue(value) {
   return value - 3;
 }
