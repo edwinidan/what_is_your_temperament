@@ -518,6 +518,7 @@ const shareCardBtn = document.getElementById("share-card-btn");
 const shareCardPreview = document.getElementById("share-card-preview");
 const shareCardCanvas = document.getElementById("share-card-canvas");
 const downloadCardBtn = document.getElementById("download-card-btn");
+const downloadCardPdfBtn = document.getElementById("download-card-pdf-btn");
 const shareCardNativeBtn = document.getElementById("share-card-native-btn");
 
 // ==========================================
@@ -534,6 +535,7 @@ if (copySummaryBtn) copySummaryBtn.addEventListener("click", copyResultSummary);
 if (copyLinkBtn) copyLinkBtn.addEventListener("click", copyShareLink);
 if (shareCardBtn) shareCardBtn.addEventListener("click", generateShareCard);
 if (downloadCardBtn) downloadCardBtn.addEventListener("click", () => downloadCanvasPNG(shareCardCanvas, "Temperament-Insight-Result.png"));
+if (downloadCardPdfBtn) downloadCardPdfBtn.addEventListener("click", () => downloadShareCardPDF(shareCardCanvas));
 if (shareCardNativeBtn) {
   if (navigator.share) {
     shareCardNativeBtn.addEventListener("click", () => shareCanvasImage(shareCardCanvas));
@@ -2088,4 +2090,44 @@ async function shareCanvasImage(canvas) {
       }
     }
   }, "image/png");
+}
+
+function downloadShareCardPDF(canvas) {
+  if (!canvas) return;
+  if (typeof window.jspdf === "undefined") {
+    console.warn("jsPDF is not loaded yet.");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+
+  // Use image/png for highest quality text rendering from canvas
+  const imgData = canvas.toDataURL("image/png", 1.0);
+
+  // Calculate orientation
+  // Our canvas is 1080x1350 internally (portrait), so orientation is 'p'
+  const orientation = canvas.width > canvas.height ? "l" : "p";
+
+  // Initialize PDF in points (pt)
+  const pdf = new jsPDF({
+    orientation: orientation,
+    unit: "pt",
+    format: [canvas.width, canvas.height]
+  });
+
+  // We want the image to fill the page exactly since we've already styled it like a card
+  pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
+
+  // Define naming convention: temperament-insight_<primary>_report.pdf
+  const primaryName = state.resultMeta?.primary ? state.resultMeta.primary.toLowerCase() : "result";
+  const filename = `temperament-insight_${primaryName}_report.pdf`;
+
+  pdf.save(filename);
+
+  if (state.resultMeta) {
+    trackEvent("share_card_pdf_downloaded", {
+      primary_temperament: state.resultMeta.primary,
+      confidence_level: state.resultMeta.confidenceLevel
+    });
+  }
 }
