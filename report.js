@@ -1,84 +1,96 @@
+/**
+ * ============================================================================
+ * DATA INVENTORY & PRIVACY (REPORTING)
+ * ============================================================================
+ * 1. URL Hashes (#result=...):
+ *    - The payload decoded here contains NO personal data (names, emails, etc.).
+ *    - It strictly contains parsed percentage weights of the 4 temperaments to
+ *      allow for client-side rendering of the print report.
+ * 2. Analytics:
+ *    - Uses Plausible (cookie-less). Events tracked: "report_print_clicked", "report_opened".
+ * ============================================================================
+ */
 // ==========================================
 // REPORT.JS - Print to PDF Rendering Logic
 // ==========================================
 
 document.addEventListener("DOMContentLoaded", () => {
-    const reportContainer = document.getElementById("report-content");
-    const errorContainer = document.getElementById("error-message");
-    const printBtn = document.getElementById("print-btn");
+  const reportContainer = document.getElementById("report-content");
+  const errorContainer = document.getElementById("error-message");
+  const printBtn = document.getElementById("print-btn");
 
-    printBtn.addEventListener("click", () => {
-        window.print();
-        if (window.plausible) {
-            plausible("report_print_clicked");
-        }
-    });
-
-    // 1. Extract payload from URL hash
-    const hash = window.location.hash;
-    if (!hash.startsWith("#result=")) {
-        showError();
-        return;
-    }
-
-    const token = hash.replace("#result=", "");
-    const payload = decodeSharePayload(token);
-
-    if (!payload || !validatePayload(payload)) {
-        showError();
-        return;
-    }
-
-    // 2. Safely extract primary temperament and normalize mapped key
-    const primaryName = payload.p;
-    const primaryKey = primaryName.toLowerCase();
-    const content = TEMPERAMENT_CONTENT[primaryKey];
-
-    if (!content) {
-        showError();
-        return;
-    }
-
-    // 3. Render Report
-    renderReport(payload, content, reportContainer);
-
+  printBtn.addEventListener("click", () => {
+    window.print();
     if (window.plausible) {
-        plausible("report_opened", { props: { primary_temperament: primaryName } });
+      plausible("report_print_clicked");
     }
+  });
+
+  // 1. Extract payload from URL hash
+  const hash = window.location.hash;
+  if (!hash.startsWith("#result=")) {
+    showError();
+    return;
+  }
+
+  const token = hash.replace("#result=", "");
+  const payload = decodeSharePayload(token);
+
+  if (!payload || !validatePayload(payload)) {
+    showError();
+    return;
+  }
+
+  // 2. Safely extract primary temperament and normalize mapped key
+  const primaryName = payload.p;
+  const primaryKey = primaryName.toLowerCase();
+  const content = TEMPERAMENT_CONTENT[primaryKey];
+
+  if (!content) {
+    showError();
+    return;
+  }
+
+  // 3. Render Report
+  renderReport(payload, content, reportContainer);
+
+  if (window.plausible) {
+    plausible("report_opened", { props: { primary_temperament: primaryName } });
+  }
 });
 
 function showError() {
-    const errorMsg = document.getElementById("error-message");
-    if (errorMsg) errorMsg.classList.remove("hidden");
+  const errorMsg = document.getElementById("error-message");
+  if (errorMsg) errorMsg.classList.remove("hidden");
 }
 
 function validatePayload(data) {
-    if (data.v !== 1) return false;
-    if (!data.p || !data.s || !data.c || !data.mix) return false;
+  if (data.v !== 1) return false;
+  if (!data.p || !data.s || !data.c || !data.mix) return false;
 
-    const mixSum = Object.values(data.mix).reduce((sum, val) => sum + val, 0);
-    if (mixSum < 99 || mixSum > 101) return false; // Account for floating/rounding noise
+  const mixSum = Object.values(data.mix).reduce((sum, val) => sum + val, 0);
+  if (mixSum < 99 || mixSum > 101) return false; // Account for floating/rounding noise
 
-    return true;
+  return true;
 }
 
 function renderReport(payload, content, container) {
-    // Clear any existing (non-error) content 
-    // (We actually just want to append to avoid removing error state node entirely if we needed it, but innerHTML is cleaner here)
-    const safePrimary = escapeHTML(content.name);
-    const colorVar = `var(--color-${safePrimary.toLowerCase()})`;
+  // Clear any existing (non-error) content 
+  // (We actually just want to append to avoid removing error state node entirely if we needed it, but innerHTML is cleaner here)
+  const safePrimary = escapeHTML(content.name);
+  const colorVar = `var(--color-${safePrimary.toLowerCase()})`;
 
-    const strengthsHTML = content.strengths.map(s => `<li>${escapeHTML(s)}</li>`).join("");
-    const weaknessesHTML = content.weaknesses.map(w => `<li>${escapeHTML(w)}</li>`).join("");
+  const strengthsHTML = content.strengths.map(s => `<li>${escapeHTML(s)}</li>`).join("");
+  const weaknessesHTML = content.weaknesses.map(w => `<li>${escapeHTML(w)}</li>`).join("");
 
-    // Sort mix natively dominance-first
-    const mixEntries = Object.entries(payload.mix)
-        .sort((a, b) => b[1] - a[1]);
+  // Sort mix natively dominance-first
+  const mixEntries = Object.entries(payload.mix)
+    .sort((a, b) => b[1] - a[1]);
 
-    const mixTableHTML = mixEntries.map(([temp, pct]) => {
-        const tempCap = temp.charAt(0).toUpperCase() + temp.slice(1);
-        const tempColor = `var(--color-${temp})`;
-        return `
+  const mixTableHTML = mixEntries.map(([temp, pct]) => {
+    const tempCap = temp.charAt(0).toUpperCase() + temp.slice(1);
+    const tempColor = `var(--color-${temp})`;
+    return `
       <tr>
         <td class="mix-name">${escapeHTML(tempCap)}</td>
         <td class="mix-bar-cell">
@@ -89,13 +101,13 @@ function renderReport(payload, content, container) {
         <td class="mix-pct">${pct}%</td>
       </tr>
     `;
-    }).join("");
+  }).join("");
 
-    // Extract confidence blurb
-    const confKey = payload.c.toLowerCase();
-    const confText = content.confidenceCopy[confKey] || content.confidenceCopy.medium;
+  // Extract confidence blurb
+  const confKey = payload.c.toLowerCase();
+  const confText = content.confidenceCopy[confKey] || content.confidenceCopy.medium;
 
-    const html = `
+  const html = `
     <header>
       <p class="report-eyebrow">Temperament Insight Report</p>
       <h1 class="primary-title" style="color: ${colorVar}">${safePrimary}</h1>
@@ -146,7 +158,7 @@ function renderReport(payload, content, container) {
     </footer>
   `;
 
-    container.innerHTML = html;
+  container.innerHTML = html;
 }
 
 // ------------------------------------------
@@ -154,24 +166,24 @@ function renderReport(payload, content, container) {
 // ------------------------------------------
 
 function decodeSharePayload(token) {
-    try {
-        let base64 = token.replace(/-/g, "+").replace(/_/g, "/");
-        while (base64.length % 4) base64 += "=";
-        const jsonString = decodeURIComponent(
-            atob(base64)
-                .split("")
-                .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-                .join("")
-        );
-        return JSON.parse(jsonString);
-    } catch (e) {
-        return null;
-    }
+  try {
+    let base64 = token.replace(/-/g, "+").replace(/_/g, "/");
+    while (base64.length % 4) base64 += "=";
+    const jsonString = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
+    return JSON.parse(jsonString);
+  } catch (e) {
+    return null;
+  }
 }
 
 function escapeHTML(str) {
-    if (!str) return "";
-    const div = document.createElement("div");
-    div.innerText = str;
-    return div.innerHTML;
+  if (!str) return "";
+  const div = document.createElement("div");
+  div.innerText = str;
+  return div.innerHTML;
 }

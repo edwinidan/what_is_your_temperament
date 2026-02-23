@@ -314,3 +314,18 @@ The project has undergone several significant User Experience (UX) and content u
 - **Native OS Sharing Pipeline:** Extended to allow users to trigger their native device share-sheets with the generated Share Card image natively injected using the `navigator.share` API.
 - **Dedicated Print-to-PDF Pipeline:** Clicking "Download PDF" leverages the active URL hash dataset and invokes a brand new standalone file (`report.html`). This cleanly renders a black-and-white optimized, physical assessment document containing full Strengths, Watch-outs, and mixed distribution details without firing a single server request, triggering the native print dialog on launch.
 
+### 14.4 Production Readiness & Privacy (Feb 23)
+- **Privacy Policy (`privacy.html`):** Created a clear, accessible privacy policy explicitly stating the app's offline-first nature, with no PII collection, no user accounts, and local-only storage.
+- **Terms & Educational Disclaimer (`terms.html`):** Added clear educational terms emphasizing that the tool provides an educational framework for self-reflection and explicitly stating that it is not intended for clinical or diagnostic use.
+- **Global Footer Navigation:** Added a clean footprint linking the new privacy and terms pages universally across all touchpoints (`index.html`, `test-options.html`, `temperaments.html`, and `report.html`).
+
+## 15. Data & Stats Inventory (Privacy Profile)
+
+To maintain trust and production-safety, Temperament Insight operates with strict data minimization principles:
+
+- **What data exists?** Only the user's answers to the assessment (values 1-5), the computed result (temperament percentages), and their current progress state.
+- **Where is it stored?** Strictly on the user’s local device via the browser’s `localStorage` (key: `temperamentInsight.progress.v1`). URL hashes (`#result=...`) are temporarily used for deep-link sharing. 
+- **How long does it exist?** `localStorage` is cleared immediately when the user finishes the assessment.
+- **Is it identifiable?** **No**. We do not collect names, emails, IPs, or any other PII. There is no user account system and no backend database.
+- **Analytics:** We use **Plausible Analytics**. It is cookie-less, anonymized, and tracks only aggregate events (e.g., `assessment_started`, `assessment_completed`, `report_opened`) to understand broad usage trends without tracking individual users.
+

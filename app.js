@@ -1,3 +1,21 @@
+/**
+ * ============================================================================
+ * DATA INVENTORY & PRIVACY
+ * ============================================================================
+ * This application is 100% client-side. No PII is collected or sent to a server.
+ * 
+ * 1. LocalStorage Keys:
+ *    - `temperamentInsight.progress.v1`: Stores the user's answers and current test state
+ *       (e.g., target depth, completed questions). Cleared on test completion or reset.
+ * 2. URL Hashes:
+ *    - `#result=...`: A base64 encoded payload of the user's scores for sharing.
+ *      Contains only numerical scores (e.g. [20, 15, 5, 0]), no personal data.
+ * 3. Analytics (via Plausible):
+ *    - Privacy-friendly, cookie-less event tracking.
+ *    - Events: "assessment_started", "assessment_page_viewed", "assessment_completed", 
+ *      "assessment_abandoned", "detail_view_opened".
+ * ============================================================================
+ */
 // ==========================================
 // 1. CONSTANTS & CONFIGURATION
 // ==========================================
