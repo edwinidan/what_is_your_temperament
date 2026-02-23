@@ -608,6 +608,8 @@ function startAssessment() {
   state.abandonmentTracked = false;
   state.resultMeta = null;
 
+  clearProgress(); // Destroy timers, instances, and storage before restarting
+
   introPanel.classList.add("hidden");
   resultsPanel.classList.add("hidden");
   assessmentPanel.classList.remove("hidden");
@@ -847,9 +849,8 @@ function renderCurrentPage() {
   const pageEnd = Math.min(startIndex + PAGE_SIZE, total);
 
   progressHeading.textContent = `Questions ${pageStart}-${pageEnd} of ${total}`;
-  progressMeta.textContent = `Answered ${answered} of ${total} | Page ${
-    state.currentPage + 1
-  } of ${pageCount}`;
+  progressMeta.textContent = `Answered ${answered} of ${total} | Page ${state.currentPage + 1
+    } of ${pageCount}`;
   progressFill.style.width = `${percent}%`;
   progressTrack.setAttribute("aria-valuenow", `${percent}`);
 
@@ -920,7 +921,7 @@ function bindQuestionListeners() {
         numVal = 3;
       }
       state.responses[questionId] = numVal;
-      labelDisplay.innerHTML = labels[numVal - 1];
+      labelDisplay.textContent = labels[numVal - 1];
       input.setAttribute("data-answered", "true");
       input.value = numVal;
       const scale = 1 + Math.abs(numVal - 3) * 0.15;
@@ -932,7 +933,7 @@ function bindQuestionListeners() {
 
     input.addEventListener("input", (event) => {
       const val = event.target.value;
-      labelDisplay.innerHTML = labels[val - 1];
+      labelDisplay.textContent = labels[val - 1];
       const scale = 1 + Math.abs(val - 3) * 0.15;
       input.style.setProperty("--thumb-scale", scale);
     });
@@ -1242,7 +1243,7 @@ function showCopiedFeedback(btnEl, originalText) {
 function safeSet(key, value) {
   try {
     localStorage.setItem(key, value);
-  } catch (_e) {}
+  } catch (_e) { }
 }
 
 function safeGet(key) {
@@ -1256,7 +1257,7 @@ function safeGet(key) {
 function safeRemove(key) {
   try {
     localStorage.removeItem(key);
-  } catch (_e) {}
+  } catch (_e) { }
 }
 
 let saveProgressTimeout = null;
@@ -1409,6 +1410,10 @@ function clearProgress() {
   if (saveProgressTimeout) {
     clearTimeout(saveProgressTimeout);
     saveProgressTimeout = null;
+  }
+  if (temperamentDonutChart && typeof temperamentDonutChart.destroy === "function") {
+    temperamentDonutChart.destroy();
+    temperamentDonutChart = null;
   }
   safeRemove(STORAGE_KEY);
 }

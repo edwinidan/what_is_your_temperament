@@ -330,6 +330,15 @@ The project has undergone several significant User Experience (UX) and content u
 - **URL Hash Bulletproofing:** The decoding parser now strictly verifies the shape, boundaries, and mathematical integrity of the `Mix Percentages` JSON payload returning `null` automatically upon any tampering, which triggers a silent fallback to `localStorage` recovery.
 - **Defensive UI Rendering:** Sliders sanitize unexpected non-integer DOM interactions by falling back to neutral values. Built-in defaults on math equations ensure components like Chart.js or Confidence meters never encounter `NaN` division or unhandled exceptions, operating 100% crash-free.
 
+### 14.6 Frontend Performance Tuning (Feb 23)
+
+- **Script Offloading:** Third-party scripts like Plausible Analytics have been mapped with `defer` attributes, pushing their execution out of the critical rendering path to accelerate time-to-first-paint.
+- **Debounced Save Cycles:** Rapid, continuous user interactions via the likert sliders dynamically sync with the DOM natively, but disk writes (`localStorage.setItem`) are strictly funneled through a `250ms` debouncer, stripping blocking I/O jitter from mobile scrub interactions.
+- **Dynamic Dependency Injection:** `Chart.js` is no longer loaded universally in the header. Instead, the `renderTemperamentDonut()` invokes a promise-based DOM injector, lazily retrieving the script only when the dashboard opens. The loader behaves as a strict singleton to avoid duplicate network requests.
+- **Asynchronous UI Yields:** Rendering the high-fidelity High-DPI Share Cards frames main-thread execution aggressively. To solve this, `requestAnimationFrame` is forced to yield execution prior to generation, permitting the interface to rapidly paint "Generating..." states without locking.
+- **Slider Reflow Elimination:** `labelDisplay.innerHTML` mutations were rebuilt to exclusively utilize `textContent` combined with inline CSS variable (`--thumb-scale`) property updates during slider scrubbing. This totally mitigates heavy HTML re-parsing and layout recalculations (`getBoundingClientRect`), keeping animation streams perfectly smooth at 60fps.
+- **Memory & Lifecycle Cleanup:** Deep un-mount behaviors were enforced upon restart routines (`startAssessment()`). Native memory destructors (`clearTimeout(saveProgressTimeout)` and `temperamentDonutChart.destroy()`) are explicitly fired to reliably garbage collect the active state before spawning new iterations, ensuring repeated retakes do not degrade device performance or trigger orphan network events.
+
 ## 15. Data & Stats Inventory (Privacy Profile)
 
 To maintain trust and production-safety, Temperament Insight operates with strict data minimization principles:
