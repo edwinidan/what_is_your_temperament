@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Temperament Insight Report</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+
+    <!-- Privacy-friendly analytics script (Plausible) -->
+    <script async src="https://plausible.io/js/pa-_qc7T854PUP4o3PSGZBHN.js"></script>
+    <script>
+        window.plausible = window.plausible || function () { (plausible.q = plausible.q || []).push(arguments); };
+        plausible.init = plausible.init || function (i) { plausible.o = i || {}; };
+        plausible.init();
+    </script>
+
+    <style>
+        :root {
+            --bg-body: #F5F7FA;
+            --bg-surface: #FFFFFF;
+            --text-main: #1A202C;
+            --text-secondary: #4A5568;
+            --text-muted: #A0AEC0;
+            --border-light: #E2E8F0;
+
+            --brand-primary: #2B6CB0;
+            --brand-hover: #2C5282;
+
+            /* Shared colors matching app.js */
+            --color-sanguine: #D6A848;
+            --color-choleric: #BC5C41;
+            --color-melancholic: #3B4A54;
+            --color-phlegmatic: #468254;
+
+            --font-family: 'Manrope', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            padding: 2rem 1rem;
+        }
+
+        /* Print Specific Wrapper */
+        .report-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--bg-surface);
+            padding: 3rem 4rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        /* No-print Action Bar */
+        .action-bar {
+            max-width: 800px;
+            margin: 0 auto 1.5rem auto;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-light);
+            padding: 0.6rem 1.2rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: inherit;
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--text-main);
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background-color: #f7fafc;
+        }
+
+        .btn-primary {
+            background-color: var(--brand-primary);
+            color: white;
+            border-color: var(--brand-primary);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--brand-hover);
+            border-color: var(--brand-hover);
+        }
+
+        /* Typography & Sections */
+        header {
+            margin-bottom: 3rem;
+            text-align: center;
+            border-bottom: 2px solid var(--border-light);
+            padding-bottom: 2rem;
+        }
+
+        .report-eyebrow {
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .primary-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 0.5rem;
+        }
+
+        .tagline {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+        }
+
+        .short-summary {
+            font-size: 1.1rem;
+            color: var(--text-main);
+            max-width: 600px;
+            margin: 0 auto;
+            background: var(--bg-body);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+        }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .meta-box {
+            border: 1px solid var(--border-light);
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+
+        .meta-box h4 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .meta-box p {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 0.25rem;
+        }
+
+        .meta-box small {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            margin-bottom: 3rem;
+            break-inside: avoid;
+        }
+
+        .list-card ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .list-card li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .list-card li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--brand-primary);
+            font-weight: bold;
+        }
+
+        .comms-section {
+            background: var(--bg-body);
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 3rem;
+            break-inside: avoid;
+        }
+
+        .comms-section p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        /* Mix Table */
+        .mix-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 3rem;
+            break-inside: avoid;
+        }
+
+        .mix-table th {
+            text-align: left;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .mix-table td {
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-light);
+            vertical-align: middle;
+        }
+
+        .mix-name {
+            font-weight: 600;
+            width: 25%;
+        }
+
+        .mix-bar-cell {
+            width: 60%;
+            padding-right: 2rem;
+        }
+
+        .mix-bar-track {
+            background: var(--border-light);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .mix-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .mix-pct {
+            font-weight: 700;
+            width: 15%;
+            text-align: right;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-light);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            break-inside: avoid;
+        }
+
+        .error-state {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        /* Native Print Specifics */
+        @media print {
+            body {
+                background-color: white;
+                padding: 0;
+            }
+
+            .action-bar {
+                display: none !important;
+            }
+
+            .report-container {
+                box-shadow: none;
+                padding: 0;
+                max-width: 100%;
+            }
+
+            .short-summary,
+            .comms-section {
+                background-color: transparent;
+                border: 1px solid var(--border-light);
+            }
+
+            .mix-bar-track {
+                background-color: #f1f1f1 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .mix-bar-fill {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            @page {
+                margin: 0.75in;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="action-bar">
+        <button class="btn" onclick="window.close()">Close</button>
+        <button class="btn btn-primary" id="print-btn">Print / Save as PDF</button>
+    </div>
+
+    <div class="report-container" id="report-content">
+        <!-- Populated by JS -->
+        <div class="error-state hidden" id="error-message">
+            <h2>Report Not Found</h2>
+            <p>We couldn't load the report data from this link. Please return to the test and generate a new summary.
+            </p>
+        </div>
+    </div>
+
+    <!-- Shared text mapped content -->
+    <script src="temperament-content.js"></script>
+    <!-- Dedicated render logic -->
+    <script src="report.js"></script>
+</body>
+
+</html>
