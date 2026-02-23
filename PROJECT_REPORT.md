@@ -180,6 +180,7 @@ Results panel includes:
 - Communication style cards
 - Confidence indicator ring
 - Expandable detailed communication explanation
+- Bottom-positioned result action controls (copy link, share card, detailed explanation toggle, retake, back home)
 - Educational disclaimer
 
 On completion:
@@ -343,8 +344,14 @@ The project has undergone several significant User Experience (UX) and content u
 
 - **Homepage Restructure:** Replaced generic marketing sections with explicitly engineered clarity blocks. The homepage now features a scannable "What You'll Learn" list, a precise 4-card "Who It's For" target audience breakdown, and a clean 3-step numbered "How It Works" pipeline.
 - **Trust Architecture:** Integrated a strict "Privacy & Safety" UI section directly above the main call to action. This explicitly guarantees Local-only storage, No Accounts, No PII tracking, and roots the tool as an educational framework, eliminating clinical/diagnostic liability immediately for new visitors.
-- **Frictionless Onboarding:** Contextual helpers were added to the depth selector (20/40/60 questions) to manage accuracy expectations. A "What you're getting" mini-note was positioned next to the start button to clarify the exact deliverable (primary/secondary mix chart).
+- **Frictionless Onboarding:** Contextual helpers were added to the depth selector (20/40/60 questions) to set depth and reflection expectations. The 60-question helper now uses educational framing: "Highest depth of insight (educational)." A "What you're getting" mini-note was positioned next to the start button to clarify the exact deliverable (primary/secondary mix chart).
 - **Premium Expansion Boundaries:** The final results dashboard was upgraded with a "What to do next" actionable list to encourage sharing, and a dashed "Deep Dives (Coming Soon)" block planted inside the sticky sidebar. This establishes premium value (growth planning, conflict tips) and frames future monetization boundaries entirely without requiring gated paywalls or auth yet.
+
+### 14.8 Results Layout & Readability Polish (Feb 23)
+
+- **Action Controls Relocated:** Result action controls (`Copy Share Link`, `Generate Share Card`, `Show Detailed Explanation`, `Take Another Test`, `Back Home`) were moved from the sidebar to the bottom of the results section so they appear only after users review the full report content.
+- **"What to do next" Bullet Stability:** The list item markup was adjusted so each bullet is treated as a single content block, preventing narrow-column per-letter wrapping and restoring normal word-level line wrapping.
+- **Behavior Preserved:** Button IDs, link targets, and JavaScript bindings remained unchanged, so existing sharing, detail toggling, and navigation actions continue to work without logic changes.
 
 ## 15. Data & Stats Inventory (Privacy Profile)
 

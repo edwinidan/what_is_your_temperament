@@ -369,106 +369,6 @@
                 <p id="secondary-traits" class="secondary-traits"></p>
               </article>
 
-              <div class="result-actions">
-                <!-- <button id="copy-summary-btn" class="btn btn-outline" type="button">
-                Copy Result Summary
-              </button> -->
-                <button
-                  id="copy-link-btn"
-                  class="btn btn-outline"
-                  type="button"
-                >
-                  Copy Share Link
-                </button>
-                <button
-                  id="share-card-btn"
-                  class="btn btn-outline"
-                  type="button"
-                >
-                  Generate Share Card
-                </button>
-
-                <!-- Hidden Share Card Preview Container -->
-                <div
-                  id="share-card-preview"
-                  class="hidden"
-                  style="
-                    margin-top: 1rem;
-                    text-align: center;
-                    background: var(--bg-surface);
-                    padding: 1rem;
-                    border-radius: 8px;
-                    border: 1px solid var(--border-light);
-                  "
-                >
-                  <canvas
-                    id="share-card-canvas"
-                    style="
-                      max-width: 100%;
-                      height: auto;
-                      border-radius: 8px;
-                      margin-bottom: 1rem;
-                      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-                    "
-                  ></canvas>
-                  <p
-                    style="
-                      font-size: 0.875rem;
-                      color: var(--text-secondary);
-                      margin-bottom: 0.5rem;
-                    "
-                  >
-                    Includes your personalized link
-                  </p>
-                  <div
-                    style="
-                      display: flex;
-                      gap: 0.5rem;
-                      justify-content: center;
-                      flex-wrap: wrap;
-                    "
-                  >
-                    <button
-                      id="download-card-btn"
-                      class="btn btn-primary"
-                      type="button"
-                    >
-                      Download PNG
-                    </button>
-                    <button
-                      id="download-card-pdf-btn"
-                      class="btn btn-primary"
-                      type="button"
-                    >
-                      Download PDF
-                    </button>
-                    <button
-                      id="share-card-native-btn"
-                      class="btn btn-outline"
-                      type="button"
-                    >
-                      Share...
-                    </button>
-                  </div>
-                </div>
-
-                <button
-                  id="detail-toggle"
-                  class="btn btn-outline"
-                  type="button"
-                >
-                  Show Detailed Explanation
-                </button>
-                <a
-                  href="test-options.html"
-                  class="btn btn-primary result-restart"
-                >
-                  Take Another Test
-                  <span aria-hidden="true">-></span>
-                </a>
-                <a href="index.html" class="btn btn-outline">Back Home</a>
-              </div>
-
               <!-- Premium Value Boundary Indicator -->
               <div
                 class="panel-card"
@@ -590,6 +490,91 @@
             purposes only. It is not a clinical diagnostic tool and should not
             be used as a substitute for professional advice.
           </p>
+
+          <div class="result-actions">
+            <!-- <button id="copy-summary-btn" class="btn btn-outline" type="button">
+                Copy Result Summary
+              </button> -->
+            <button id="copy-link-btn" class="btn btn-outline" type="button">
+              Copy Share Link
+            </button>
+            <button id="share-card-btn" class="btn btn-outline" type="button">
+              Generate Share Card
+            </button>
+
+            <!-- Hidden Share Card Preview Container -->
+            <div
+              id="share-card-preview"
+              class="hidden"
+              style="
+                margin-top: 1rem;
+                text-align: center;
+                background: var(--bg-surface);
+                padding: 1rem;
+                border-radius: 8px;
+                border: 1px solid var(--border-light);
+              "
+            >
+              <canvas
+                id="share-card-canvas"
+                style="
+                  max-width: 100%;
+                  height: auto;
+                  border-radius: 8px;
+                  margin-bottom: 1rem;
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                "
+              ></canvas>
+              <p
+                style="
+                  font-size: 0.875rem;
+                  color: var(--text-secondary);
+                  margin-bottom: 0.5rem;
+                "
+              >
+                Includes your personalized link
+              </p>
+              <div
+                style="
+                  display: flex;
+                  gap: 0.5rem;
+                  justify-content: center;
+                  flex-wrap: wrap;
+                "
+              >
+                <button
+                  id="download-card-btn"
+                  class="btn btn-primary"
+                  type="button"
+                >
+                  Download PNG
+                </button>
+                <button
+                  id="download-card-pdf-btn"
+                  class="btn btn-primary"
+                  type="button"
+                >
+                  Download PDF
+                </button>
+                <button
+                  id="share-card-native-btn"
+                  class="btn btn-outline"
+                  type="button"
+                >
+                  Share...
+                </button>
+              </div>
+            </div>
+
+            <button id="detail-toggle" class="btn btn-outline" type="button">
+              Show Detailed Explanation
+            </button>
+            <a href="test-options.html" class="btn btn-primary result-restart">
+              Take Another Test
+              <span aria-hidden="true">-></span>
+            </a>
+            <a href="index.html" class="btn btn-outline">Back Home</a>
+          </div>
         </div>
       </section>
     </main>
