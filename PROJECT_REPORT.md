@@ -1,7 +1,7 @@
 # Temperament Insight Project Report
 
 Date: February 23, 2026  
-Project type: Static educational web app (no backend, no build step)
+Project type: Static-first educational web app with a Vercel serverless AI proxy (no build step, no database)
 
 ## 1. Executive Summary
 
@@ -53,6 +53,9 @@ Notable UX update: the intermediate "Pick Your Test Length" hero step was remove
 - `TEMPERAMENT_REFLECTION_GUIDE_SYSTEM_PROMPT.txt`
   - Copy-paste-ready strict system prompt for the assistant.
   - Encodes non-clinical guardrails, refusal style, prompt-injection resistance, and response structure rules.
+- `api/reflect.ts`
+  - Vercel serverless endpoint (`POST /api/reflect`) for Gemini-backed reflections.
+  - Validates mode/context/user question payloads, applies soft rate limiting, injects system prompt from env, and returns normalized safe JSON.
 - `README.md`
   - Run instructions and high-level scope.
 
@@ -91,6 +94,16 @@ On load:
 - Switches visible panel from intro to assessment.
 - Saves progress, scrolls to active panel.
 - Fires analytics event: `assessment_started`.
+
+### 4.4 Serverless Reflection Proxy (`/api/reflect`)
+
+- Runs as a Vercel Node.js serverless function (`runtime = "nodejs"`).
+- Uses environment variables only: `GEMINI_API_KEY`, `GEMINI_MODEL` (default `gemini-2.5-flash`), and `TRG_SYSTEM_PROMPT`.
+- Enforces request contract (`mode`, `context`, optional `user_question`) and validates the context schema.
+- Accepts `mix` sum rounding variance (`99-101`) while preserving relative-emphasis use.
+- Applies best-effort in-memory soft rate limiting keyed by a short-lived hashed client identifier.
+- Normalizes model output to `{ title, body, suggested_next }`, including a safe non-JSON fallback path when output can be validated.
+- Stores no user payloads and logs only error category/status metadata.
 
 ## 5. Question Delivery and Validation
 
@@ -240,7 +253,7 @@ Implementation decision:
 
 Analytics is implemented with Plausible in a privacy-focused way:
 
-- No backend/database added.
+- No analytics backend/database added.
 - No user accounts.
 - No PII fields collected.
 - Tracking calls fail silently if blocked.
@@ -282,7 +295,9 @@ Implemented:
 - Dominance-first ordering in Mix and Score Breakdown sections
 - Mobile result breakdown optimization (2-column cards and smaller percentage labels)
 - Detailed expandable interpretation
-- Optional Results-page AI reflection UX scaffold (frontend-only, no API integration yet)
+- Optional Results-page AI reflection UX with mode-based guidance, session-only history, and non-clinical boundaries
+- Vercel serverless Gemini proxy endpoint (`POST /api/reflect`) with strict validation, prompt enforcement, soft rate limiting, and safe output normalization
+- Frontend integration from assistant UI to `/api/reflect` with API-first responses and controlled fallback for upstream errors
 - Responsive redesign and direct-to-selection CTA flow
 - Privacy-friendly product analytics events
 
@@ -300,6 +315,7 @@ Not implemented:
 - Browser support relies on standard modern DOM/CSS features.
 - Ensure Plausible script remains present in both HTML files for analytics continuity.
 - Ensure Chart.js script remains present in `test-options.html` for donut chart rendering.
+- For Vercel deployments using AI reflections, configure `GEMINI_API_KEY`, `GEMINI_MODEL`, and `TRG_SYSTEM_PROMPT`.
 
 ## 14. Version 2 Updates (Recent Enhancements)
 
@@ -365,16 +381,33 @@ The project has undergone several significant User Experience (UX) and content u
 
 - **Optional Assistant Placement:** Implemented an optional assistant panel directly in `test-options.html` Results flow, positioned below the educational disclaimer and above the bottom result action controls.
 - **Guided Mode-Based Interaction:** Added a collapsed-first UX that expands into exactly six reflection modes (`Result Summary`, `Strengths in Action`, `Watch-outs & Reframes`, `7-Day Reflection Plan`, `Communication Prep`, `Journaling Prompts`) with a visible 5-message session counter.
-- **Stateful Frontend Logic (No API):** Added dedicated in-memory assistant state (`assistantOpen`, `messagesUsed`, `activeMode`, `loading`, `history`) and deterministic local response generation (150-200 words) to support full UX behavior without backend integration.
+- **Stateful Frontend Logic:** Added dedicated in-memory assistant state (`assistantOpen`, `messagesUsed`, `activeMode`, `loading`, `history`) to control loading, response history, retries, and session limits.
 - **Safety & Boundary Handling:** Added loading, limit, and error states (network unavailable, boundary/refusal, unexpected failure) with calm educational copy and non-clinical positioning.
 - **Spec/Prompt Foundation Added:** Introduced `AI_ASSISTANT_SPEC.md` and `TEMPERAMENT_REFLECTION_GUIDE_SYSTEM_PROMPT.txt` to lock behavior, constraints, and future integration readiness before API wiring.
+
+### 14.10 Vercel Gemini Proxy Hardening (Feb 23)
+
+- **Serverless Endpoint Added:** Created `api/reflect.ts` with `POST /api/reflect` contract for assistant reflections on Vercel.
+- **Vercel Runtime Compatibility:** Updated the handler to use official `@vercel/node` types (`VercelRequest`, `VercelResponse`) and Node runtime configuration.
+- **Cost/Latency Tuning:** Lowered Gemini output budget to `maxOutputTokens: 350` (temperature kept low at `0.4`) for stable 150-200 word targets with lower overhead.
+- **Formatting Resilience:** Kept strict JSON-first parsing while adding a safe fallback path that accepts non-JSON text only when it passes sanitation, word-count validation, and safety boundary checks.
+- **Validation Robustness:** Relaxed `context.mix` sum acceptance to `99-101` to tolerate real-world rounding variance without weakening schema checks.
+- **Privacy-Safe Error Logging:** Logging now records only coarse error category/status; no raw user content, payloads, or model output is logged.
+
+### 14.11 Assistant UI-to-API Integration (Feb 23)
+
+- **API-First Reflection Calls:** The Results assistant now posts mode/context payloads from `app.js` to `/api/reflect` using `fetch` (`POST`, JSON), with no frontend exposure of secrets.
+- **Preserved UX States:** Existing loading state (`Thinking thoughtfully...`), mode-button disabling, history rendering, and 5-message counter behavior were preserved during integration.
+- **Controlled Fallback Rule:** Local deterministic generation is retained as a fallback only when the API returns `UPSTREAM_ERROR` (including missing backend configuration), maintaining continuity without weakening boundaries.
+- **Retry-Safe Error Handling:** For network failures and non-upstream API errors (`RATE_LIMITED`, `BAD_REQUEST`), the assistant shows friendly errors, does not decrement messages, and allows immediate retry by selecting a mode again.
+- **Limit Integrity:** The assistant still transitions to limit state at 5 successful responses (API success and eligible fallback responses count as successful).
 
 ## 15. Data & Stats Inventory (Privacy Profile)
 
 To maintain trust and production-safety, Temperament Insight operates with strict data minimization principles:
 
 - **What data exists?** Only the user's answers to the assessment (values 1-5), the computed result (temperament percentages), and their current progress state.
-- **Where is it stored?** Strictly on the user’s local device via the browser’s `localStorage` (key: `temperamentInsight.progress.v1`). URL hashes (`#result=...`) are temporarily used for deep-link sharing.
+- **Where is it stored?** Assessment progress remains local in browser `localStorage` (key: `temperamentInsight.progress.v1`), with URL hashes (`#result=...`) for deep-link sharing. The serverless proxy stores no request data and has no database layer.
 - **How long does it exist?** `localStorage` is cleared immediately when the user finishes the assessment.
-- **Is it identifiable?** **No**. We do not collect names, emails, IPs, or any other PII. There is no user account system and no backend database.
+- **Is it identifiable?** **No persistent identifiers are collected.** We do not collect names, emails, or user accounts, and there is no backend database. The proxy uses a short-lived in-memory hashed IP key for soft rate limiting only (not persisted or logged as raw IP).
 - **Analytics:** We use **Plausible Analytics**. It is cookie-less, anonymized, and tracks only aggregate events (e.g., `assessment_started`, `assessment_completed`, `report_opened`) to understand broad usage trends without tracking individual users.

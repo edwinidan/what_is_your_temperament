@@ -32,6 +32,8 @@ const ANALYTICS_EVENTS = {
 const ASSISTANT_MAX_MESSAGES = 5;
 const ASSISTANT_RESPONSE_WORD_MIN = 150;
 const ASSISTANT_RESPONSE_WORD_MAX = 200;
+const ASSISTANT_REFLECT_ENDPOINT = "/api/reflect";
+const ASSISTANT_API_TIMEOUT_MS = 12_000;
 const ASSISTANT_MODES = [
   "Result Summary",
   "Strengths in Action",
@@ -1332,23 +1334,32 @@ async function handleModeSelection(mode) {
     return;
   }
 
-  if (typeof navigator !== "undefined" && "onLine" in navigator && !navigator.onLine) {
-    showAssistantError("network");
-    return;
-  }
-
   assistantState.activeMode = mode;
   setAssistantLoading(true, "Thinking thoughtfully...");
 
   try {
-    await new Promise((resolve) => setTimeout(resolve, 680));
-    const response = generateLocalAssistantResponse(mode, assistantContext);
-    appendAssistantResponse(response);
-    assistantState.messagesUsed += 1;
-    renderAssistantCounter();
-    renderLimitState();
+    const apiResult = await postAssistantReflection(mode, assistantContext);
+
+    if (apiResult.ok) {
+      appendAssistantResponse(apiResult.data);
+      assistantState.messagesUsed += 1;
+      renderAssistantCounter();
+      renderLimitState();
+      return;
+    }
+
+    if (isFallbackEligible(apiResult.error)) {
+      const fallbackResponse = generateLocalAssistantResponse(mode, assistantContext);
+      appendAssistantResponse(fallbackResponse);
+      assistantState.messagesUsed += 1;
+      renderAssistantCounter();
+      renderLimitState();
+      return;
+    }
+
+    showAssistantError(mapAssistantErrorType(apiResult.error.code));
   } catch (_error) {
-    showAssistantError("unexpected");
+    showAssistantError("network");
   } finally {
     setAssistantLoading(false);
   }
@@ -1375,6 +1386,139 @@ function setAssistantButtonsDisabled(disabled) {
   assistantModeButtons.forEach((button) => {
     button.disabled = disabled;
   });
+}
+
+async function postAssistantReflection(mode, context) {
+  const controller =
+    typeof AbortController !== "undefined" ? new AbortController() : null;
+  const timeoutId = controller
+    ? setTimeout(() => controller.abort(), ASSISTANT_API_TIMEOUT_MS)
+    : null;
+
+  try {
+    const response = await fetch(ASSISTANT_REFLECT_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mode, context }),
+      signal: controller ? controller.signal : undefined,
+    });
+
+    const payload = await safeReadJson(response);
+    if (payload?.ok === true) {
+      const normalized = normalizeAssistantSuccess(mode, payload.data);
+      if (normalized) {
+        return { ok: true, data: normalized };
+      }
+      return {
+        ok: false,
+        error: {
+          code: "UPSTREAM_ERROR",
+          message: "The reflection response was not in the expected format.",
+        },
+      };
+    }
+
+    return {
+      ok: false,
+      error: normalizeAssistantError(response.status, payload),
+    };
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  }
+}
+
+async function safeReadJson(response) {
+  try {
+    return await response.json();
+  } catch (_error) {
+    return null;
+  }
+}
+
+function normalizeAssistantSuccess(mode, data) {
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    return null;
+  }
+
+  const rawBody = data.body;
+  if (typeof rawBody !== "string") {
+    return null;
+  }
+  const body = normalizeSpaces(rawBody);
+  if (!body) {
+    return null;
+  }
+
+  const rawTitle = data.title;
+  const title =
+    typeof rawTitle === "string" && rawTitle.trim()
+      ? normalizeSpaces(rawTitle)
+      : mode;
+
+  const suggested =
+    Array.isArray(data.suggested_next) && data.suggested_next.length
+      ? data.suggested_next
+          .filter((item) => typeof item === "string")
+          .map((item) => normalizeSpaces(item))
+          .filter(Boolean)
+          .slice(0, 3)
+      : [];
+
+  return {
+    mode,
+    title,
+    body,
+    suggested_next: suggested.length ? suggested : undefined,
+  };
+}
+
+function normalizeAssistantError(status, payload) {
+  if (payload && typeof payload === "object" && !Array.isArray(payload)) {
+    const error = payload.error;
+    if (
+      payload.ok === false &&
+      error &&
+      typeof error === "object" &&
+      !Array.isArray(error)
+    ) {
+      const code = normalizeAssistantErrorCode(error.code);
+      const message =
+        typeof error.message === "string" ? normalizeSpaces(error.message) : "";
+      return { code, message };
+    }
+  }
+
+  if (status === 429) {
+    return { code: "RATE_LIMITED", message: "" };
+  }
+  if (status === 400 || status === 405) {
+    return { code: "BAD_REQUEST", message: "" };
+  }
+
+  return { code: "UPSTREAM_ERROR", message: "" };
+}
+
+function normalizeAssistantErrorCode(code) {
+  if (code === "BAD_REQUEST" || code === "RATE_LIMITED" || code === "UPSTREAM_ERROR") {
+    return code;
+  }
+  return "UPSTREAM_ERROR";
+}
+
+function isFallbackEligible(error) {
+  return error?.code === "UPSTREAM_ERROR";
+}
+
+function mapAssistantErrorType(code) {
+  if (code === "RATE_LIMITED") {
+    return "rate_limited";
+  }
+  if (code === "BAD_REQUEST") {
+    return "bad_request";
+  }
+  return "unexpected";
 }
 
 function appendAssistantResponse(response) {
@@ -1438,10 +1582,18 @@ function showAssistantError(type) {
     return;
   }
 
-  assistantError.textContent =
-    type === "network"
-      ? "We couldn't generate this reflection right now. Please check your connection and try again."
-      : "Something went wrong while generating this reflection. No data was lost.";
+  const messages = {
+    network:
+      "We couldn't generate this reflection right now. Please check your connection and try again.",
+    rate_limited:
+      "You have reached a temporary reflection request limit. Please pause briefly and try again.",
+    bad_request:
+      "We couldn't process this reflection request. Please try again.",
+    unexpected:
+      "Something went wrong while generating this reflection. No data was lost.",
+  };
+
+  assistantError.textContent = messages[type] || messages.unexpected;
   assistantError.classList.remove("hidden");
   clearAssistantStatus();
   assistantState.loading = false;
