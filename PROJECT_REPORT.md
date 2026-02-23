@@ -339,6 +339,13 @@ The project has undergone several significant User Experience (UX) and content u
 - **Slider Reflow Elimination:** `labelDisplay.innerHTML` mutations were rebuilt to exclusively utilize `textContent` combined with inline CSS variable (`--thumb-scale`) property updates during slider scrubbing. This totally mitigates heavy HTML re-parsing and layout recalculations (`getBoundingClientRect`), keeping animation streams perfectly smooth at 60fps.
 - **Memory & Lifecycle Cleanup:** Deep un-mount behaviors were enforced upon restart routines (`startAssessment()`). Native memory destructors (`clearTimeout(saveProgressTimeout)` and `temperamentDonutChart.destroy()`) are explicitly fired to reliably garbage collect the active state before spawning new iterations, ensuring repeated retakes do not degrade device performance or trigger orphan network events.
 
+### 14.7 Product Clarity & Boundary Copy (Feb 23)
+
+- **Homepage Restructure:** Replaced generic marketing sections with explicitly engineered clarity blocks. The homepage now features a scannable "What You'll Learn" list, a precise 4-card "Who It's For" target audience breakdown, and a clean 3-step numbered "How It Works" pipeline.
+- **Trust Architecture:** Integrated a strict "Privacy & Safety" UI section directly above the main call to action. This explicitly guarantees Local-only storage, No Accounts, No PII tracking, and roots the tool as an educational framework, eliminating clinical/diagnostic liability immediately for new visitors.
+- **Frictionless Onboarding:** Contextual helpers were added to the depth selector (20/40/60 questions) to manage accuracy expectations. A "What you're getting" mini-note was positioned next to the start button to clarify the exact deliverable (primary/secondary mix chart).
+- **Premium Expansion Boundaries:** The final results dashboard was upgraded with a "What to do next" actionable list to encourage sharing, and a dashed "Deep Dives (Coming Soon)" block planted inside the sticky sidebar. This establishes premium value (growth planning, conflict tips) and frames future monetization boundaries entirely without requiring gated paywalls or auth yet.
+
 ## 15. Data & Stats Inventory (Privacy Profile)
 
 To maintain trust and production-safety, Temperament Insight operates with strict data minimization principles:
