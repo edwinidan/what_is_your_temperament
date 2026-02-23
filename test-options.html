@@ -491,6 +491,114 @@
             be used as a substitute for professional advice.
           </p>
 
+          <section
+            id="assistant-guide"
+            class="panel-card assistant-guide"
+            aria-label="Temperament Reflection Guide"
+          >
+            <div id="assistant-collapsed" class="assistant-collapsed">
+              <p class="eyebrow">Optional Reflection Guide</p>
+              <h3 class="assistant-title">Temperament Reflection Guide</h3>
+              <p class="assistant-subtitle">
+                Optional · Educational · Non-diagnostic
+              </p>
+              <button
+                id="assistant-open-btn"
+                class="btn btn-outline assistant-open-btn"
+                type="button"
+                aria-expanded="false"
+                aria-controls="assistant-expanded"
+              >
+                Explore reflections
+              </button>
+            </div>
+
+            <div id="assistant-expanded" class="assistant-expanded hidden">
+              <header class="assistant-header">
+                <h3>Temperament Reflection Guide</h3>
+                <p>Educational reflection based on your results</p>
+              </header>
+
+              <p id="assistant-counter" class="assistant-counter">
+                Messages left: 5
+              </p>
+
+              <div
+                id="assistant-status"
+                class="assistant-status hidden"
+                aria-live="polite"
+              ></div>
+              <div
+                id="assistant-error"
+                class="assistant-error hidden"
+                role="alert"
+              ></div>
+
+              <div
+                id="assistant-mode-group"
+                class="assistant-mode-grid"
+                role="group"
+                aria-label="Reflection modes"
+              >
+                <button
+                  type="button"
+                  class="btn btn-outline assistant-mode-btn"
+                  data-mode="Result Summary"
+                >
+                  Result Summary
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline assistant-mode-btn"
+                  data-mode="Strengths in Action"
+                >
+                  Strengths in Action
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline assistant-mode-btn"
+                  data-mode="Watch-outs & Reframes"
+                >
+                  Watch-outs & Reframes
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline assistant-mode-btn"
+                  data-mode="7-Day Reflection Plan"
+                >
+                  7-Day Reflection Plan
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline assistant-mode-btn"
+                  data-mode="Communication Prep"
+                >
+                  Communication Prep
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline assistant-mode-btn"
+                  data-mode="Journaling Prompts"
+                >
+                  Journaling Prompts
+                </button>
+              </div>
+
+              <div id="assistant-limit" class="assistant-limit hidden">
+                <p>
+                  You have reached this reflection session limit. You can review
+                  your results above or start a new assessment when ready.
+                </p>
+              </div>
+
+              <div
+                id="assistant-history"
+                class="assistant-history"
+                aria-live="polite"
+              ></div>
+            </div>
+          </section>
+
           <div class="result-actions">
             <!-- <button id="copy-summary-btn" class="btn btn-outline" type="button">
                 Copy Result Summary

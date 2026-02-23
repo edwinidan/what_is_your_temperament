@@ -29,6 +29,17 @@ const ANALYTICS_EVENTS = {
   assessmentAbandoned: "assessment_abandoned",
   detailViewOpened: "detail_view_opened",
 };
+const ASSISTANT_MAX_MESSAGES = 5;
+const ASSISTANT_RESPONSE_WORD_MIN = 150;
+const ASSISTANT_RESPONSE_WORD_MAX = 200;
+const ASSISTANT_MODES = [
+  "Result Summary",
+  "Strengths in Action",
+  "Watch-outs & Reframes",
+  "7-Day Reflection Plan",
+  "Communication Prep",
+  "Journaling Prompts",
+];
 
 const TEMPERAMENTS = ["Sanguine", "Choleric", "Melancholic", "Phlegmatic"];
 const TEMPERAMENT_COLORS = {
@@ -493,6 +504,14 @@ const state = {
   shareUrl: null,
   sharedView: false,
 };
+const assistantState = {
+  assistantOpen: false,
+  messagesUsed: 0,
+  activeMode: null,
+  loading: false,
+  history: [],
+};
+let assistantContext = null;
 let temperamentDonutChart = null;
 
 const introPanel = document.getElementById("intro-panel");
@@ -544,6 +563,19 @@ const shareCardCanvas = document.getElementById("share-card-canvas");
 const downloadCardBtn = document.getElementById("download-card-btn");
 const downloadCardPdfBtn = document.getElementById("download-card-pdf-btn");
 const shareCardNativeBtn = document.getElementById("share-card-native-btn");
+const assistantGuide = document.getElementById("assistant-guide");
+const assistantCollapsed = document.getElementById("assistant-collapsed");
+const assistantExpanded = document.getElementById("assistant-expanded");
+const assistantOpenBtn = document.getElementById("assistant-open-btn");
+const assistantCounter = document.getElementById("assistant-counter");
+const assistantStatus = document.getElementById("assistant-status");
+const assistantError = document.getElementById("assistant-error");
+const assistantModeGroup = document.getElementById("assistant-mode-group");
+const assistantModeButtons = Array.from(
+  document.querySelectorAll(".assistant-mode-btn"),
+);
+const assistantLimit = document.getElementById("assistant-limit");
+const assistantHistory = document.getElementById("assistant-history");
 
 // ==========================================
 // 4. INITIALIZATION & EVENT LISTENERS
@@ -573,6 +605,7 @@ if (shareCardNativeBtn) {
     shareCardNativeBtn.style.display = "none";
   }
 }
+initAssistantUI();
 window.addEventListener("pagehide", handlePageHide);
 
 // Entry point behavior
@@ -607,6 +640,8 @@ function startAssessment() {
   state.completionTracked = false;
   state.abandonmentTracked = false;
   state.resultMeta = null;
+  setAssistantContext(null);
+  resetAssistantSession();
 
   clearProgress(); // Destroy timers, instances, and storage before restarting
 
@@ -1098,6 +1133,7 @@ function renderResults({ primary, secondary, confidence, ranked }) {
 
   state.resultMeta = {
     primary,
+    secondary,
     confidenceLevel,
   };
   state.completionTracked = true;
@@ -1161,6 +1197,18 @@ function renderResults({ primary, secondary, confidence, ranked }) {
   renderTemperamentLegend(mixPercentages, mixDisplayOrder);
   renderTemperamentDonut(mixPercentages, mixDisplayOrder);
   renderScoreBars(mixPercentages, ranked);
+  setAssistantContext({
+    primary,
+    secondary,
+    confidence: confidenceLevel,
+    mix: {
+      sanguine: mixPercentages.Sanguine,
+      choleric: mixPercentages.Choleric,
+      melancholic: mixPercentages.Melancholic,
+      phlegmatic: mixPercentages.Phlegmatic,
+    },
+  });
+  resetAssistantSession();
 
   state.detailVisible = false;
   resultDetail.classList.add("hidden");
@@ -1187,6 +1235,431 @@ function toggleDetailView() {
       primary_temperament: state.resultMeta.primary,
     });
   }
+}
+
+function initAssistantUI() {
+  if (!assistantGuide) {
+    return;
+  }
+
+  if (assistantOpenBtn) {
+    assistantOpenBtn.addEventListener("click", openAssistant);
+  }
+
+  assistantModeButtons.forEach((button) => {
+    button.addEventListener("click", () =>
+      handleModeSelection(button.dataset.mode || ""),
+    );
+  });
+
+  resetAssistantSession();
+}
+
+function setAssistantContext(context) {
+  if (!context) {
+    assistantContext = null;
+    return;
+  }
+
+  assistantContext = {
+    primary: context.primary,
+    secondary: context.secondary,
+    confidence: context.confidence,
+    mix: {
+      sanguine: Number(context.mix.sanguine),
+      choleric: Number(context.mix.choleric),
+      melancholic: Number(context.mix.melancholic),
+      phlegmatic: Number(context.mix.phlegmatic),
+    },
+  };
+}
+
+function resetAssistantSession() {
+  assistantState.assistantOpen = false;
+  assistantState.messagesUsed = 0;
+  assistantState.activeMode = null;
+  assistantState.loading = false;
+  assistantState.history = [];
+
+  if (assistantHistory) {
+    assistantHistory.innerHTML = "";
+  }
+  clearAssistantStatus();
+  clearAssistantError();
+  renderAssistantShell();
+}
+
+function openAssistant() {
+  assistantState.assistantOpen = true;
+  renderAssistantShell();
+}
+
+function renderAssistantShell() {
+  if (!assistantGuide || !assistantCollapsed || !assistantExpanded) {
+    return;
+  }
+
+  const isOpen = assistantState.assistantOpen;
+  assistantCollapsed.classList.toggle("hidden", isOpen);
+  assistantExpanded.classList.toggle("hidden", !isOpen);
+
+  if (assistantOpenBtn) {
+    assistantOpenBtn.setAttribute("aria-expanded", `${isOpen}`);
+  }
+
+  renderAssistantCounter();
+  renderLimitState();
+  renderAssistantHistory();
+  setAssistantButtonsDisabled(
+    assistantState.loading || assistantState.messagesUsed >= ASSISTANT_MAX_MESSAGES,
+  );
+}
+
+async function handleModeSelection(mode) {
+  if (!ASSISTANT_MODES.includes(mode)) {
+    appendAssistantResponse(buildAssistantBoundaryResponse(mode));
+    return;
+  }
+
+  if (assistantState.loading || assistantState.messagesUsed >= ASSISTANT_MAX_MESSAGES) {
+    return;
+  }
+
+  clearAssistantError();
+
+  if (!assistantContext) {
+    showAssistantError("unexpected");
+    return;
+  }
+
+  if (typeof navigator !== "undefined" && "onLine" in navigator && !navigator.onLine) {
+    showAssistantError("network");
+    return;
+  }
+
+  assistantState.activeMode = mode;
+  setAssistantLoading(true, "Thinking thoughtfully...");
+
+  try {
+    await new Promise((resolve) => setTimeout(resolve, 680));
+    const response = generateLocalAssistantResponse(mode, assistantContext);
+    appendAssistantResponse(response);
+    assistantState.messagesUsed += 1;
+    renderAssistantCounter();
+    renderLimitState();
+  } catch (_error) {
+    showAssistantError("unexpected");
+  } finally {
+    setAssistantLoading(false);
+  }
+}
+
+function setAssistantLoading(isLoading, message = "Thinking thoughtfully...") {
+  assistantState.loading = isLoading;
+
+  if (isLoading) {
+    if (assistantStatus) {
+      assistantStatus.textContent = message;
+      assistantStatus.dataset.loading = "true";
+      assistantStatus.classList.remove("hidden");
+    }
+    setAssistantButtonsDisabled(true);
+    return;
+  }
+
+  clearAssistantStatus();
+  setAssistantButtonsDisabled(assistantState.messagesUsed >= ASSISTANT_MAX_MESSAGES);
+}
+
+function setAssistantButtonsDisabled(disabled) {
+  assistantModeButtons.forEach((button) => {
+    button.disabled = disabled;
+  });
+}
+
+function appendAssistantResponse(response) {
+  assistantState.history.push({
+    mode: response.mode,
+    title: response.title,
+    body: response.body,
+    suggested_next:
+      Array.isArray(response.suggested_next) && response.suggested_next.length
+        ? response.suggested_next.slice(0, 3)
+        : undefined,
+  });
+  renderAssistantHistory();
+}
+
+function renderAssistantHistory() {
+  if (!assistantHistory) {
+    return;
+  }
+
+  if (!assistantState.history.length) {
+    assistantHistory.innerHTML = "";
+    return;
+  }
+
+  assistantHistory.innerHTML = assistantState.history
+    .map((entry) => {
+      const suggestedHtml = Array.isArray(entry.suggested_next)
+        ? `
+        <p class="assistant-suggested-title">Suggested next</p>
+        <ul class="assistant-suggested-list">
+          ${entry.suggested_next
+          .map((item) => `<li>${escapeHtml(item)}</li>`)
+          .join("")}
+        </ul>`
+        : "";
+
+      return `
+      <article class="assistant-response-card">
+        <h4 class="assistant-response-title">${escapeHtml(entry.title)}</h4>
+        <p class="assistant-response-body">${escapeHtml(entry.body)}</p>
+        ${suggestedHtml}
+      </article>`;
+    })
+    .join("");
+}
+
+function renderAssistantCounter() {
+  if (!assistantCounter) {
+    return;
+  }
+  const messagesLeft = Math.max(
+    0,
+    ASSISTANT_MAX_MESSAGES - assistantState.messagesUsed,
+  );
+  assistantCounter.textContent = `Messages left: ${messagesLeft}`;
+}
+
+function showAssistantError(type) {
+  if (!assistantError) {
+    return;
+  }
+
+  assistantError.textContent =
+    type === "network"
+      ? "We couldn't generate this reflection right now. Please check your connection and try again."
+      : "Something went wrong while generating this reflection. No data was lost.";
+  assistantError.classList.remove("hidden");
+  clearAssistantStatus();
+  assistantState.loading = false;
+  setAssistantButtonsDisabled(assistantState.messagesUsed >= ASSISTANT_MAX_MESSAGES);
+}
+
+function clearAssistantError() {
+  if (!assistantError) {
+    return;
+  }
+  assistantError.textContent = "";
+  assistantError.classList.add("hidden");
+}
+
+function clearAssistantStatus() {
+  if (!assistantStatus) {
+    return;
+  }
+  assistantStatus.textContent = "";
+  delete assistantStatus.dataset.loading;
+  assistantStatus.classList.add("hidden");
+}
+
+function renderLimitState() {
+  if (!assistantLimit || !assistantModeGroup) {
+    return;
+  }
+
+  const limitReached = assistantState.messagesUsed >= ASSISTANT_MAX_MESSAGES;
+  assistantLimit.classList.toggle("hidden", !limitReached);
+  assistantModeGroup.classList.toggle("hidden", limitReached);
+}
+
+function buildAssistantBoundaryResponse(mode) {
+  return {
+    mode,
+    title: "Reflection Boundary",
+    body: "I can only provide educational, non-diagnostic reflection within the six available guide modes. Please choose one of the listed modes and I will respond with calm, practical guidance based on your current result profile.",
+    suggested_next: ["Choose a mode above to continue your reflection session."],
+  };
+}
+
+function generateLocalAssistantResponse(mode, context) {
+  const { primary, secondary, confidence, mix } = context;
+  const confidenceLine = getConfidenceGuidance(confidence);
+  const mixLine = getRelativeMixLine(mix);
+  const primaryLower = primary.toLowerCase();
+  const secondaryLower = secondary.toLowerCase();
+
+  const templates = {
+    "Result Summary": {
+      lead: `Your current reflection points to ${primary} as your primary pattern, with ${secondary} as a meaningful secondary influence. ${mixLine} ${confidenceLine}`,
+      middle:
+        `In practical terms, this blend may shape how you make decisions, communicate under pressure, and reset after demanding situations. A ${primaryLower} lead can bring clear momentum, while ${secondaryLower} often adds an important balancing perspective. Consider this profile as a useful mirror for this moment, not as a fixed label.`,
+      action:
+        "For this week, focus on one small behavior to test in real settings. Choose a routine context, notice what helps you stay steady, and write one sentence about what felt natural versus what required extra effort. This keeps the reflection grounded and usable.",
+      suggested_next: [
+        "Would you like strengths-in-action ideas for one real task this week?",
+        "Do you want a communication prep reflection for one conversation?",
+      ],
+    },
+    "Strengths in Action": {
+      lead: `A practical strength focus starts with your ${primary} profile while keeping ${secondary} in view. ${mixLine} ${confidenceLine}`,
+      middle:
+        `For daily use, identify two strengths you can intentionally apply: one that supports execution and one that supports relationships. Execution strengths help you move work forward with structure, pace, or clarity. Relationship strengths help people feel understood and aligned, especially when priorities differ.`,
+      action:
+        "Try a simple plan: pick one meeting, one task block, and one personal interaction where you will use these strengths deliberately. Before each moment, name your intention in plain language. Afterward, note what improved and what you would adjust next time. This converts abstract strengths into repeatable behavior.",
+      suggested_next: [
+        "Want a watch-outs and reframes reflection to balance these strengths?",
+        "Would a 7-day reflection plan help you apply this consistently?",
+      ],
+    },
+    "Watch-outs & Reframes": {
+      lead: `A helpful watch-out reflection treats patterns as signals, not flaws. With ${primary} and ${secondary} in your current profile, ${mixLine} ${confidenceLine}`,
+      middle:
+        `Watch-outs usually appear when pace, uncertainty, or emotional load increases. A useful reframe is to translate each pressure point into one adjustable behavior. Instead of trying to change your personality, adjust timing, wording, or decision cadence so your strengths still lead while reducing friction.`,
+      action:
+        "Use this sequence for one week: notice a repeating friction point, pause for one breath, name the pattern, choose one reframe sentence, then try one small action immediately. Keep the action concrete and observable. The goal is steady improvement, not perfect control.",
+      suggested_next: [
+        "Would you like a communication prep reflection for a high-stakes conversation?",
+        "Do you want journaling prompts to track your reframes daily?",
+      ],
+    },
+    "7-Day Reflection Plan": {
+      lead: `Here is a seven-day reflection rhythm based on your ${primary}/${secondary} blend. ${mixLine} ${confidenceLine}`,
+      middle:
+        "Day 1: define one intention. Day 2: notice where your natural pattern helps. Day 3: identify one friction point. Day 4: test one small reframe. Day 5: check impact on others. Day 6: repeat what worked. Day 7: summarize one lesson and one next experiment.",
+      action:
+        "Keep each check-in short, preferably three to five minutes. Write only what you observed, what you tried, and what changed. If your week is busy, reduce scope rather than skipping the process. Consistency matters more than depth for early behavior change.",
+      suggested_next: [
+        "Want strengths-in-action guidance for Day 1 execution?",
+        "Would journaling prompts help structure each day's check-in?",
+      ],
+    },
+    "Communication Prep": {
+      lead: `For communication prep, use your ${primary} lead intentionally and let ${secondary} support tone and pacing. ${mixLine} ${confidenceLine}`,
+      middle:
+        "Before the conversation, define your core message in one sentence and your desired outcome in one sentence. Then add one empathy line to show you understand the other person's priorities. This combination helps you stay direct without losing relational trust.",
+      action:
+        "During the conversation, ask one clarifying question before giving your recommendation. Reflect key points back briefly, then propose one concrete next step with timeline and owner. Afterward, note whether your tone, pace, and clarity matched your intention. This creates a reliable communication loop.",
+      suggested_next: [
+        "Would you like watch-outs and reframes for communication pressure points?",
+        "Do you want a result summary reflection to reset your overall priorities?",
+      ],
+    },
+    "Journaling Prompts": {
+      lead: `Use journaling to turn your ${primary}/${secondary} reflection into clear observations. ${mixLine} ${confidenceLine}`,
+      middle:
+        "Prompt 1: Where did my natural pattern help today? Prompt 2: Where did I feel friction, and what triggered it? Prompt 3: Which small reframe did I test, and what changed? Prompt 4: What support or structure would help tomorrow? Keep responses concrete and short.",
+      action:
+        "If time is limited, answer only one prompt each day. Review your notes after one week and highlight repeated themes. You are looking for patterns you can work with, not self-judgment. Small, consistent reflection builds better self-awareness than occasional long entries.",
+      suggested_next: [
+        "Would a 7-day reflection plan help organize these prompts?",
+        "Want communication prep guidance for one upcoming conversation?",
+      ],
+    },
+  };
+
+  const selected = templates[mode];
+  if (!selected) {
+    return buildAssistantBoundaryResponse(mode);
+  }
+
+  let body = `${selected.lead} ${selected.middle} ${selected.action}`;
+  body = fitBodyWordRange(body, ASSISTANT_RESPONSE_WORD_MIN, ASSISTANT_RESPONSE_WORD_MAX);
+
+  return {
+    mode,
+    title: mode,
+    body,
+    suggested_next:
+      Array.isArray(selected.suggested_next) && selected.suggested_next.length
+        ? selected.suggested_next.slice(0, 3)
+        : undefined,
+  };
+}
+
+function getConfidenceGuidance(confidence) {
+  if (confidence === "low") {
+    return "Confidence is currently low, so treat this as a blended range of tendencies and mixed influences rather than one strong pattern.";
+  }
+  if (confidence === "medium") {
+    return "Confidence is medium, so your leading pattern is useful while overlap remains important to consider.";
+  }
+  return "Confidence is high, so your leading pattern appears more distinct in this response set.";
+}
+
+function getRelativeMixLine(mix) {
+  const ordered = Object.entries(mix)
+    .map(([name, value]) => ({ name, value: Number(value) }))
+    .sort((a, b) => b.value - a.value);
+  const top = ordered[0]?.name || "primary";
+  const second = ordered[1]?.name || "secondary";
+  const lower = ordered.slice(2).map((entry) => entry.name);
+
+  if (lower.length === 2) {
+    return `Your mix appears more influenced by ${top} and ${second}, while ${lower[0]} and ${lower[1]} play supporting roles.`;
+  }
+
+  return `Your mix appears to lean most toward ${top}, with ${second} also shaping your style.`;
+}
+
+function fitBodyWordRange(text, minWords, maxWords) {
+  const fillerSentences = [
+    "Keep your next step specific, observable, and realistic for your current week.",
+    "Use this reflection as a guide for experimentation rather than as a final verdict.",
+    "Progress is usually stronger when you review one behavior repeatedly across familiar situations.",
+  ];
+
+  let normalized = normalizeSpaces(text);
+  let words = countWords(normalized);
+  let fillerIndex = 0;
+
+  while (words < minWords) {
+    normalized = `${normalized} ${fillerSentences[fillerIndex % fillerSentences.length]}`;
+    fillerIndex += 1;
+    words = countWords(normalized);
+  }
+
+  if (words > maxWords) {
+    normalized = truncateWords(normalized, maxWords);
+  }
+
+  return normalized;
+}
+
+function countWords(text) {
+  if (!text) {
+    return 0;
+  }
+  return text.trim().split(/\s+/).filter(Boolean).length;
+}
+
+function truncateWords(text, maxWords) {
+  const words = text.trim().split(/\s+/).filter(Boolean);
+  if (words.length <= maxWords) {
+    return text;
+  }
+
+  let truncated = words.slice(0, maxWords).join(" ");
+  truncated = truncated.replace(/[;,:-]+$/, "");
+  if (!/[.!?]$/.test(truncated)) {
+    truncated += ".";
+  }
+  return truncated;
+}
+
+function normalizeSpaces(text) {
+  return text.replace(/\s+/g, " ").trim();
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
 }
 
 async function copyShareLink() {
@@ -1958,6 +2431,18 @@ function renderSharedResults(payload) {
       });
     }
   });
+  setAssistantContext({
+    primary,
+    secondary,
+    confidence: confidenceLevel,
+    mix: {
+      sanguine: mixPercentages.Sanguine,
+      choleric: mixPercentages.Choleric,
+      melancholic: mixPercentages.Melancholic,
+      phlegmatic: mixPercentages.Phlegmatic,
+    },
+  });
+  resetAssistantSession();
 
   state.detailVisible = false;
   resultDetail.classList.add("hidden");

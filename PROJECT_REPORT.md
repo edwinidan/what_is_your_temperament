@@ -1,6 +1,6 @@
 # Temperament Insight Project Report
 
-Date: February 21, 2026  
+Date: February 23, 2026  
 Project type: Static educational web app (no backend, no build step)
 
 ## 1. Executive Summary
@@ -47,6 +47,12 @@ Notable UX update: the intermediate "Pick Your Test Length" hero step was remove
 - `app.js`
   - Assessment data, state machine, pagination, scoring, confidence logic, persistence.
   - Privacy-friendly analytics event instrumentation.
+- `AI_ASSISTANT_SPEC.md`
+  - Product specification for the optional Results-page assistant ("Temperament Reflection Guide").
+  - Defines scope boundaries, allowed modes, forbidden topics, limits, input constraints, and output format.
+- `TEMPERAMENT_REFLECTION_GUIDE_SYSTEM_PROMPT.txt`
+  - Copy-paste-ready strict system prompt for the assistant.
+  - Encodes non-clinical guardrails, refusal style, prompt-injection resistance, and response structure rules.
 - `README.md`
   - Run instructions and high-level scope.
 
@@ -180,6 +186,7 @@ Results panel includes:
 - Communication style cards
 - Confidence indicator ring
 - Expandable detailed communication explanation
+- Optional guided assistant module ("Temperament Reflection Guide") with collapsed default state, mode-based reflections, and session-only history
 - Bottom-positioned result action controls (copy link, share card, detailed explanation toggle, retake, back home)
 - Educational disclaimer
 
@@ -275,6 +282,7 @@ Implemented:
 - Dominance-first ordering in Mix and Score Breakdown sections
 - Mobile result breakdown optimization (2-column cards and smaller percentage labels)
 - Detailed expandable interpretation
+- Optional Results-page AI reflection UX scaffold (frontend-only, no API integration yet)
 - Responsive redesign and direct-to-selection CTA flow
 - Privacy-friendly product analytics events
 
@@ -352,6 +360,14 @@ The project has undergone several significant User Experience (UX) and content u
 - **Action Controls Relocated:** Result action controls (`Copy Share Link`, `Generate Share Card`, `Show Detailed Explanation`, `Take Another Test`, `Back Home`) were moved from the sidebar to the bottom of the results section so they appear only after users review the full report content.
 - **"What to do next" Bullet Stability:** The list item markup was adjusted so each bullet is treated as a single content block, preventing narrow-column per-letter wrapping and restoring normal word-level line wrapping.
 - **Behavior Preserved:** Button IDs, link targets, and JavaScript bindings remained unchanged, so existing sharing, detail toggling, and navigation actions continue to work without logic changes.
+
+### 14.9 Temperament Reflection Guide UX (Feb 23)
+
+- **Optional Assistant Placement:** Implemented an optional assistant panel directly in `test-options.html` Results flow, positioned below the educational disclaimer and above the bottom result action controls.
+- **Guided Mode-Based Interaction:** Added a collapsed-first UX that expands into exactly six reflection modes (`Result Summary`, `Strengths in Action`, `Watch-outs & Reframes`, `7-Day Reflection Plan`, `Communication Prep`, `Journaling Prompts`) with a visible 5-message session counter.
+- **Stateful Frontend Logic (No API):** Added dedicated in-memory assistant state (`assistantOpen`, `messagesUsed`, `activeMode`, `loading`, `history`) and deterministic local response generation (150-200 words) to support full UX behavior without backend integration.
+- **Safety & Boundary Handling:** Added loading, limit, and error states (network unavailable, boundary/refusal, unexpected failure) with calm educational copy and non-clinical positioning.
+- **Spec/Prompt Foundation Added:** Introduced `AI_ASSISTANT_SPEC.md` and `TEMPERAMENT_REFLECTION_GUIDE_SYSTEM_PROMPT.txt` to lock behavior, constraints, and future integration readiness before API wiring.
 
 ## 15. Data & Stats Inventory (Privacy Profile)
 
