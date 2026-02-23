@@ -1,428 +1,482 @@
 <!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Temperament Test - Home</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Temperament Test - Home</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet" />
+    <!-- Privacy-friendly analytics script (Plausible) -->
+    <script
+      defer
+      data-domain="whatismytemperament.com"
+      src="https://plausible.io/js/pa-_qc7T854PUP4o3PSGZBHN.js"
+    ></script>
+    <script>
+      window.plausible =
+        window.plausible ||
+        function () {
+          (plausible.q = plausible.q || []).push(arguments);
+        };
+      plausible.init =
+        plausible.init ||
+        function (i) {
+          plausible.o = i || {};
+        };
+      plausible.init();
+    </script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
 
-  <!-- Privacy-friendly analytics script (Plausible) -->
-  <script defer data-domain="whatismytemperament.com"
-    src="https://plausible.io/js/pa-_qc7T854PUP4o3PSGZBHN.js"></script>
-  <script>
-    window.plausible =
-      window.plausible ||
-      function () {
-        (plausible.q = plausible.q || []).push(arguments);
-      };
-    plausible.init =
-      plausible.init ||
-      function (i) {
-        plausible.o = i || {};
-      };
-    plausible.init();
-  </script>
-  <link rel="stylesheet" href="styles.css" />
-</head>
-
-<body class="site-home">
-  <!-- ===============================
+  <body class="site-home">
+    <!-- ===============================
        TOP NAVIGATION BAR
        =============================== -->
-  <nav class="top-nav">
-    <div class="app-container nav-inner">
-      <!-- Brand Logo / Name -->
-      <a class="brand" href="index.html">
-        <span class="brand-mark" aria-hidden="true">T</span>
-        <span class="brand-text">Temperament<span>Test</span></span>
-      </a>
-      <div class="nav-links">
-        <a href="#about">About</a>
-        <a href="#types">Types</a>
-        <a href="#contact">Contact</a>
+    <nav class="top-nav">
+      <div class="app-container nav-inner">
+        <!-- Brand Logo / Name -->
+        <a class="brand" href="index.html">
+          <span class="brand-mark" aria-hidden="true">T</span>
+          <span class="brand-text">Temperament<span>Test</span></span>
+        </a>
+        <div class="nav-links">
+          <a href="#about">About</a>
+          <a href="#types">Types</a>
+          <a href="#contact">Contact</a>
+        </div>
+        <a href="test-options.html#choose-depth" class="nav-cta">Take Test</a>
       </div>
-      <a href="test-options.html#choose-depth" class="nav-cta">Take Test</a>
-    </div>
-  </nav>
+    </nav>
 
-  <main>
-    <!-- ===============================
+    <main>
+      <!-- ===============================
          HERO SECTION (Top Banner)
          =============================== -->
-    <section class="hero hero-home">
-      <!-- Animated background mesh circles -->
-      <div class="hero-mesh" aria-hidden="true">
-        <div class="mesh-orb orb-phlegmatic"></div>
-        <div class="mesh-orb orb-sanguine"></div>
-        <div class="mesh-orb orb-choleric"></div>
-        <div class="mesh-orb orb-melancholic"></div>
-      </div>
-      <div class="app-container hero-content">
-        <h1>
-          Discover Your True <br />
-          <span>Temperament</span>
-        </h1>
-        <p class="hero-copy">
-          Unlock the patterns behind how you think, react, and connect with
-          others through a clear, practical self-awareness assessment.
-        </p>
-
-        <!-- Primary Call to Actions linking directly to the Test Options form -->
-        <div class="hero-actions">
-          <a href="test-options.html#choose-depth" class="btn btn-primary">
-            Start Free Test
-            <span aria-hidden="true">-></span>
-          </a>
-          <a href="temperaments.html" class="btn btn-outline">Learn More</a>
+      <section class="hero hero-home">
+        <!-- Animated background mesh circles -->
+        <div class="hero-mesh" aria-hidden="true">
+          <div class="mesh-orb orb-phlegmatic"></div>
+          <div class="mesh-orb orb-sanguine"></div>
+          <div class="mesh-orb orb-choleric"></div>
+          <div class="mesh-orb orb-melancholic"></div>
         </div>
-        <p class="hero-meta">
-          Takes less than 5 minutes. No registration required.
-        </p>
-      </div>
-    </section>
+        <div class="app-container hero-content">
+          <h1>
+            Discover Your True <br />
+            <span>Temperament</span>
+          </h1>
+          <p class="hero-copy">
+            Unlock the patterns behind how you think, react, and connect with
+            others through a clear, practical self-awareness assessment.
+          </p>
 
-    <!-- ===============================
+          <!-- Primary Call to Actions linking directly to the Test Options form -->
+          <div class="hero-actions">
+            <a href="test-options.html#choose-depth" class="btn btn-primary">
+              Start Free Test
+              <span aria-hidden="true">-></span>
+            </a>
+            <a href="temperaments.html" class="btn btn-outline">Learn More</a>
+          </div>
+          <p class="hero-meta">
+            Takes less than 5 minutes. No registration required.
+          </p>
+        </div>
+      </section>
+
+      <!-- ===============================
          WHAT YOU'LL LEARN (Replaces 'Why Take...')
          =============================== -->
-    <section class="section" id="about">
-      <div class="app-container">
-        <div class="section-head">
-          <span class="section-kicker">EDUCATIONAL REFLECTION</span>
-          <h2>What You'll Learn</h2>
-          <p>
-            Your temperament influences how you navigate the world. This
-            assessment provides insight into your innate patterns:
-          </p>
+      <section class="section" id="about">
+        <div class="app-container">
+          <div class="section-head">
+            <span class="section-kicker">EDUCATIONAL REFLECTION</span>
+            <h2>What You'll Learn</h2>
+            <p>
+              Your temperament influences how you navigate the world. This
+              assessment provides insight into your innate patterns:
+            </p>
+          </div>
+
+          <ul class="learn-list">
+            <li>
+              <strong>Stress Response:</strong> You may notice how you
+              communicate and react under pressure.
+            </li>
+            <li>
+              <strong>Social Energy:</strong> Your default social style and
+              interaction preferences.
+            </li>
+            <li>
+              <strong>Typical strengths:</strong> The core capabilities you lean
+              on most.
+            </li>
+            <li>
+              <strong>Common watch-outs:</strong> Blind spots to be aware of in
+              your daily life.
+            </li>
+            <li>
+              <strong>Reflection prompts:</strong> A clear focus area for
+              self-development.
+            </li>
+            <li>
+              <strong>Secondary Influence:</strong> How your secondary
+              temperament shapes your primary traits.
+            </li>
+          </ul>
         </div>
+      </section>
 
-        <ul class="learn-list">
-          <li>
-            <strong>Stress Response:</strong> How you communicate and react
-            under pressure.
-          </li>
-          <li>
-            <strong>Social Energy:</strong> Your default social style and
-            interaction preferences.
-          </li>
-          <li>
-            <strong>Natural Strengths:</strong> The core capabilities you lean
-            on most.
-          </li>
-          <li>
-            <strong>Watch-outs:</strong> Blind spots to be aware of in your
-            daily life.
-          </li>
-          <li>
-            <strong>Practical Growth:</strong> A clear focus area for
-            self-development.
-          </li>
-          <li>
-            <strong>Secondary Influence:</strong> How your secondary
-            temperament shapes your primary traits.
-          </li>
-        </ul>
-      </div>
-    </section>
-
-    <!-- ===============================
+      <!-- ===============================
          WHO IT'S FOR
          =============================== -->
-    <section class="section section-muted" id="audience">
-      <div class="app-container">
-        <div class="section-head">
-          <h2>Who It’s For</h2>
-          <p>
-            Designed for anyone seeking better relationships and deeper
-            self-awareness.
-          </p>
+      <section class="section section-muted" id="audience">
+        <div class="app-container">
+          <div class="section-head">
+            <h2>Who It’s For</h2>
+            <p>
+              Designed for anyone seeking better relationships and deeper
+              self-awareness.
+            </p>
+          </div>
+          <div class="who-grid">
+            <article class="who-card">
+              <h3>Students & Young Adults</h3>
+              <p>
+                Understand your working style to navigate early career and
+                academic challenges.
+              </p>
+            </article>
+            <article class="who-card">
+              <h3>Couples & Friendships</h3>
+              <p>
+                Learn how your partner naturally communicates to reduce
+                friction.
+              </p>
+            </article>
+            <article class="who-card">
+              <h3>Teams & Clubs</h3>
+              <p>
+                Discover how different temperaments balance each other in group
+                settings.
+              </p>
+            </article>
+            <article class="who-card">
+              <h3>Self-Reflection</h3>
+              <p>
+                Gain language to articulate your needs, strengths, and
+                boundaries.
+              </p>
+            </article>
+          </div>
         </div>
-        <div class="who-grid">
-          <article class="who-card">
-            <h3>Students & Young Adults</h3>
-            <p>
-              Understand your working style to navigate early career and
-              academic challenges.
-            </p>
-          </article>
-          <article class="who-card">
-            <h3>Couples & Friendships</h3>
-            <p>
-              Learn how your partner naturally communicates to reduce
-              friction.
-            </p>
-          </article>
-          <article class="who-card">
-            <h3>Teams & Clubs</h3>
-            <p>
-              Discover how different temperaments balance each other in group
-              settings.
-            </p>
-          </article>
-          <article class="who-card">
-            <h3>Self-Reflection</h3>
-            <p>
-              Gain language to articulate your needs, strengths, and
-              boundaries.
-            </p>
-          </article>
-        </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- ===============================
+      <!-- ===============================
          HOW IT WORKS
          =============================== -->
-    <section class="section" id="how-it-works">
-      <div class="app-container">
-        <div class="section-head">
-          <span class="section-kicker">SIMPLE PROCESS</span>
-          <h2>How It Works</h2>
+      <section class="section" id="how-it-works">
+        <div class="app-container">
+          <div class="section-head">
+            <span class="section-kicker">SIMPLE PROCESS</span>
+            <h2>How It Works</h2>
+          </div>
+          <div class="how-steps">
+            <article class="step-card">
+              <span class="step-num">1</span>
+              <h3>Choose Length</h3>
+              <p>
+                Select a 20, 40, or 60-question assessment based on how much
+                detail you want.
+              </p>
+            </article>
+            <article class="step-card">
+              <span class="step-num">2</span>
+              <h3>Answer Sliders</h3>
+              <p>
+                React honestly to a series of statements using intuitive
+                sliders.
+              </p>
+            </article>
+            <article class="step-card">
+              <span class="step-num">3</span>
+              <h3>Get Your Results</h3>
+              <p>
+                Instantly receive your primary temperament, secondary influence,
+                and mix breakdown.
+              </p>
+            </article>
+          </div>
         </div>
-        <div class="how-steps">
-          <article class="step-card">
-            <span class="step-num">1</span>
-            <h3>Choose Length</h3>
-            <p>
-              Select a 20, 40, or 60-question assessment based on how much
-              detail you want.
-            </p>
-          </article>
-          <article class="step-card">
-            <span class="step-num">2</span>
-            <h3>Answer Sliders</h3>
-            <p>
-              React honestly to a series of statements using intuitive
-              sliders.
-            </p>
-          </article>
-          <article class="step-card">
-            <span class="step-num">3</span>
-            <h3>Get Your Results</h3>
-            <p>
-              Instantly receive your primary temperament, secondary influence,
-              and mix breakdown.
-            </p>
-          </article>
-        </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- ===============================
+      <!-- ===============================
          THE FOUR TEMPERAMENTS LISTING
          Displays the core 4 types with preview images linked to temperaments.html
          =============================== -->
-    <section class="section section-muted" id="types" style="background: var(--gray-50)">
-      <div class="app-container">
-        <div class="section-head">
-          <h2>The Four Temperaments</h2>
-          <p>
-            Most people are a blend, with one primary and one secondary
-            influence.
-          </p>
-        </div>
+      <section
+        class="section section-muted"
+        id="types"
+        style="background: var(--gray-50)"
+      >
+        <div class="app-container">
+          <div class="section-head">
+            <h2>The Four Temperaments</h2>
+            <p>
+              Most people are a blend, with one primary and one secondary
+              influence.
+            </p>
+          </div>
 
-        <div class="temp-grid">
-          <!-- Sanguine Card -->
-          <a href="temperaments.html#sanguine" class="temp-card temp-card-link">
-            <div class="temp-img">
-              <img src="https://images.unsplash.com/photo-1625283518288-00362afc8663?w=900&auto=format&fit=crop"
-                alt="Sanguine temperament" />
-            </div>
-            <div class="temp-body">
-              <h3>Sanguine</h3>
-              <p class="temp-sub">Enthusiastic, Active, Social</p>
-              <p>
-                Optimistic and expressive, often energized by interaction and
-                variety.
-              </p>
-            </div>
-          </a>
+          <div class="temp-grid">
+            <!-- Sanguine Card -->
+            <a
+              href="temperaments.html#sanguine"
+              class="temp-card temp-card-link"
+            >
+              <div class="temp-img">
+                <img
+                  src="https://images.unsplash.com/photo-1625283518288-00362afc8663?w=900&auto=format&fit=crop"
+                  alt="Sanguine temperament"
+                />
+              </div>
+              <div class="temp-body">
+                <h3>Sanguine</h3>
+                <p class="temp-sub">Enthusiastic, Active, Social</p>
+                <p>
+                  Optimistic and expressive, often energized by interaction and
+                  variety.
+                </p>
+              </div>
+            </a>
 
-          <a href="temperaments.html#choleric" class="temp-card temp-card-link">
-            <div class="temp-img">
-              <img src="https://images.unsplash.com/photo-1758519291173-bb9fb3098e04?w=900&auto=format&fit=crop"
-                alt="Choleric temperament" />
-            </div>
-            <div class="temp-body">
-              <h3>Choleric</h3>
-              <p class="temp-sub">Driven, Decisive, Goal-Oriented</p>
-              <p>
-                Results-focused and assertive, often stepping into leadership
-                naturally.
-              </p>
-            </div>
-          </a>
+            <a
+              href="temperaments.html#choleric"
+              class="temp-card temp-card-link"
+            >
+              <div class="temp-img">
+                <img
+                  src="https://images.unsplash.com/photo-1758519291173-bb9fb3098e04?w=900&auto=format&fit=crop"
+                  alt="Choleric temperament"
+                />
+              </div>
+              <div class="temp-body">
+                <h3>Choleric</h3>
+                <p class="temp-sub">Driven, Decisive, Goal-Oriented</p>
+                <p>
+                  Results-focused and assertive, often stepping into leadership
+                  naturally.
+                </p>
+              </div>
+            </a>
 
-          <a href="temperaments.html#melancholic" class="temp-card temp-card-link">
-            <div class="temp-img">
-              <img src="https://images.unsplash.com/photo-1712229462114-dae7fa1d1bf1?w=900&auto=format&fit=crop"
-                alt="Melancholic temperament" />
-            </div>
-            <div class="temp-body">
-              <h3>Melancholic</h3>
-              <p class="temp-sub">Analytical, Careful, Reflective</p>
-              <p>
-                Detail-oriented and thoughtful, with strong sensitivity to
-                quality and depth.
-              </p>
-            </div>
-          </a>
+            <a
+              href="temperaments.html#melancholic"
+              class="temp-card temp-card-link"
+            >
+              <div class="temp-img">
+                <img
+                  src="https://images.unsplash.com/photo-1712229462114-dae7fa1d1bf1?w=900&auto=format&fit=crop"
+                  alt="Melancholic temperament"
+                />
+              </div>
+              <div class="temp-body">
+                <h3>Melancholic</h3>
+                <p class="temp-sub">Analytical, Careful, Reflective</p>
+                <p>
+                  Detail-oriented and thoughtful, with strong sensitivity to
+                  quality and depth.
+                </p>
+              </div>
+            </a>
 
-          <a href="temperaments.html#phlegmatic" class="temp-card temp-card-link">
-            <div class="temp-img">
-              <img src="https://images.unsplash.com/photo-1557929878-b358f3bdbdd7?w=900&auto=format&fit=crop"
-                alt="Phlegmatic temperament" />
-            </div>
-            <div class="temp-body">
-              <h3>Phlegmatic</h3>
-              <p class="temp-sub">Steady, Calm, Reliable</p>
-              <p>
-                Consistent and diplomatic, often bringing stability and
-                balance to groups.
-              </p>
-            </div>
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===============================
-         TRUST / PRIVACY SECTION
-         =============================== -->
-    <section class="section trust-section" id="trust">
-      <div class="app-container narrow text-center">
-        <div class="trust-box">
-          <span class="section-kicker">PRIVACY & SAFETY</span>
-          <h2>Your Data Stays With You</h2>
-          <p>
-            We respect your privacy. This assessment is designed as a safe,
-            local-first tool for self-reflection.
-          </p>
-          <ul class="trust-list">
-            <li>
-              <strong>No Accounts:</strong> You do not need to sign up or
-              provide an email.
-            </li>
-            <li>
-              <strong>No Personal Info:</strong> We never ask for names or
-              contact details.
-            </li>
-            <li>
-              <strong>Local Storage:</strong> Your progress is saved only on
-              your device and cleared when finished.
-            </li>
-            <li>
-              <strong>Anonymous Analytics:</strong> We use privacy-friendly
-              analytics solely to ensure the site is working.
-            </li>
-            <li>
-              <strong>Educational Only:</strong> This is a reflection
-              framework, not a clinical diagnostic tool.
-            </li>
-          </ul>
-          <div class="trust-links">
-            <a href="privacy.html">Read Privacy Policy</a>
-            <a href="terms.html">Read Terms of Use</a>
+            <a
+              href="temperaments.html#phlegmatic"
+              class="temp-card temp-card-link"
+            >
+              <div class="temp-img">
+                <img
+                  src="https://images.unsplash.com/photo-1557929878-b358f3bdbdd7?w=900&auto=format&fit=crop"
+                  alt="Phlegmatic temperament"
+                />
+              </div>
+              <div class="temp-body">
+                <h3>Phlegmatic</h3>
+                <p class="temp-sub">Steady, Calm, Reliable</p>
+                <p>
+                  Consistent and diplomatic, often bringing stability and
+                  balance to groups.
+                </p>
+              </div>
+            </a>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- ===============================
+      <!-- ===============================
+         TRUST / PRIVACY SECTION
+         =============================== -->
+      <section class="section trust-section" id="trust">
+        <div class="app-container narrow text-center">
+          <div class="trust-box">
+            <span class="section-kicker">PRIVACY & SAFETY</span>
+            <h2>Your Data Stays With You</h2>
+            <p>
+              We respect your privacy. This assessment is designed as a safe,
+              local-first tool for self-reflection.
+            </p>
+            <ul class="trust-list">
+              <li>
+                <strong>No Accounts:</strong> You do not need to sign up or
+                provide an email.
+              </li>
+              <li>
+                <strong>No Personal Info:</strong> We never ask for names or
+                contact details.
+              </li>
+              <li>
+                <strong>Local Storage:</strong> Your answers stay in your
+                browser (local storage) and are cleared when finished.
+              </li>
+              <li>
+                <strong>Anonymous Analytics:</strong> We use privacy-friendly
+                analytics (Plausible) to count visits/events — no personal data.
+              </li>
+              <li>
+                <strong>Educational Only:</strong> This is a reflection
+                framework, not a clinical diagnostic tool.
+              </li>
+            </ul>
+            <div class="trust-links">
+              <a href="privacy.html">Read Privacy Policy</a>
+              <a href="terms.html">Read Terms of Use</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===============================
          BOTTOM CALL TO ACTION BAND
          =============================== -->
-    <section class="section cta-band">
-      <div class="app-container cta-inner">
-        <h2>Ready to discover your temperament?</h2>
-        <div class="cta-actions" style="
+      <section class="section cta-band">
+        <div class="app-container cta-inner">
+          <h2>Ready to discover your temperament?</h2>
+          <div
+            class="cta-actions"
+            style="
               margin-top: 2rem;
               display: flex;
               gap: 1rem;
               justify-content: center;
               flex-wrap: wrap;
-            ">
-          <a href="test-options.html#choose-depth" class="btn btn-light" style="padding: 1rem 2rem; font-size: 1.1rem">
-            Start Free Test
-            <span aria-hidden="true">-></span>
-          </a>
-          <a href="temperaments.html" class="btn btn-outline" style="
+            "
+          >
+            <a
+              href="test-options.html#choose-depth"
+              class="btn btn-light"
+              style="padding: 1rem 2rem; font-size: 1.1rem"
+            >
+              Start Free Test
+              <span aria-hidden="true">-></span>
+            </a>
+            <a
+              href="temperaments.html"
+              class="btn btn-outline"
+              style="
                 background: transparent;
                 border-color: rgb(255 255 255 / 30%);
                 color: #fff;
                 padding: 1rem 2rem;
                 font-size: 1.1rem;
-              ">
-            Explore Temperaments
-          </a>
+              "
+            >
+              Explore Temperaments
+            </a>
+          </div>
+          <p style="margin-top: 1.5rem; opacity: 0.9">
+            Choose 20, 40, or 60 questions based on how deep you want to go.
+          </p>
         </div>
-        <p style="margin-top: 1.5rem; opacity: 0.9">
-          Choose 20, 40, or 60 questions based on how deep you want to go.
-        </p>
-      </div>
-    </section>
-  </main>
+      </section>
+    </main>
 
-  <!-- ===============================
+    <!-- ===============================
        SITE FOOTER
        =============================== -->
-  <footer class="site-footer" id="contact">
-    <div class="app-container footer-grid">
-      <!-- Footer Branding -->
-      <div class="footer-brand">
-        <a class="brand" href="index.html">
-          <span class="brand-mark" aria-hidden="true">T</span>
-          <span class="brand-text">Temperament<span>Test</span></span>
-        </a>
-        <p>
-          Educational self-reflection tool based on the four classic
-          temperament patterns.
-        </p>
-      </div>
+    <footer class="site-footer" id="contact">
+      <div class="app-container footer-grid">
+        <!-- Footer Branding -->
+        <div class="footer-brand">
+          <a class="brand" href="index.html">
+            <span class="brand-mark" aria-hidden="true">T</span>
+            <span class="brand-text">Temperament<span>Test</span></span>
+          </a>
+          <p>
+            Educational self-reflection tool based on the four classic
+            temperament patterns.
+          </p>
+        </div>
 
-      <div class="footer-col">
-        <h3>Explore</h3>
-        <a href="temperaments.html">About Types</a>
-        <a href="test-options.html#choose-depth">Take the Test</a>
-        <a href="temperaments.html">Temperament Guide</a>
-      </div>
+        <div class="footer-col">
+          <h3>Explore</h3>
+          <a href="temperaments.html">About Types</a>
+          <a href="test-options.html#choose-depth">Take the Test</a>
+          <a href="temperaments.html">Temperament Guide</a>
+        </div>
 
-      <div class="footer-col">
-        <h3>Contact</h3>
-        <a href="mailto:contact@temperamenttest.com">contact@temperamenttest.com</a>
-        <p>Educational use only. Not medical diagnosis.</p>
+        <div class="footer-col">
+          <h3>Contact</h3>
+          <a href="mailto:contact@temperamenttest.com"
+            >contact@temperamenttest.com</a
+          >
+          <p>Educational use only. Not medical diagnosis.</p>
+        </div>
       </div>
-    </div>
-    <div class="footer-base">
-      <div class="app-container" style="
+      <div class="footer-base">
+        <div
+          class="app-container"
+          style="
             display: flex;
             flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
             gap: 1rem;
-          ">
-        <p style="margin: 0">
-          &copy; 2026 TemperamentTest. All rights reserved.
-        </p>
-        <div class="footer-legal" style="font-size: 0.92rem; color: var(--gray-500)">
-          <a href="privacy.html" style="
+          "
+        >
+          <p style="margin: 0">
+            &copy; 2026 TemperamentTest. All rights reserved.
+          </p>
+          <div
+            class="footer-legal"
+            style="font-size: 0.92rem; color: var(--gray-500)"
+          >
+            <a
+              href="privacy.html"
+              style="
                 color: inherit;
                 text-decoration: underline;
                 margin-right: 0.5rem;
-              ">Privacy Policy</a>
-          |
-          <a href="terms.html" style="
+              "
+              >Privacy Policy</a
+            >
+            |
+            <a
+              href="terms.html"
+              style="
                 color: inherit;
                 text-decoration: underline;
                 margin-left: 0.5rem;
-              ">Terms & Disclaimer</a>
+              "
+              >Terms & Disclaimer</a
+            >
+          </div>
         </div>
       </div>
-    </div>
-  </footer>
-</body>
-
+    </footer>
+  </body>
 </html>
