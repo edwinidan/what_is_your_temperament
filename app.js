@@ -927,7 +927,7 @@ function bindQuestionListeners() {
       input.style.setProperty("--thumb-scale", scale);
       pageWarning.classList.add("hidden");
       syncProgressOnly();
-      saveProgress();
+      debounceSaveProgress();
     };
 
     input.addEventListener("input", (event) => {
@@ -1259,6 +1259,16 @@ function safeRemove(key) {
   } catch (_e) {}
 }
 
+let saveProgressTimeout = null;
+function debounceSaveProgress() {
+  if (saveProgressTimeout) {
+    clearTimeout(saveProgressTimeout);
+  }
+  saveProgressTimeout = setTimeout(() => {
+    saveProgress();
+  }, 250);
+}
+
 function toCenteredValue(value) {
   return value - 3;
 }
@@ -1396,6 +1406,10 @@ function restoreProgressIfAvailable() {
 }
 
 function clearProgress() {
+  if (saveProgressTimeout) {
+    clearTimeout(saveProgressTimeout);
+    saveProgressTimeout = null;
+  }
   safeRemove(STORAGE_KEY);
 }
 
@@ -1592,9 +1606,43 @@ function renderTemperamentLegend(percentages, displayOrder) {
     .join("");
 }
 
-function renderTemperamentDonut(percentages, displayOrder) {
+let chartJsLoaderPromise = null;
+
+function loadChartJs() {
+  if (typeof window.Chart === "function") {
+    return Promise.resolve(window.Chart);
+  }
+  if (chartJsLoaderPromise) {
+    return chartJsLoaderPromise;
+  }
+  chartJsLoaderPromise = new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src =
+      "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js";
+    script.onload = () => resolve(window.Chart);
+    script.onerror = () => {
+      chartJsLoaderPromise = null;
+      reject(new Error("Failed to load Chart.js"));
+    };
+    document.head.appendChild(script);
+  });
+  return chartJsLoaderPromise;
+}
+
+async function renderTemperamentDonut(percentages, displayOrder) {
   const canvas = document.getElementById("temperament-donut");
-  if (!canvas || typeof window.Chart !== "function") {
+  if (!canvas) {
+    return;
+  }
+
+  try {
+    await loadChartJs();
+  } catch (_e) {
+    // Fallback: If Chart.js fails to load over the network, render text-only
+    return;
+  }
+
+  if (typeof window.Chart !== "function") {
     return;
   }
   const context = canvas.getContext("2d");
@@ -1944,6 +1992,11 @@ async function generateShareCard() {
     // Decode stored mix percentages from URL token
     const decodedPayload = decodeSharePayload(state.shareUrl);
     const mixPercents = decodedPayload?.mix || {};
+
+    // Yield thread to allow button "Generating..." text to paint
+    await new Promise((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(resolve)),
+    );
 
     const cardData = {
       primary: state.resultMeta.primary,

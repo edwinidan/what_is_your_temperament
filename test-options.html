@@ -1,392 +1,541 @@
 <!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Temperament Test - Choose Test Length</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Temperament Test - Choose Test Length</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet" />
+    <!-- Privacy-friendly analytics script (Plausible) -->
+    <script
+      defer
+      data-domain="whatismytemperament.com"
+      src="https://plausible.io/js/pa-_qc7T854PUP4o3PSGZBHN.js"
+    ></script>
+    <script>
+      window.plausible =
+        window.plausible ||
+        function () {
+          (plausible.q = plausible.q || []).push(arguments);
+        };
+      plausible.init =
+        plausible.init ||
+        function (i) {
+          plausible.o = i || {};
+        };
+      plausible.init();
+    </script>
+    <!-- Chart.js will be dynamically loaded via app.js -->
+    <link rel="stylesheet" href="styles.css" />
+  </head>
 
-  <!-- Privacy-friendly analytics script (Plausible) -->
-  <script async src="https://plausible.io/js/pa-_qc7T854PUP4o3PSGZBHN.js"></script>
-  <script>
-    window.plausible = window.plausible || function () { (plausible.q = plausible.q || []).push(arguments); };
-    plausible.init = plausible.init || function (i) { plausible.o = i || {}; };
-    plausible.init();
-  </script>
-  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-  <link rel="stylesheet" href="styles.css" />
-</head>
-
-<body class="site-selection">
-  <!-- ===============================
+  <body class="site-selection">
+    <!-- ===============================
        TOP NAVIGATION BAR
        =============================== -->
-  <nav class="top-nav">
-    <div class="app-container nav-inner">
-      <!-- Brand Logo / Name -->
-      <a class="brand" href="index.html">
-        <span class="brand-mark" aria-hidden="true">T</span>
-        <span class="brand-text">Temperament<span>Test</span></span>
-      </a>
-      <div class="nav-links">
-        <a href="index.html#about">About</a>
-        <a href="index.html#types">Types</a>
-        <a href="index.html#contact">Contact</a>
-      </div>
-      <a href="#choose-depth" class="nav-cta">Choose Test</a>
-    </div>
-  </nav>
-
-  <main>
-    <!-- ===============================
-         STAGE 1: INTRO & DEPTH SELECTION
-         This panel is visible when the user first arrives to select test length.
-         =============================== -->
-    <div id="intro-panel">
-      <section class="section selection-direct" id="choose-depth">
-        <div class="app-container narrow">
-          <div class="section-head">
-            <h2>Select Number of Questions</h2>
-            <p>Choose your preferred depth before starting the assessment.</p>
-          </div>
-
-          <fieldset class="depth-grid" aria-label="Choose assessment depth">
-            <legend class="sr-only">Choose assessment depth</legend>
-
-            <label class="depth-card">
-              <input type="radio" name="depth" value="20" checked />
-              <span class="depth-content">
-                <span class="depth-title">20 Questions</span>
-                <span class="depth-sub">Fast overview with core personality signals.</span>
-                <span class="depth-meta">About 5 minutes</span>
-              </span>
-            </label>
-
-            <label class="depth-card">
-              <input type="radio" name="depth" value="40" />
-              <span class="depth-content">
-                <span class="depth-title">40 Questions</span>
-                <span class="depth-sub">Balanced depth for stronger confidence.</span>
-                <span class="depth-meta">About 9 minutes</span>
-              </span>
-            </label>
-
-            <label class="depth-card">
-              <input type="radio" name="depth" value="60" />
-              <span class="depth-content">
-                <span class="depth-title">60 Questions</span>
-                <span class="depth-sub">Most detailed view of your temperament blend.</span>
-                <span class="depth-meta">About 13 minutes</span>
-              </span>
-            </label>
-          </fieldset>
-
-          <div class="selection-actions">
-            <button id="start-btn" class="btn btn-primary btn-start" type="button">
-              Start Free Test
-              <span aria-hidden="true">-></span>
-            </button>
-            <p class="selection-note">
-              No account required. This is educational reflection, not diagnosis.
-            </p>
-            <a href="index.html" class="btn btn-outline back-home-btn">Back Home</a>
-          </div>
-        </div>
-      </section>
-    </div>
-
-    <!-- ===============================
-         STAGE 2: ASSESSMENT IN PROGRESS
-         This panel holds the live test questions and tracking interface.
-         (Hidden by default, shown via app.js)
-         =============================== -->
-    <section class="section quiz-stage hidden" id="assessment-panel" aria-live="polite">
-      <div class="app-container narrow">
-        <div class="panel-card">
-          <div class="assessment-mesh" aria-hidden="true">
-            <div class="assessment-orb assessment-orb-phlegmatic"></div>
-            <div class="assessment-orb assessment-orb-sanguine"></div>
-            <div class="assessment-orb assessment-orb-choleric"></div>
-            <div class="assessment-orb assessment-orb-melancholic"></div>
-          </div>
-          <header class="assessment-header">
-            <div>
-              <p class="eyebrow">Assessment In Progress</p>
-              <h2 id="progress-heading">Question 1 of 20</h2>
-            </div>
-            <p id="progress-meta">Answered 0 of 20</p>
-          </header>
-
-          <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-            <div class="progress-fill" id="progress-fill"></div>
-          </div>
-
-          <div id="question-page" class="question-page"></div>
-          <p id="page-warning" class="warning hidden" role="alert">
-            Please answer all questions on this page before continuing.
-          </p>
-
-          <div class="page-controls">
-            <button id="prev-btn" class="btn btn-outline" type="button">Previous</button>
-            <button id="simulate-btn" class="btn btn-outline hidden" type="button">Auto-fill 20Q</button>
-            <button id="next-btn" class="btn btn-primary" type="button">Next</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===============================
-         STAGE 3: RESULTS DASHBOARD
-         This panel renders the user's computed results after the test finishes,
-         or when loaded via a #result= shareable link.
-         =============================== -->
-    <section class="section results-stage hidden" id="results-panel" aria-live="polite">
-      <div class="app-container result-container">
-        <!-- Result Hero Banner -->
-        <div class="panel-card result-hero-card">
-          <div class="result-hero-mesh" aria-hidden="true">
-            <div class="result-mesh-orb result-orb-phlegmatic"></div>
-            <div class="result-mesh-orb result-orb-sanguine"></div>
-            <div class="result-mesh-orb result-orb-choleric"></div>
-            <div class="result-mesh-orb result-orb-melancholic"></div>
-          </div>
-          <p class="eyebrow">Your Temperament Reflection</p>
-          <span class="result-pill">Your Result Is In</span>
-          <h2 id="result-name" class="result-name"></h2>
-          <p id="result-tagline" class="result-tagline"></p>
-          <p id="result-short" class="result-short"></p>
-          <div class="result-confidence-pill">
-            <span class="confidence-dot"></span>
-            <span id="result-confidence"></span>
-          </div>
-          <p id="result-title" class="sr-only"></p>
-        </div>
-
-        <!-- Main Content Area: Profile and Sidebar -->
-        <div class="result-profile-grid">
-
-          <!-- Primary Profile Detailed Display -->
-          <article class="panel-card profile-main-card">
-            <div class="profile-image-wrap">
-              <img id="result-profile-image" src="" alt="Primary temperament profile" />
-              <div class="profile-image-overlay">
-                <h3 id="result-profile-name"></h3>
-                <p id="result-profile-summary"></p>
-              </div>
-            </div>
-
-            <div class="profile-columns">
-              <div class="result-list-col">
-                <h4>Strengths</h4>
-                <ul id="detail-strengths" class="result-list"></ul>
-              </div>
-              <div class="result-list-col">
-                <h4>Watch-outs</h4>
-                <ul id="detail-weaknesses" class="result-list"></ul>
-              </div>
-            </div>
-
-            <div class="growth-note">
-              <h4>Growth Area</h4>
-              <p id="result-growth"></p>
-            </div>
-
-            <div id="result-detail" class="detail hidden">
-              <article>
-                <h3>Detailed Communication Insight</h3>
-                <p id="detail-communication"></p>
-              </article>
-            </div>
-          </article>
-
-          <!-- Sticky Sidebar Data -->
-          <aside class="result-sidebar">
-
-            <!-- Temperament Mix Donut Chart -->
-            <article class="panel-card mix-card">
-              <h3>Temperament Mix</h3>
-              <div class="mix-donut">
-                <canvas id="temperament-donut"></canvas>
-                <div class="mix-donut-center">
-                  <span id="primary-percent-label">0%</span>
-                  <small>Primary</small>
-                </div>
-              </div>
-              <div id="temperament-legend" class="mix-legend"></div>
-            </article>
-
-            <article class="secondary-card">
-              <p class="secondary-eyebrow">Secondary Influence</p>
-              <h3 id="secondary-name"></h3>
-              <p id="secondary-desc"></p>
-              <p id="secondary-traits" class="secondary-traits"></p>
-            </article>
-
-            <div class="result-actions">
-              <!-- <button id="copy-summary-btn" class="btn btn-outline" type="button">
-                Copy Result Summary
-              </button> -->
-              <button id="copy-link-btn" class="btn btn-outline" type="button">
-                Copy Share Link
-              </button>
-              <button id="share-card-btn" class="btn btn-outline" type="button">
-                Generate Share Card
-              </button>
-
-              <!-- Hidden Share Card Preview Container -->
-              <div id="share-card-preview" class="hidden"
-                style="margin-top: 1rem; text-align: center; background: var(--bg-surface); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-light);">
-                <canvas id="share-card-canvas"
-                  style="max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1);"></canvas>
-                <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Includes your
-                  personalized link</p>
-                <div style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;">
-                  <button id="download-card-btn" class="btn btn-primary" type="button">Download PNG</button>
-                  <button id="download-card-pdf-btn" class="btn btn-primary" type="button">Download PDF</button>
-                  <button id="share-card-native-btn" class="btn btn-outline" type="button">Share...</button>
-                </div>
-              </div>
-
-              <button id="detail-toggle" class="btn btn-outline" type="button">
-                Show Detailed Explanation
-              </button>
-              <a href="test-options.html" class="btn btn-primary result-restart">
-                Take Another Test
-                <span aria-hidden="true">-></span>
-              </a>
-              <a href="index.html" class="btn btn-outline">Back Home</a>
-            </div>
-          </aside>
-        </div>
-
-        <!-- Linear Score Breakdown -->
-        <div class="panel-card score-breakdown-card">
-          <p class="eyebrow">Score Breakdown</p>
-          <h3>How You Scored Across All Four</h3>
-          <div class="score-grid">
-            <div class="score-col" data-temp="Sanguine">
-              <div class="score-track">
-                <div class="score-fill" id="bar-sanguine"></div>
-              </div>
-              <span class="score-percent" id="pct-sanguine">0%</span>
-              <span class="score-name">Sanguine</span>
-            </div>
-            <div class="score-col" data-temp="Choleric">
-              <div class="score-track">
-                <div class="score-fill" id="bar-choleric"></div>
-              </div>
-              <span class="score-percent" id="pct-choleric">0%</span>
-              <span class="score-name">Choleric</span>
-            </div>
-            <div class="score-col" data-temp="Melancholic">
-              <div class="score-track">
-                <div class="score-fill" id="bar-melancholic"></div>
-              </div>
-              <span class="score-percent" id="pct-melancholic">0%</span>
-              <span class="score-name">Melancholic</span>
-            </div>
-            <div class="score-col" data-temp="Phlegmatic">
-              <div class="score-track">
-                <div class="score-fill" id="bar-phlegmatic"></div>
-              </div>
-              <span class="score-percent" id="pct-phlegmatic">0%</span>
-              <span class="score-name">Phlegmatic</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Communication Style Grid -->
-        <div class="panel-card comms-card">
-          <p class="eyebrow">How You Connect</p>
-          <h3>Your Communication Style</h3>
-          <div class="comms-grid">
-            <article>
-              <h4>Preferred Style</h4>
-              <p id="comms-preferred"></p>
-            </article>
-            <article>
-              <h4>As a Listener</h4>
-              <p id="comms-listener"></p>
-            </article>
-            <article>
-              <h4>Expressing Yourself</h4>
-              <p id="comms-expression"></p>
-            </article>
-            <article>
-              <h4>Under Pressure</h4>
-              <p id="comms-pressure"></p>
-            </article>
-          </div>
-        </div>
-
-        <div class="panel-card confidence-card">
-          <div class="confidence-copy">
-            <h3 id="confidence-title"></h3>
-            <p id="confidence-message"></p>
-          </div>
-          <div class="confidence-meter">
-            <div class="confidence-ring" id="confidence-ring">
-              <span id="confidence-percent">0%</span>
-            </div>
-            <span id="confidence-label" class="confidence-label"></span>
-          </div>
-        </div>
-
-        <p class="disclaimer">
-          This assessment is designed for personal reflection and educational
-          purposes only. It is not a clinical diagnostic tool and should not be
-          used as a substitute for professional advice.
-        </p>
-      </div>
-    </section>
-  </main>
-
-  <!-- ===============================
-       SITE FOOTER
-       =============================== -->
-  <footer class="site-footer">
-    <div class="app-container footer-grid">
-      <!-- Footer Branding -->
-      <div class="footer-brand">
+    <nav class="top-nav">
+      <div class="app-container nav-inner">
+        <!-- Brand Logo / Name -->
         <a class="brand" href="index.html">
           <span class="brand-mark" aria-hidden="true">T</span>
           <span class="brand-text">Temperament<span>Test</span></span>
         </a>
-        <p>Educational personality reflection based on classic temperament theory.</p>
+        <div class="nav-links">
+          <a href="index.html#about">About</a>
+          <a href="index.html#types">Types</a>
+          <a href="index.html#contact">Contact</a>
+        </div>
+        <a href="#choose-depth" class="nav-cta">Choose Test</a>
+      </div>
+    </nav>
+
+    <main>
+      <!-- ===============================
+         STAGE 1: INTRO & DEPTH SELECTION
+         This panel is visible when the user first arrives to select test length.
+         =============================== -->
+      <div id="intro-panel">
+        <section class="section selection-direct" id="choose-depth">
+          <div class="app-container narrow">
+            <div class="section-head">
+              <h2>Select Number of Questions</h2>
+              <p>Choose your preferred depth before starting the assessment.</p>
+            </div>
+
+            <fieldset class="depth-grid" aria-label="Choose assessment depth">
+              <legend class="sr-only">Choose assessment depth</legend>
+
+              <label class="depth-card">
+                <input type="radio" name="depth" value="20" checked />
+                <span class="depth-content">
+                  <span class="depth-title">20 Questions</span>
+                  <span class="depth-sub"
+                    >Fast overview with core personality signals.</span
+                  >
+                  <span class="depth-meta">About 5 minutes</span>
+                </span>
+              </label>
+
+              <label class="depth-card">
+                <input type="radio" name="depth" value="40" />
+                <span class="depth-content">
+                  <span class="depth-title">40 Questions</span>
+                  <span class="depth-sub"
+                    >Balanced depth for stronger confidence.</span
+                  >
+                  <span class="depth-meta">About 9 minutes</span>
+                </span>
+              </label>
+
+              <label class="depth-card">
+                <input type="radio" name="depth" value="60" />
+                <span class="depth-content">
+                  <span class="depth-title">60 Questions</span>
+                  <span class="depth-sub"
+                    >Most detailed view of your temperament blend.</span
+                  >
+                  <span class="depth-meta">About 13 minutes</span>
+                </span>
+              </label>
+            </fieldset>
+
+            <div class="selection-actions">
+              <button
+                id="start-btn"
+                class="btn btn-primary btn-start"
+                type="button"
+              >
+                Start Free Test
+                <span aria-hidden="true">-></span>
+              </button>
+              <p class="selection-note">
+                No account required. This is educational reflection, not
+                diagnosis.
+              </p>
+              <a href="index.html" class="btn btn-outline back-home-btn"
+                >Back Home</a
+              >
+            </div>
+          </div>
+        </section>
       </div>
 
-      <div class="footer-col">
-        <h3>Explore</h3>
-        <a href="index.html#about">About Types</a>
-        <a href="index.html#types">Temperaments</a>
-        <a href="test-options.html">Take the Test</a>
-      </div>
+      <!-- ===============================
+         STAGE 2: ASSESSMENT IN PROGRESS
+         This panel holds the live test questions and tracking interface.
+         (Hidden by default, shown via app.js)
+         =============================== -->
+      <section
+        class="section quiz-stage hidden"
+        id="assessment-panel"
+        aria-live="polite"
+      >
+        <div class="app-container narrow">
+          <div class="panel-card">
+            <div class="assessment-mesh" aria-hidden="true">
+              <div class="assessment-orb assessment-orb-phlegmatic"></div>
+              <div class="assessment-orb assessment-orb-sanguine"></div>
+              <div class="assessment-orb assessment-orb-choleric"></div>
+              <div class="assessment-orb assessment-orb-melancholic"></div>
+            </div>
+            <header class="assessment-header">
+              <div>
+                <p class="eyebrow">Assessment In Progress</p>
+                <h2 id="progress-heading">Question 1 of 20</h2>
+              </div>
+              <p id="progress-meta">Answered 0 of 20</p>
+            </header>
 
-      <div class="footer-col">
-        <h3>Contact</h3>
-        <a href="mailto:contact@temperamenttest.com">contact@temperamenttest.com</a>
-        <p>No registration required for assessment results.</p>
-      </div>
-    </div>
-    <div class="footer-base">
-      <div class="app-container"
-        style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
-        <p style="margin: 0;">&copy; 2026 TemperamentTest. All rights reserved.</p>
-        <div class="footer-legal" style="font-size: 0.92rem; color: var(--gray-500);">
-          <a href="privacy.html" style="color: inherit; text-decoration: underline; margin-right: 0.5rem;">Privacy
-            Policy</a> |
-          <a href="terms.html" style="color: inherit; text-decoration: underline; margin-left: 0.5rem;">Terms &
-            Disclaimer</a>
+            <div
+              class="progress-track"
+              role="progressbar"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow="0"
+            >
+              <div class="progress-fill" id="progress-fill"></div>
+            </div>
+
+            <div id="question-page" class="question-page"></div>
+            <p id="page-warning" class="warning hidden" role="alert">
+              Please answer all questions on this page before continuing.
+            </p>
+
+            <div class="page-controls">
+              <button id="prev-btn" class="btn btn-outline" type="button">
+                Previous
+              </button>
+              <button
+                id="simulate-btn"
+                class="btn btn-outline hidden"
+                type="button"
+              >
+                Auto-fill 20Q
+              </button>
+              <button id="next-btn" class="btn btn-primary" type="button">
+                Next
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===============================
+         STAGE 3: RESULTS DASHBOARD
+         This panel renders the user's computed results after the test finishes,
+         or when loaded via a #result= shareable link.
+         =============================== -->
+      <section
+        class="section results-stage hidden"
+        id="results-panel"
+        aria-live="polite"
+      >
+        <div class="app-container result-container">
+          <!-- Result Hero Banner -->
+          <div class="panel-card result-hero-card">
+            <div class="result-hero-mesh" aria-hidden="true">
+              <div class="result-mesh-orb result-orb-phlegmatic"></div>
+              <div class="result-mesh-orb result-orb-sanguine"></div>
+              <div class="result-mesh-orb result-orb-choleric"></div>
+              <div class="result-mesh-orb result-orb-melancholic"></div>
+            </div>
+            <p class="eyebrow">Your Temperament Reflection</p>
+            <span class="result-pill">Your Result Is In</span>
+            <h2 id="result-name" class="result-name"></h2>
+            <p id="result-tagline" class="result-tagline"></p>
+            <p id="result-short" class="result-short"></p>
+            <div class="result-confidence-pill">
+              <span class="confidence-dot"></span>
+              <span id="result-confidence"></span>
+            </div>
+            <p id="result-title" class="sr-only"></p>
+          </div>
+
+          <!-- Main Content Area: Profile and Sidebar -->
+          <div class="result-profile-grid">
+            <!-- Primary Profile Detailed Display -->
+            <article class="panel-card profile-main-card">
+              <div class="profile-image-wrap">
+                <img
+                  id="result-profile-image"
+                  src=""
+                  alt="Primary temperament profile"
+                />
+                <div class="profile-image-overlay">
+                  <h3 id="result-profile-name"></h3>
+                  <p id="result-profile-summary"></p>
+                </div>
+              </div>
+
+              <div class="profile-columns">
+                <div class="result-list-col">
+                  <h4>Strengths</h4>
+                  <ul id="detail-strengths" class="result-list"></ul>
+                </div>
+                <div class="result-list-col">
+                  <h4>Watch-outs</h4>
+                  <ul id="detail-weaknesses" class="result-list"></ul>
+                </div>
+              </div>
+
+              <div class="growth-note">
+                <h4>Growth Area</h4>
+                <p id="result-growth"></p>
+              </div>
+
+              <div id="result-detail" class="detail hidden">
+                <article>
+                  <h3>Detailed Communication Insight</h3>
+                  <p id="detail-communication"></p>
+                </article>
+              </div>
+            </article>
+
+            <!-- Sticky Sidebar Data -->
+            <aside class="result-sidebar">
+              <!-- Temperament Mix Donut Chart -->
+              <article class="panel-card mix-card">
+                <h3>Temperament Mix</h3>
+                <div class="mix-donut">
+                  <canvas id="temperament-donut"></canvas>
+                  <div class="mix-donut-center">
+                    <span id="primary-percent-label">0%</span>
+                    <small>Primary</small>
+                  </div>
+                </div>
+                <div id="temperament-legend" class="mix-legend"></div>
+              </article>
+
+              <article class="secondary-card">
+                <p class="secondary-eyebrow">Secondary Influence</p>
+                <h3 id="secondary-name"></h3>
+                <p id="secondary-desc"></p>
+                <p id="secondary-traits" class="secondary-traits"></p>
+              </article>
+
+              <div class="result-actions">
+                <!-- <button id="copy-summary-btn" class="btn btn-outline" type="button">
+                Copy Result Summary
+              </button> -->
+                <button
+                  id="copy-link-btn"
+                  class="btn btn-outline"
+                  type="button"
+                >
+                  Copy Share Link
+                </button>
+                <button
+                  id="share-card-btn"
+                  class="btn btn-outline"
+                  type="button"
+                >
+                  Generate Share Card
+                </button>
+
+                <!-- Hidden Share Card Preview Container -->
+                <div
+                  id="share-card-preview"
+                  class="hidden"
+                  style="
+                    margin-top: 1rem;
+                    text-align: center;
+                    background: var(--bg-surface);
+                    padding: 1rem;
+                    border-radius: 8px;
+                    border: 1px solid var(--border-light);
+                  "
+                >
+                  <canvas
+                    id="share-card-canvas"
+                    style="
+                      max-width: 100%;
+                      height: auto;
+                      border-radius: 8px;
+                      margin-bottom: 1rem;
+                      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                    "
+                  ></canvas>
+                  <p
+                    style="
+                      font-size: 0.875rem;
+                      color: var(--text-secondary);
+                      margin-bottom: 0.5rem;
+                    "
+                  >
+                    Includes your personalized link
+                  </p>
+                  <div
+                    style="
+                      display: flex;
+                      gap: 0.5rem;
+                      justify-content: center;
+                      flex-wrap: wrap;
+                    "
+                  >
+                    <button
+                      id="download-card-btn"
+                      class="btn btn-primary"
+                      type="button"
+                    >
+                      Download PNG
+                    </button>
+                    <button
+                      id="download-card-pdf-btn"
+                      class="btn btn-primary"
+                      type="button"
+                    >
+                      Download PDF
+                    </button>
+                    <button
+                      id="share-card-native-btn"
+                      class="btn btn-outline"
+                      type="button"
+                    >
+                      Share...
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  id="detail-toggle"
+                  class="btn btn-outline"
+                  type="button"
+                >
+                  Show Detailed Explanation
+                </button>
+                <a
+                  href="test-options.html"
+                  class="btn btn-primary result-restart"
+                >
+                  Take Another Test
+                  <span aria-hidden="true">-></span>
+                </a>
+                <a href="index.html" class="btn btn-outline">Back Home</a>
+              </div>
+            </aside>
+          </div>
+
+          <!-- Linear Score Breakdown -->
+          <div class="panel-card score-breakdown-card">
+            <p class="eyebrow">Score Breakdown</p>
+            <h3>How You Scored Across All Four</h3>
+            <div class="score-grid">
+              <div class="score-col" data-temp="Sanguine">
+                <div class="score-track">
+                  <div class="score-fill" id="bar-sanguine"></div>
+                </div>
+                <span class="score-percent" id="pct-sanguine">0%</span>
+                <span class="score-name">Sanguine</span>
+              </div>
+              <div class="score-col" data-temp="Choleric">
+                <div class="score-track">
+                  <div class="score-fill" id="bar-choleric"></div>
+                </div>
+                <span class="score-percent" id="pct-choleric">0%</span>
+                <span class="score-name">Choleric</span>
+              </div>
+              <div class="score-col" data-temp="Melancholic">
+                <div class="score-track">
+                  <div class="score-fill" id="bar-melancholic"></div>
+                </div>
+                <span class="score-percent" id="pct-melancholic">0%</span>
+                <span class="score-name">Melancholic</span>
+              </div>
+              <div class="score-col" data-temp="Phlegmatic">
+                <div class="score-track">
+                  <div class="score-fill" id="bar-phlegmatic"></div>
+                </div>
+                <span class="score-percent" id="pct-phlegmatic">0%</span>
+                <span class="score-name">Phlegmatic</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Communication Style Grid -->
+          <div class="panel-card comms-card">
+            <p class="eyebrow">How You Connect</p>
+            <h3>Your Communication Style</h3>
+            <div class="comms-grid">
+              <article>
+                <h4>Preferred Style</h4>
+                <p id="comms-preferred"></p>
+              </article>
+              <article>
+                <h4>As a Listener</h4>
+                <p id="comms-listener"></p>
+              </article>
+              <article>
+                <h4>Expressing Yourself</h4>
+                <p id="comms-expression"></p>
+              </article>
+              <article>
+                <h4>Under Pressure</h4>
+                <p id="comms-pressure"></p>
+              </article>
+            </div>
+          </div>
+
+          <div class="panel-card confidence-card">
+            <div class="confidence-copy">
+              <h3 id="confidence-title"></h3>
+              <p id="confidence-message"></p>
+            </div>
+            <div class="confidence-meter">
+              <div class="confidence-ring" id="confidence-ring">
+                <span id="confidence-percent">0%</span>
+              </div>
+              <span id="confidence-label" class="confidence-label"></span>
+            </div>
+          </div>
+
+          <p class="disclaimer">
+            This assessment is designed for personal reflection and educational
+            purposes only. It is not a clinical diagnostic tool and should not
+            be used as a substitute for professional advice.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <!-- ===============================
+       SITE FOOTER
+       =============================== -->
+    <footer class="site-footer">
+      <div class="app-container footer-grid">
+        <!-- Footer Branding -->
+        <div class="footer-brand">
+          <a class="brand" href="index.html">
+            <span class="brand-mark" aria-hidden="true">T</span>
+            <span class="brand-text">Temperament<span>Test</span></span>
+          </a>
+          <p>
+            Educational personality reflection based on classic temperament
+            theory.
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <h3>Explore</h3>
+          <a href="index.html#about">About Types</a>
+          <a href="index.html#types">Temperaments</a>
+          <a href="test-options.html">Take the Test</a>
+        </div>
+
+        <div class="footer-col">
+          <h3>Contact</h3>
+          <a href="mailto:contact@temperamenttest.com"
+            >contact@temperamenttest.com</a
+          >
+          <p>No registration required for assessment results.</p>
         </div>
       </div>
-    </div>
-  </footer>
+      <div class="footer-base">
+        <div
+          class="app-container"
+          style="
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+          "
+        >
+          <p style="margin: 0">
+            &copy; 2026 TemperamentTest. All rights reserved.
+          </p>
+          <div
+            class="footer-legal"
+            style="font-size: 0.92rem; color: var(--gray-500)"
+          >
+            <a
+              href="privacy.html"
+              style="
+                color: inherit;
+                text-decoration: underline;
+                margin-right: 0.5rem;
+              "
+              >Privacy Policy</a
+            >
+            |
+            <a
+              href="terms.html"
+              style="
+                color: inherit;
+                text-decoration: underline;
+                margin-left: 0.5rem;
+              "
+              >Terms & Disclaimer</a
+            >
+          </div>
+        </div>
+      </div>
+    </footer>
 
-  <script src="app.js"></script>
-</body>
-
+    <script src="app.js"></script>
+  </body>
 </html>
