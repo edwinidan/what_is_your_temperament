@@ -3,7 +3,7 @@
  * DATA INVENTORY & PRIVACY
  * ============================================================================
  * This application is 100% client-side. No PII is collected or sent to a server.
- * 
+ *
  * 1. LocalStorage Keys:
  *    - `temperamentInsight.progress.v1`: Stores the user's answers and current test state
  *       (e.g., target depth, completed questions). Cleared on test completion or reset.
@@ -12,7 +12,7 @@
  *      Contains only numerical scores (e.g. [20, 15, 5, 0]), no personal data.
  * 3. Analytics (via Plausible):
  *    - Privacy-friendly, cookie-less event tracking.
- *    - Events: "assessment_started", "assessment_page_viewed", "assessment_completed", 
+ *    - Events: "assessment_started", "assessment_page_viewed", "assessment_completed",
  *      "assessment_abandoned", "detail_view_opened".
  * ============================================================================
  */
@@ -87,8 +87,7 @@ const TEMPERAMENT_COMMS = {
   Melancholic: {
     preferred:
       "Thoughtful one-on-one exchanges with depth, context, and nuance.",
-    listener:
-      "Attentive and detail-sensitive, often hearing what others miss.",
+    listener: "Attentive and detail-sensitive, often hearing what others miss.",
     expression:
       "Carefully chosen words; you communicate with precision and meaning.",
     pressure:
@@ -429,14 +428,21 @@ T240,Phlegmatic,Empathy,I am quick to harshly criticize people who make errors.,
 `.trim();
 
 const QUESTION_BANK_ROWS = parseQuestionBankCsv(QUESTION_BANK_CSV).map(
-  ({ id, temperament, dimension, item_text, reverse_scored, scoring_rule }) => ({
+  ({
+    id,
+    temperament,
+    dimension,
+    item_text,
+    reverse_scored,
+    scoring_rule,
+  }) => ({
     id,
     temperament,
     dimension,
     text: item_text,
     reverseScored: reverse_scored === "true",
     scoringRule: scoring_rule,
-  })
+  }),
 );
 
 const QUESTION_BY_ID = QUESTION_BANK_ROWS.reduce((acc, question) => {
@@ -446,7 +452,7 @@ const QUESTION_BY_ID = QUESTION_BANK_ROWS.reduce((acc, question) => {
 
 const QUESTION_BANK_BY_TEMPERAMENT = TEMPERAMENTS.reduce((acc, temperament) => {
   acc[temperament] = QUESTION_BANK_ROWS.filter(
-    (question) => question.temperament === temperament
+    (question) => question.temperament === temperament,
   );
   return acc;
 }, {});
@@ -461,12 +467,12 @@ const QUESTION_BANK_BY_TEMPERAMENT_DIMENSION = TEMPERAMENTS.reduce(
         dimensionAcc[question.dimension].push(question);
         return dimensionAcc;
       },
-      {}
+      {},
     );
     acc[temperament] = byDimension;
     return acc;
   },
-  {}
+  {},
 );
 
 validateQuestionBank(QUESTION_BANK_ROWS);
@@ -552,13 +558,19 @@ detailToggle.addEventListener("click", toggleDetailView);
 if (copySummaryBtn) copySummaryBtn.addEventListener("click", copyResultSummary);
 if (copyLinkBtn) copyLinkBtn.addEventListener("click", copyShareLink);
 if (shareCardBtn) shareCardBtn.addEventListener("click", generateShareCard);
-if (downloadCardBtn) downloadCardBtn.addEventListener("click", () => downloadCanvasPNG(shareCardCanvas, "Temperament-Insight-Result.png"));
-if (downloadCardPdfBtn) downloadCardPdfBtn.addEventListener("click", openPrintableReport);
+if (downloadCardBtn)
+  downloadCardBtn.addEventListener("click", () =>
+    downloadCanvasPNG(shareCardCanvas, "Temperament-Insight-Result.png"),
+  );
+if (downloadCardPdfBtn)
+  downloadCardPdfBtn.addEventListener("click", openPrintableReport);
 if (shareCardNativeBtn) {
   if (navigator.share) {
-    shareCardNativeBtn.addEventListener("click", () => shareCanvasImage(shareCardCanvas));
+    shareCardNativeBtn.addEventListener("click", () =>
+      shareCanvasImage(shareCardCanvas),
+    );
   } else {
-    shareCardNativeBtn.style.display = 'none';
+    shareCardNativeBtn.style.display = "none";
   }
 }
 window.addEventListener("pagehide", handlePageHide);
@@ -584,7 +596,7 @@ if (window.location.hash.startsWith("#result=")) {
 // ==========================================
 function startAssessment() {
   const selectedDepthInput = document.querySelector(
-    'input[name="depth"]:checked'
+    'input[name="depth"]:checked',
   );
   state.selectedDepth = Number(selectedDepthInput.value);
   state.questions = buildQuestionSet(state.selectedDepth);
@@ -618,7 +630,7 @@ function buildQuestionSet(depth, questionOrder) {
 
   const perTemperament = depth / TEMPERAMENTS.length;
   const selectedQuestions = TEMPERAMENTS.flatMap((temperament) =>
-    sampleBalancedQuestions(temperament, perTemperament)
+    sampleBalancedQuestions(temperament, perTemperament),
   );
   const arrangedQuestions = shuffleArray(selectedQuestions);
 
@@ -655,7 +667,7 @@ function sampleBalancedQuestions(temperament, perTemperament) {
     const pool = byDimension[dimension] || [];
     if (pool.length < required) {
       throw new Error(
-        `Question bank underflow for ${temperament}/${dimension}: needed ${required}, found ${pool.length}.`
+        `Question bank underflow for ${temperament}/${dimension}: needed ${required}, found ${pool.length}.`,
       );
     }
 
@@ -668,7 +680,7 @@ function sampleBalancedQuestions(temperament, perTemperament) {
 function validateQuestionBank(questionBankRows) {
   if (questionBankRows.length !== 240) {
     throw new Error(
-      `Question bank must contain exactly 240 items, found ${questionBankRows.length}.`
+      `Question bank must contain exactly 240 items, found ${questionBankRows.length}.`,
     );
   }
 
@@ -690,17 +702,17 @@ function validateQuestionBank(questionBankRows) {
 
     if (!TEMPERAMENTS.includes(question.temperament)) {
       throw new Error(
-        `Invalid temperament '${question.temperament}' for question ${question.id}.`
+        `Invalid temperament '${question.temperament}' for question ${question.id}.`,
       );
     }
     if (typeof question.reverseScored !== "boolean") {
       throw new Error(
-        `Invalid reverseScored value for question ${question.id}; expected boolean.`
+        `Invalid reverseScored value for question ${question.id}; expected boolean.`,
       );
     }
     if (question.scoringRule !== "Likert 1-5") {
       throw new Error(
-        `Invalid scoring rule for question ${question.id}; expected 'Likert 1-5'.`
+        `Invalid scoring rule for question ${question.id}; expected 'Likert 1-5'.`,
       );
     }
 
@@ -720,7 +732,7 @@ function validateQuestionBank(questionBankRows) {
   TEMPERAMENTS.forEach((temperament) => {
     if (temperamentCounts[temperament] !== 60) {
       throw new Error(
-        `${temperament} must have exactly 60 items, found ${temperamentCounts[temperament]}.`
+        `${temperament} must have exactly 60 items, found ${temperamentCounts[temperament]}.`,
       );
     }
 
@@ -728,14 +740,14 @@ function validateQuestionBank(questionBankRows) {
     const dimensionNames = Object.keys(temperamentDimensions);
     if (dimensionNames.length !== 3) {
       throw new Error(
-        `${temperament} must have exactly 3 dimensions, found ${dimensionNames.length}.`
+        `${temperament} must have exactly 3 dimensions, found ${dimensionNames.length}.`,
       );
     }
 
     dimensionNames.forEach((dimension) => {
       if (temperamentDimensions[dimension] !== 20) {
         throw new Error(
-          `${temperament}/${dimension} must have 20 items, found ${temperamentDimensions[dimension]}.`
+          `${temperament}/${dimension} must have 20 items, found ${temperamentDimensions[dimension]}.`,
         );
       }
     });
@@ -771,7 +783,7 @@ function parseQuestionBankCsv(csvText) {
     const values = parseCsvLine(line);
     if (values.length !== headers.length) {
       throw new Error(
-        `Invalid CSV row at line ${index + 2}: expected ${headers.length} fields, found ${values.length}.`
+        `Invalid CSV row at line ${index + 2}: expected ${headers.length} fields, found ${values.length}.`,
       );
     }
 
@@ -825,15 +837,19 @@ function renderCurrentPage() {
   const total = state.questions.length;
   const pageCount = Math.ceil(total / PAGE_SIZE);
   const startIndex = state.currentPage * PAGE_SIZE;
-  const pageQuestions = state.questions.slice(startIndex, startIndex + PAGE_SIZE);
+  const pageQuestions = state.questions.slice(
+    startIndex,
+    startIndex + PAGE_SIZE,
+  );
   const answered = Object.keys(state.responses).length;
   const percent = Math.round((answered / total) * 100);
   const pageStart = startIndex + 1;
   const pageEnd = Math.min(startIndex + PAGE_SIZE, total);
 
   progressHeading.textContent = `Questions ${pageStart}-${pageEnd} of ${total}`;
-  progressMeta.textContent = `Answered ${answered} of ${total} | Page ${state.currentPage + 1
-    } of ${pageCount}`;
+  progressMeta.textContent = `Answered ${answered} of ${total} | Page ${
+    state.currentPage + 1
+  } of ${pageCount}`;
   progressFill.style.width = `${percent}%`;
   progressTrack.setAttribute("aria-valuenow", `${percent}`);
 
@@ -842,7 +858,7 @@ function renderCurrentPage() {
       const labels = getScaleLabels(question.scoringRule);
       const currentValue = state.responses[question.id] || 3;
       const hasResponse = !!state.responses[question.id];
-      const thumbScale = 1 + (Math.abs(currentValue - 3) * 0.15);
+      const thumbScale = 1 + Math.abs(currentValue - 3) * 0.15;
 
       return `
         <article class="question-card">
@@ -892,17 +908,22 @@ function renderCurrentPage() {
 }
 
 function bindQuestionListeners() {
-  questionPage.querySelectorAll('.question-range').forEach((input) => {
+  questionPage.querySelectorAll(".question-range").forEach((input) => {
     const questionId = input.name;
     const question = state.questions.find((q) => q.id === questionId);
     const labels = getScaleLabels(question.scoringRule);
     const labelDisplay = document.getElementById(`label-val-${questionId}`);
 
     const updateValue = (val) => {
-      state.responses[questionId] = Number(val);
-      labelDisplay.innerHTML = labels[val - 1];
+      let numVal = Number(val);
+      if (Number.isNaN(numVal) || numVal < 1 || numVal > 5) {
+        numVal = 3;
+      }
+      state.responses[questionId] = numVal;
+      labelDisplay.innerHTML = labels[numVal - 1];
       input.setAttribute("data-answered", "true");
-      const scale = 1 + (Math.abs(val - 3) * 0.15);
+      input.value = numVal;
+      const scale = 1 + Math.abs(numVal - 3) * 0.15;
       input.style.setProperty("--thumb-scale", scale);
       pageWarning.classList.add("hidden");
       syncProgressOnly();
@@ -912,8 +933,8 @@ function bindQuestionListeners() {
     input.addEventListener("input", (event) => {
       const val = event.target.value;
       labelDisplay.innerHTML = labels[val - 1];
-      const scale = 1 + (Math.abs(val - 3) * 0.15);
-      input.style.setProperty('--thumb-scale', scale);
+      const scale = 1 + Math.abs(val - 3) * 0.15;
+      input.style.setProperty("--thumb-scale", scale);
     });
 
     input.addEventListener("change", (event) => {
@@ -940,7 +961,7 @@ function syncProgressOnly() {
   const percent = Math.round((answered / total) * 100);
   progressMeta.textContent = progressMeta.textContent.replace(
     /Answered \d+ of \d+/,
-    `Answered ${answered} of ${total}`
+    `Answered ${answered} of ${total}`,
   );
   progressFill.style.width = `${percent}%`;
   progressTrack.setAttribute("aria-valuenow", `${percent}`);
@@ -961,9 +982,10 @@ function simulateAssessmentForResults() {
     return;
   }
 
-  const dominant = TEMPERAMENTS[Math.floor(Math.random() * TEMPERAMENTS.length)];
+  const dominant =
+    TEMPERAMENTS[Math.floor(Math.random() * TEMPERAMENTS.length)];
   const secondaryPool = TEMPERAMENTS.filter(
-    (temperament) => temperament !== dominant
+    (temperament) => temperament !== dominant,
   );
   const secondary =
     secondaryPool[Math.floor(Math.random() * secondaryPool.length)];
@@ -972,7 +994,7 @@ function simulateAssessmentForResults() {
     state.responses[question.id] = getSimulatedResponseValue(
       question,
       dominant,
-      secondary
+      secondary,
     );
   });
 
@@ -1003,7 +1025,10 @@ function goToNextPage() {
 
 function isCurrentPageComplete() {
   const startIndex = state.currentPage * PAGE_SIZE;
-  const pageQuestions = state.questions.slice(startIndex, startIndex + PAGE_SIZE);
+  const pageQuestions = state.questions.slice(
+    startIndex,
+    startIndex + PAGE_SIZE,
+  );
   return pageQuestions.every((question) => state.responses[question.id]);
 }
 
@@ -1021,7 +1046,7 @@ function scoreAssessment() {
   }, {});
 
   state.questions.forEach((question) => {
-    const value = state.responses[question.id];
+    const value = state.responses[question.id] || 3;
     const centered = toCenteredValue(value);
     const signed = question.reverseScored ? -centered : centered;
     scores[question.temperament] += signed;
@@ -1086,8 +1111,8 @@ function renderResults({ primary, secondary, confidence, ranked }) {
       sanguine: mixPercentages["Sanguine"],
       choleric: mixPercentages["Choleric"],
       melancholic: mixPercentages["Melancholic"],
-      phlegmatic: mixPercentages["Phlegmatic"]
-    }
+      phlegmatic: mixPercentages["Phlegmatic"],
+    },
   };
   state.shareUrl = encodeSharePayload(sharePayload);
 
@@ -1109,8 +1134,12 @@ function renderResults({ primary, secondary, confidence, ranked }) {
   const weaknesses = [...primaryProfile.weaknesses];
   weaknesses.push(`Possible watch-out: ${secondaryProfile.challengeFocus}.`);
 
-  detailStrengths.innerHTML = strengths.map((item) => `<li>${item}</li>`).join("");
-  detailWeaknesses.innerHTML = weaknesses.map((item) => `<li>${item}</li>`).join("");
+  detailStrengths.innerHTML = strengths
+    .map((item) => `<li>${item}</li>`)
+    .join("");
+  detailWeaknesses.innerHTML = weaknesses
+    .map((item) => `<li>${item}</li>`)
+    .join("");
   detailCommunication.textContent = `${primaryProfile.communication} Secondary ${secondary.toLowerCase()} influence may also shape tone and pace in conversations.`;
   secondaryName.textContent = secondary;
   secondaryDesc.textContent = secondaryProfile.short;
@@ -1165,8 +1194,8 @@ async function copyShareLink() {
   try {
     await navigator.clipboard.writeText(link);
     showCopiedFeedback(copyLinkBtn, "Copy Share Link");
-  } catch (err) {
-    console.error("Failed to copy link: ", err);
+  } catch (_err) {
+    // Silent failure
   }
 }
 
@@ -1191,8 +1220,8 @@ ${link}
   try {
     await navigator.clipboard.writeText(summaryText);
     showCopiedFeedback(copySummaryBtn, "Copy Result Summary");
-  } catch (err) {
-    console.error("Failed to copy summary: ", err);
+  } catch (_err) {
+    // Silent failure
   }
 }
 
@@ -1210,6 +1239,26 @@ function showCopiedFeedback(btnEl, originalText) {
 // ==========================================
 // 7. UTILITIES & DATA STORAGE
 // ==========================================
+function safeSet(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch (_e) {}
+}
+
+function safeGet(key) {
+  try {
+    return localStorage.getItem(key);
+  } catch (_e) {
+    return null;
+  }
+}
+
+function safeRemove(key) {
+  try {
+    localStorage.removeItem(key);
+  } catch (_e) {}
+}
+
 function toCenteredValue(value) {
   return value - 3;
 }
@@ -1222,8 +1271,7 @@ function getConfidenceLevel(scoreGap, depth) {
   if (normalizedGap >= 0.25) {
     return {
       level: "High",
-      message:
-        "Your top pattern is clearly distinct in this response set.",
+      message: "Your top pattern is clearly distinct in this response set.",
     };
   }
 
@@ -1255,20 +1303,11 @@ function saveProgress() {
     startedAt: state.startedAt,
   };
 
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-  } catch (_error) {
-    // Ignore storage failures (e.g., private mode or blocked storage).
-  }
+  safeSet(STORAGE_KEY, JSON.stringify(payload));
 }
 
 function restoreProgressIfAvailable() {
-  let raw = null;
-  try {
-    raw = localStorage.getItem(STORAGE_KEY);
-  } catch (_error) {
-    return;
-  }
+  const raw = safeGet(STORAGE_KEY);
   if (!raw) {
     return;
   }
@@ -1281,7 +1320,24 @@ function restoreProgressIfAvailable() {
     return;
   }
 
-  if (!saved || !VALID_DEPTHS.includes(saved.selectedDepth)) {
+  if (
+    !saved ||
+    typeof saved !== "object" ||
+    !VALID_DEPTHS.includes(saved.selectedDepth)
+  ) {
+    clearProgress();
+    return;
+  }
+
+  if (
+    !Array.isArray(saved.questionOrder) ||
+    saved.questionOrder.length !== saved.selectedDepth
+  ) {
+    clearProgress();
+    return;
+  }
+
+  if (!isValidSavedQuestionOrder(saved.questionOrder, saved.selectedDepth)) {
     clearProgress();
     return;
   }
@@ -1290,18 +1346,31 @@ function restoreProgressIfAvailable() {
   const validIds = new Set(questions.map((question) => question.id));
   const restoredResponses = {};
 
-  Object.entries(saved.responses || {}).forEach(([questionId, value]) => {
-    const numericValue = Number(value);
-    if (validIds.has(questionId) && numericValue >= 1 && numericValue <= 5) {
-      restoredResponses[questionId] = numericValue;
-    }
-  });
+  if (saved.responses && typeof saved.responses === "object") {
+    Object.entries(saved.responses).forEach(([questionId, value]) => {
+      const numericValue = Number(value);
+      if (
+        validIds.has(questionId) &&
+        !Number.isNaN(numericValue) &&
+        numericValue >= 1 &&
+        numericValue <= 5
+      ) {
+        restoredResponses[questionId] = numericValue;
+      }
+    });
+  }
 
   const totalPages = Math.ceil(questions.length / PAGE_SIZE);
+  const cp = Number(saved.currentPage);
+  if (Number.isNaN(cp) || cp < 0 || cp >= totalPages) {
+    clearProgress();
+    return;
+  }
+
   state.selectedDepth = saved.selectedDepth;
   state.questions = questions;
   state.responses = restoredResponses;
-  state.currentPage = clamp(Number(saved.currentPage) || 0, 0, totalPages - 1);
+  state.currentPage = cp;
   state.detailVisible = false;
   state.startedAt =
     Number.isFinite(saved.startedAt) && saved.startedAt > 0
@@ -1312,7 +1381,7 @@ function restoreProgressIfAvailable() {
   state.resultMeta = null;
 
   const depthInput = document.querySelector(
-    `input[name="depth"][value="${state.selectedDepth}"]`
+    `input[name="depth"][value="${state.selectedDepth}"]`,
   );
   if (depthInput) {
     depthInput.checked = true;
@@ -1327,11 +1396,7 @@ function restoreProgressIfAvailable() {
 }
 
 function clearProgress() {
-  try {
-    localStorage.removeItem(STORAGE_KEY);
-  } catch (_error) {
-    // Ignore storage failures (e.g., private mode or blocked storage).
-  }
+  safeRemove(STORAGE_KEY);
 }
 
 function clamp(value, min, max) {
@@ -1423,7 +1488,11 @@ function getDurationSeconds(startedAt) {
 
 function normalizeConfidenceLevel(level) {
   const normalized = String(level || "").toLowerCase();
-  if (normalized === "high" || normalized === "medium" || normalized === "low") {
+  if (
+    normalized === "high" ||
+    normalized === "medium" ||
+    normalized === "low"
+  ) {
     return normalized;
   }
   return "low";
@@ -1464,15 +1533,14 @@ function buildTemperamentMixPercentages(ranked) {
     fraction: entry.raw - Math.floor(entry.raw),
   }));
 
-  let remainder =
-    100 - floors.reduce((sum, entry) => sum + entry.value, 0);
+  let remainder = 100 - floors.reduce((sum, entry) => sum + entry.value, 0);
   floors
     .slice()
     .sort((a, b) => b.fraction - a.fraction)
     .forEach((entry) => {
       if (remainder > 0) {
         const target = floors.find(
-          (candidate) => candidate.temperament === entry.temperament
+          (candidate) => candidate.temperament === entry.temperament,
         );
         target.value += 1;
         remainder -= 1;
@@ -1508,9 +1576,10 @@ function getTemperamentDisplayOrder(percentages, ranked) {
 }
 
 function renderTemperamentLegend(percentages, displayOrder) {
-  temperamentLegend.innerHTML = displayOrder.map((temperament) => {
-    const value = percentages[temperament];
-    return `
+  temperamentLegend.innerHTML = displayOrder
+    .map((temperament) => {
+      const value = percentages[temperament];
+      return `
       <div class="mix-legend-row">
         <span class="mix-legend-name">
           <span class="mix-legend-dot" style="background: ${TEMPERAMENT_COLORS[temperament]}"></span>
@@ -1519,7 +1588,8 @@ function renderTemperamentLegend(percentages, displayOrder) {
         <span class="mix-legend-val">${value}%</span>
       </div>
     `;
-  }).join("");
+    })
+    .join("");
 }
 
 function renderTemperamentDonut(percentages, displayOrder) {
@@ -1544,7 +1614,7 @@ function renderTemperamentDonut(percentages, displayOrder) {
         {
           data: displayOrder.map((temperament) => percentages[temperament]),
           backgroundColor: displayOrder.map(
-            (temperament) => TEMPERAMENT_COLORS[temperament]
+            (temperament) => TEMPERAMENT_COLORS[temperament],
           ),
           borderWidth: 0,
         },
@@ -1608,7 +1678,10 @@ function renderScoreBars(percentages, ranked) {
 
 function trackEvent(name, props = {}) {
   try {
-    if (typeof window === "undefined" || typeof window.plausible !== "function") {
+    if (
+      typeof window === "undefined" ||
+      typeof window.plausible !== "function"
+    ) {
       return;
     }
 
@@ -1631,7 +1704,7 @@ function trackEvent(name, props = {}) {
  * Encodes a JSON payload into a base64url string.
  * Uses TextEncoder for UTF-8 and safely converts to URL-friendly base64.
  *
- * @param {Object} payload 
+ * @param {Object} payload
  * @returns {string} base64url encoded string
  */
 function encodeSharePayload(payload) {
@@ -1654,7 +1727,7 @@ function encodeSharePayload(payload) {
  * Decodes a base64url string back into a JSON payload.
  * Validates the minimum expected schema.
  *
- * @param {string} token 
+ * @param {string} token
  * @returns {Object|null} Validated payload or null on any error
  */
 function decodeSharePayload(token) {
@@ -1705,7 +1778,7 @@ function decodeSharePayload(token) {
  * Renders the results panel using a decoded share payload.
  * Bypasses the assessment flow completely.
  *
- * @param {Object} payload 
+ * @param {Object} payload
  */
 function renderSharedResults(payload) {
   introPanel.classList.add("hidden");
@@ -1727,14 +1800,15 @@ function renderSharedResults(payload) {
     Sanguine: payload.mix.sanguine,
     Choleric: payload.mix.choleric,
     Melancholic: payload.mix.melancholic,
-    Phlegmatic: payload.mix.phlegmatic
+    Phlegmatic: payload.mix.phlegmatic,
   };
 
   const confidenceLevel = normalizeConfidenceLevel(confidenceLevelFromPayload);
   const confidencePercentValue = getConfidencePercent(confidenceLevel);
 
   // Capitalize confidence representation
-  const confidenceDisplayLevel = confidenceLevel.charAt(0).toUpperCase() + confidenceLevel.slice(1);
+  const confidenceDisplayLevel =
+    confidenceLevel.charAt(0).toUpperCase() + confidenceLevel.slice(1);
 
   resultName.textContent = primary;
   resultTagline.textContent = primaryVisual.tagline;
@@ -1754,8 +1828,12 @@ function renderSharedResults(payload) {
   const weaknesses = [...primaryProfile.weaknesses];
   weaknesses.push(`Possible watch-out: ${secondaryProfile.challengeFocus}.`);
 
-  detailStrengths.innerHTML = strengths.map((item) => `<li>${item}</li>`).join("");
-  detailWeaknesses.innerHTML = weaknesses.map((item) => `<li>${item}</li>`).join("");
+  detailStrengths.innerHTML = strengths
+    .map((item) => `<li>${item}</li>`)
+    .join("");
+  detailWeaknesses.innerHTML = weaknesses
+    .map((item) => `<li>${item}</li>`)
+    .join("");
   detailCommunication.textContent = `${primaryProfile.communication} Secondary ${secondary.toLowerCase()} influence may also shape tone and pace in conversations.`;
   secondaryName.textContent = secondary;
   secondaryDesc.textContent = secondaryProfile.short;
@@ -1769,11 +1847,14 @@ function renderSharedResults(payload) {
   confidenceTitle.textContent = `${confidenceDisplayLevel} Confidence`;
   // Construct simple valid string message matching original logic's tone based on the label.
   if (confidenceLevel === "high") {
-    confidenceMessage.textContent = "Your top pattern is clearly distinct in this response set.";
+    confidenceMessage.textContent =
+      "Your top pattern is clearly distinct in this response set.";
   } else if (confidenceLevel === "medium") {
-    confidenceMessage.textContent = "Your leading pattern is present, with noticeable overlap from your secondary pattern.";
+    confidenceMessage.textContent =
+      "Your leading pattern is present, with noticeable overlap from your secondary pattern.";
   } else {
-    confidenceMessage.textContent = "Your responses show a blended profile, so treat this as a starting reflection rather than a fixed label.";
+    confidenceMessage.textContent =
+      "Your responses show a blended profile, so treat this as a starting reflection rather than a fixed label.";
   }
   confidencePercent.textContent = `${confidencePercentValue}%`;
   confidenceLabel.textContent = confidenceLevel;
@@ -1781,7 +1862,9 @@ function renderSharedResults(payload) {
   primaryPercentLabel.textContent = `${mixPercentages[primary]}%`;
 
   // We explicitly bypass getting ranked data since we don't have it natively, so we just sort the mix percentages array.
-  const displayOrder = [...TEMPERAMENTS].sort((a, b) => mixPercentages[b] - mixPercentages[a]);
+  const displayOrder = [...TEMPERAMENTS].sort(
+    (a, b) => mixPercentages[b] - mixPercentages[a],
+  );
 
   renderTemperamentLegend(mixPercentages, displayOrder);
   renderTemperamentDonut(mixPercentages, displayOrder);
@@ -1851,8 +1934,12 @@ async function generateShareCard() {
   try {
     await document.fonts.ready;
 
-    const fullLink = new URL(`#result=${state.shareUrl}`, window.location.origin + window.location.pathname).toString();
-    const shortSummary = TEMPERAMENT_PROFILES[state.resultMeta.primary]?.short || "";
+    const fullLink = new URL(
+      `#result=${state.shareUrl}`,
+      window.location.origin + window.location.pathname,
+    ).toString();
+    const shortSummary =
+      TEMPERAMENT_PROFILES[state.resultMeta.primary]?.short || "";
 
     // Decode stored mix percentages from URL token
     const decodedPayload = decodeSharePayload(state.shareUrl);
@@ -1868,8 +1955,8 @@ async function generateShareCard() {
         Sanguine: mixPercents.sanguine || 0,
         Choleric: mixPercents.choleric || 0,
         Melancholic: mixPercents.melancholic || 0,
-        Phlegmatic: mixPercents.phlegmatic || 0
-      }
+        Phlegmatic: mixPercents.phlegmatic || 0,
+      },
     };
 
     drawShareCard(shareCardCanvas, cardData);
@@ -1879,11 +1966,9 @@ async function generateShareCard() {
 
     trackEvent("share_card_generated", {
       primary_temperament: cardData.primary,
-      confidence_level: cardData.confidence
+      confidence_level: cardData.confidence,
     });
-
-  } catch (err) {
-    console.error("Failed to generate share card", err);
+  } catch (_err) {
     shareCardBtn.textContent = "Failed to generate";
     setTimeout(() => {
       shareCardBtn.textContent = originalText;
@@ -1914,7 +1999,14 @@ function drawShareCard(canvas, data) {
   ctx.fillRect(0, 0, width, height);
 
   // Add subtle gradient/mesh circle in top right
-  const gradient = ctx.createRadialGradient(width - 200, 200, 0, width - 200, 200, 600);
+  const gradient = ctx.createRadialGradient(
+    width - 200,
+    200,
+    0,
+    width - 200,
+    200,
+    600,
+  );
   gradient.addColorStop(0, TEMPERAMENT_COLORS[data.primary] + "22"); // 22 is hex alpha
   gradient.addColorStop(1, "rgba(245, 247, 250, 0)");
   ctx.fillStyle = gradient;
@@ -1922,8 +2014,8 @@ function drawShareCard(canvas, data) {
 
   // 2. Main Card Container
   const cardMargin = 80;
-  const cardWidth = width - (cardMargin * 2);
-  const cardHeight = height - (cardMargin * 2.5);
+  const cardWidth = width - cardMargin * 2;
+  const cardHeight = height - cardMargin * 2.5;
 
   ctx.fillStyle = "#FFFFFF";
   ctx.shadowColor = "rgba(0, 0, 0, 0.08)";
@@ -1960,14 +2052,26 @@ function drawShareCard(canvas, data) {
 
   ctx.font = "500 36px Manrope, sans-serif";
   ctx.fillStyle = "#718096";
-  ctx.fillText(` •  Confidence: ${data.confidence.charAt(0).toUpperCase() + data.confidence.slice(1)}`, contentX + ctx.measureText(`Secondary: ${data.secondary}`).width, contentY);
+  ctx.fillText(
+    ` •  Confidence: ${data.confidence.charAt(0).toUpperCase() + data.confidence.slice(1)}`,
+    contentX + ctx.measureText(`Secondary: ${data.secondary}`).width,
+    contentY,
+  );
 
   // 6. Summary Text
   contentY += 90;
   ctx.fillStyle = "#4a5568";
   ctx.font = "400 36px Manrope, sans-serif";
   const lineHeight = 54;
-  contentY = wrapText(ctx, data.summary, contentX, contentY, innerWidth, lineHeight, 4);
+  contentY = wrapText(
+    ctx,
+    data.summary,
+    contentX,
+    contentY,
+    innerWidth,
+    lineHeight,
+    4,
+  );
 
   // 7. Mix Breakdown (Bars)
   contentY += 80;
@@ -2019,7 +2123,11 @@ function drawShareCard(canvas, data) {
 
   ctx.fillStyle = "#718096";
   ctx.font = "500 24px Manrope, sans-serif";
-  ctx.fillText("View my full interactive profile:", contentX + 40, linkBoxY + 30);
+  ctx.fillText(
+    "View my full interactive profile:",
+    contentX + 40,
+    linkBoxY + 30,
+  );
 
   ctx.fillStyle = "#2b6cb0";
   ctx.font = "600 28px Manrope, sans-serif";
@@ -2033,28 +2141,32 @@ function drawShareCard(canvas, data) {
   ctx.fillStyle = "#A0AEC0";
   ctx.font = "400 24px Manrope, sans-serif";
   ctx.textAlign = "center";
-  ctx.fillText("Educational reflection, not a clinical diagnosis. Take the test at whatismytemperament.com", width / 2, height - cardMargin + 30);
+  ctx.fillText(
+    "Educational reflection, not a clinical diagnosis. Take the test at whatismytemperament.com",
+    width / 2,
+    height - cardMargin + 30,
+  );
   ctx.textAlign = "left";
 }
 
 function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines) {
-  const words = text.split(' ');
-  let line = '';
+  const words = text.split(" ");
+  let line = "";
   let lineCount = 1;
   let currentY = y;
 
   for (let n = 0; n < words.length; n++) {
-    const testLine = line + words[n] + ' ';
+    const testLine = line + words[n] + " ";
     const metrics = ctx.measureText(testLine);
     const testWidth = metrics.width;
 
     if (testWidth > maxWidth && n > 0) {
       if (lineCount >= maxLines) {
-        ctx.fillText(line.trim() + '...', x, currentY);
+        ctx.fillText(line.trim() + "...", x, currentY);
         return currentY + lineHeight;
       } else {
         ctx.fillText(line, x, currentY);
-        line = words[n] + ' ';
+        line = words[n] + " ";
         currentY += lineHeight;
         lineCount++;
       }
@@ -2078,7 +2190,7 @@ function downloadCanvasPNG(canvas, filename) {
 
   if (state.resultMeta) {
     trackEvent("share_card_downloaded", {
-      primary_temperament: state.resultMeta.primary
+      primary_temperament: state.resultMeta.primary,
     });
   }
 }
@@ -2088,22 +2200,24 @@ async function shareCanvasImage(canvas) {
 
   canvas.toBlob(async (blob) => {
     if (!blob) return;
-    const file = new File([blob], "Temperament-Insight-Result.png", { type: "image/png" });
+    const file = new File([blob], "Temperament-Insight-Result.png", {
+      type: "image/png",
+    });
     const shareData = {
       files: [file],
-      title: 'My Temperament Insight Result',
-      text: 'Check out my temperament profile!'
+      title: "My Temperament Insight Result",
+      text: "Check out my temperament profile!",
     };
 
     try {
       await navigator.share(shareData);
       if (state.resultMeta) {
         trackEvent("share_card_shared", {
-          primary_temperament: state.resultMeta.primary
+          primary_temperament: state.resultMeta.primary,
         });
       }
     } catch (err) {
-      if (err.name !== 'AbortError') {
+      if (err.name !== "AbortError") {
         console.error("Error sharing canvas image:", err);
       }
     }
@@ -2114,15 +2228,18 @@ function openPrintableReport() {
   if (!state.shareUrl) return;
 
   // Construct absolute URL for the report page mapping the encoded payload cache
-  const reportUrl = new URL(`report.html#result=${state.shareUrl}`, window.location.origin + window.location.pathname).toString();
+  const reportUrl = new URL(
+    `report.html#result=${state.shareUrl}`,
+    window.location.origin + window.location.pathname,
+  ).toString();
 
   // Open the printable report in a new tab
-  window.open(reportUrl, '_blank');
+  window.open(reportUrl, "_blank");
 
   if (state.resultMeta) {
     trackEvent("share_card_pdf_downloaded", {
       primary_temperament: state.resultMeta.primary,
-      confidence_level: state.resultMeta.confidenceLevel
+      confidence_level: state.resultMeta.confidenceLevel,
     });
   }
 }

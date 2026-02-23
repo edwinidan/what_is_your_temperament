@@ -299,15 +299,18 @@ Date: February 22 - 23, 2026
 The project has undergone several significant User Experience (UX) and content upgrades to form Version 2:
 
 ### 14.1 Interactive Input Modernization (Feb 22)
+
 - **Slider-based Question Selection:** The previous button-based inputs for question responses have been replaced with smooth, interactive slider inputs.
 - **Improved Styling:** The styling of the questions and slider track has been refined to provide better visual feedback and a more engaging assessment experience. The question text is now clearly presented above the corresponding slider.
 
 ### 14.2 Comprehensive Temperament Profiles (Feb 22)
+
 - **New Page Addition (`temperaments.html`):** A dedicated HTML page has been added to house in-depth information about each temperament.
 - **Detailed Psychological Profiles:** The brief summaries for Choleric, Melancholic, and Phlegmatic temperaments have been expanded into comprehensive, detailed psychological profiles.
 - **CSS Enhancements:** `styles.css` was updated to properly style these new, longer profile sections, ensuring readability and visual consistency across all temperament details.
 
 ### 14.3 Result Sharing & Exports (Feb 22 - Feb 23)
+
 - **Encoded URL Deep-Links:** Results are now serialized into a tiny JSON payload, dynamically base64url-encoded, and attached to the browser URL hash (`#result=...`). When users click this link, the app seamlessly hydrates directly into the Results Panel without prompting a new test, acting as an instant, privacy-respecting shareable profile.
 - **Clipboard Generation:** Users can quickly capture their results onto their clipboard using physical buttons mapping to the Web Clipboard API. The "Copy Result Summary" provides a human-readable text block summarizing leading temperaments, while the "Copy Share Link" copies the raw URL.
 - **HTML Canvas Share Cards:** By extracting the result state, a stylish 1080x1350 High-DPI "Share Card" PNG is generated completely client-side. The image draws the temperament breakdown dynamically and overlays the personal URL.
@@ -315,17 +318,24 @@ The project has undergone several significant User Experience (UX) and content u
 - **Dedicated Print-to-PDF Pipeline:** Clicking "Download PDF" leverages the active URL hash dataset and invokes a brand new standalone file (`report.html`). This cleanly renders a black-and-white optimized, physical assessment document containing full Strengths, Watch-outs, and mixed distribution details without firing a single server request, triggering the native print dialog on launch.
 
 ### 14.4 Production Readiness & Privacy (Feb 23)
+
 - **Privacy Policy (`privacy.html`):** Created a clear, accessible privacy policy explicitly stating the app's offline-first nature, with no PII collection, no user accounts, and local-only storage.
 - **Terms & Educational Disclaimer (`terms.html`):** Added clear educational terms emphasizing that the tool provides an educational framework for self-reflection and explicitly stating that it is not intended for clinical or diagnostic use.
 - **Global Footer Navigation:** Added a clean footprint linking the new privacy and terms pages universally across all touchpoints (`index.html`, `test-options.html`, `temperaments.html`, and `report.html`).
+
+### 14.5 Error Hardening & Edge-Case Safety (Feb 23)
+
+- **`localStorage` Resilience:** Encapsulated storage operations (`setItem`, `getItem`, `removeItem`) within `try/catch` wrappers. The application degrades gracefully, functioning fully in-memory if browser storage is blocked or quota is exceeded.
+- **Mid-Assessment Refresh Recovery:** State hydration is now strictly validated. The app structurally verifies saved constraints (selected depth, page numbers, answer counts). Corrupted sessions are instantly dropped, quietly returning the user to a clean homepage state.
+- **URL Hash Bulletproofing:** The decoding parser now strictly verifies the shape, boundaries, and mathematical integrity of the `Mix Percentages` JSON payload returning `null` automatically upon any tampering, which triggers a silent fallback to `localStorage` recovery.
+- **Defensive UI Rendering:** Sliders sanitize unexpected non-integer DOM interactions by falling back to neutral values. Built-in defaults on math equations ensure components like Chart.js or Confidence meters never encounter `NaN` division or unhandled exceptions, operating 100% crash-free.
 
 ## 15. Data & Stats Inventory (Privacy Profile)
 
 To maintain trust and production-safety, Temperament Insight operates with strict data minimization principles:
 
 - **What data exists?** Only the user's answers to the assessment (values 1-5), the computed result (temperament percentages), and their current progress state.
-- **Where is it stored?** Strictly on the user’s local device via the browser’s `localStorage` (key: `temperamentInsight.progress.v1`). URL hashes (`#result=...`) are temporarily used for deep-link sharing. 
+- **Where is it stored?** Strictly on the user’s local device via the browser’s `localStorage` (key: `temperamentInsight.progress.v1`). URL hashes (`#result=...`) are temporarily used for deep-link sharing.
 - **How long does it exist?** `localStorage` is cleared immediately when the user finishes the assessment.
 - **Is it identifiable?** **No**. We do not collect names, emails, IPs, or any other PII. There is no user account system and no backend database.
 - **Analytics:** We use **Plausible Analytics**. It is cookie-less, anonymized, and tracks only aggregate events (e.g., `assessment_started`, `assessment_completed`, `report_opened`) to understand broad usage trends without tracking individual users.
-
