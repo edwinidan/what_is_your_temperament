@@ -1,0 +1,7 @@
+{
+    "functions": {
+        "api/reflect.ts": {
+            "maxDuration": 30
+        }
+    }
+}

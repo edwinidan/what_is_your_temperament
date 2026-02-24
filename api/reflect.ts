@@ -69,7 +69,7 @@ export const config = {
 
 export default async function handler(
   req: VercelRequest,
-  res: VercelResponse<ReflectSuccess | ReflectError>,
+  res: VercelResponse,
 ) {
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   res.setHeader("Cache-Control", "no-store");
@@ -101,7 +101,7 @@ export default async function handler(
   }
 
   const apiKey = process.env.GEMINI_API_KEY;
-  const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+  const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
   const systemPrompt = process.env.TRG_SYSTEM_PROMPT;
 
   if (!apiKey || !systemPrompt) {
@@ -153,7 +153,7 @@ export default async function handler(
 }
 
 function sendError(
-  res: VercelResponse<ReflectSuccess | ReflectError>,
+  res: VercelResponse,
   httpStatus: number,
   code: ReflectError["error"]["code"],
   message: string,
@@ -389,7 +389,7 @@ function normalizeModelOutput(
     }
 
     const bodyWords = countWords(body);
-    if (bodyWords < 150 || bodyWords > 200) {
+    if (bodyWords < 100 || bodyWords > 250) {
       return { ok: false, reason: `body_word_count_${bodyWords}` };
     }
 
@@ -418,7 +418,7 @@ function normalizeModelOutput(
   }
 
   const fallbackWords = countWords(fallbackBody);
-  if (fallbackWords < 150 || fallbackWords > 200) {
+  if (fallbackWords < 100 || fallbackWords > 250) {
     return { ok: false, reason: `fallback_body_word_count_${fallbackWords}` };
   }
 
@@ -510,11 +510,11 @@ function getClientIp(req: VercelRequest): string {
 function isSoftRateLimited(ip: string): boolean {
   const now = Date.now();
 
-  for (const [key, entry] of softRateLimitStore.entries()) {
+  Array.from(softRateLimitStore.entries()).forEach(([key, entry]) => {
     if (entry.resetAt <= now) {
       softRateLimitStore.delete(key);
     }
-  }
+  });
 
   const current = softRateLimitStore.get(ip);
   if (!current) {
