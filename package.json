@@ -9,6 +9,7 @@
   "devDependencies": {
     "@types/node": "^18.0.0",
     "@vercel/node": "^3.0.0",
+    "dotenv": "^17.3.1",
     "typescript": "^5.0.0",
     "vercel": "^43.0.0"
   }
