@@ -1,6 +1,6 @@
 # Temperament Insight Project Report
 
-Date: February 23, 2026  
+Date: February 24, 2026  
 Project type: Static-first educational web app with a Vercel serverless AI proxy (no build step, no database)
 
 ## 1. Executive Summary
@@ -411,3 +411,37 @@ To maintain trust and production-safety, Temperament Insight operates with stric
 - **How long does it exist?** `localStorage` is cleared immediately when the user finishes the assessment.
 - **Is it identifiable?** **No persistent identifiers are collected.** We do not collect names, emails, or user accounts, and there is no backend database. The proxy uses a short-lived in-memory hashed IP key for soft rate limiting only (not persisted or logged as raw IP).
 - **Analytics:** We use **Plausible Analytics**. It is cookie-less, anonymized, and tracks only aggregate events (e.g., `assessment_started`, `assessment_completed`, `report_opened`) to understand broad usage trends without tracking individual users.
+
+## 16. Current Problems and Active Risks (Feb 24, 2026)
+
+The following issues are currently active and should be prioritized before broader rollout of assistant-powered reflections:
+
+1. **Vercel API local type-check failure (`api/reflect.ts`)**
+- Current local TypeScript check fails with `Cannot find name 'fetch'` in the serverless function.
+- Root cause: local TS configuration/toolchain is incomplete for Node runtime fetch typing.
+- Impact: editor red diagnostics, reduced confidence in local verification, and higher risk of unnoticed type/runtime mismatches.
+
+2. **Assistant response contract drift in proxy normalization**
+- `api/reflect.ts` currently accepts body length range `100-250` words in normalization, while spec/system behavior target is `150-200`.
+- Impact: backend may return responses outside intended assistant limits and diverge from documented product boundaries.
+
+3. **Model default/version drift across artifacts**
+- Current local defaults reference `gemini-2.0-flash` in API/env examples, while earlier hardening/docs referenced `gemini-2.5-flash`.
+- Impact: inconsistent behavior/cost/latency across environments and confusion during debugging.
+
+4. **Environment and deployment config not yet stabilized in git**
+- Local project currently has untracked runtime/config files (`package.json`, `package-lock.json`, `tsconfig.json`, `vercel.json`, `.gitignore`, `.env.example`) plus local modifications to `api/reflect.ts`.
+- Impact: non-reproducible setup for other contributors and potential “works on one machine only” behavior.
+
+5. **Secret-handling operational risk**
+- Local `.env.local` contains Vercel-generated credentials/tokens and must remain local-only.
+- Impact: accidental exposure risk if copied into logs, commits, or screenshots.
+- Current mitigation: `.env.local` is ignored; operational requirement is strict secret hygiene and token rotation if exposure is suspected.
+
+6. **Local run-path mismatch between static and API-integrated assistant**
+- App assistant now calls `/api/reflect`; running purely as static files without Vercel function support will trigger assistant errors/fallback paths.
+- Impact: local QA can appear unstable unless run with Vercel-compatible local runtime and environment variables.
+
+7. **No automated integration test coverage for assistant API wiring**
+- There are currently no automated tests validating `app.js` assistant flow against `/api/reflect` success/error/fallback/limit behavior.
+- Impact: regression risk remains high for assistant UX and error handling.
