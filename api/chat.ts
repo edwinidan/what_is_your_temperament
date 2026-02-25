@@ -358,7 +358,13 @@ async function callGroq(input: {
         `Confidence: ${input.context.confidence}`,
         `Mix: Sanguine ${input.context.mix.sanguine}%, Choleric ${input.context.mix.choleric}%, Melancholic ${input.context.mix.melancholic}%, Phlegmatic ${input.context.mix.phlegmatic}%`,
         "",
-        "You are in conversational chat mode. Respond naturally and conversationally (100–180 words). Do not use JSON or structured output. Ground every response in the user's temperament profile above.",
+        "Chat mode rules (override length rules above for this mode):",
+        "- Be casual, warm, and conversational — like a knowledgeable friend, not a formal report.",
+        "- Keep replies SHORT: 50–80 words maximum. Never write long paragraphs.",
+        "- Speak directly to the person. Use 'you' naturally.",
+        "- Ground every reply in their specific temperament profile above.",
+        "- Do NOT use JSON, bullet lists, headers, or structured formatting.",
+        "- End with at most one short, natural follow-up question (optional).",
     ].join("\n");
 
     const messages = [
@@ -378,8 +384,8 @@ async function callGroq(input: {
         body: JSON.stringify({
             model: input.model,
             messages,
-            temperature: 0.5,
-            max_tokens: 400,
+            temperature: 0.6,
+            max_tokens: 200,
         }),
     });
 
