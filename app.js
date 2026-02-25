@@ -617,6 +617,7 @@ if (shareCardNativeBtn) {
   }
 }
 initAssistantUI();
+initChatFab();
 window.addEventListener("pagehide", handlePageHide);
 
 // Entry point behavior
@@ -3024,4 +3025,55 @@ function openPrintableReport() {
       confidence_level: state.resultMeta.confidenceLevel,
     });
   }
+}
+
+// ==========================================
+// FLOATING "JUMP TO CHAT" FAB
+// ==========================================
+function initChatFab() {
+  const chatFab = document.getElementById("chat-fab");
+  if (!chatFab || !assistantGuide) return;
+
+  let resultsPanelVisible = false;
+
+  // Use IntersectionObserver to detect when assistant-guide is already in view
+  const guideObserver = new IntersectionObserver(
+    (entries) => {
+      const isGuideVisible = entries[0].isIntersecting;
+      if (resultsPanelVisible) {
+        chatFab.classList.toggle("hidden", isGuideVisible);
+      }
+    },
+    { threshold: 0.15 },
+  );
+
+  // Use MutationObserver on results panel to detect when it becomes visible
+  const panelObserver = new MutationObserver(() => {
+    const isVisible = !resultsPanel.classList.contains("hidden");
+    resultsPanelVisible = isVisible;
+    if (isVisible) {
+      guideObserver.observe(assistantGuide);
+      // Start with FAB visible (guide is below viewport initially)
+      chatFab.classList.remove("hidden");
+    } else {
+      guideObserver.disconnect();
+      chatFab.classList.add("hidden");
+    }
+  });
+
+  panelObserver.observe(resultsPanel, {
+    attributes: true,
+    attributeFilter: ["class"],
+  });
+
+  // Click: smooth-scroll to chat and auto-open the assistant
+  chatFab.addEventListener("click", () => {
+    assistantGuide.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    // Auto-open the assistant panel if it's still collapsed
+    if (!assistantState.assistantOpen && assistantOpenBtn) {
+      // Slight delay so the scroll finishes first
+      setTimeout(() => assistantOpenBtn.click(), 500);
+    }
+  });
 }
