@@ -306,10 +306,15 @@ function validateHistory(
             return { ok: false, message: `history[${i}].content must not be empty.` };
         }
 
-        if (content.length > MAX_MESSAGE_CHARS) {
+        // Only cap user messages — assistant messages are AI-generated content
+        // that can legitimately be 600–1,200 chars (100–180 words).
+        const charLimit = e.role === "user" ? MAX_MESSAGE_CHARS : 2_000;
+        if (content.length > charLimit) {
             return {
                 ok: false,
-                message: `history[${i}].content must be ${MAX_MESSAGE_CHARS} characters or fewer.`,
+                message: e.role === "user"
+                    ? `history[${i}].content must be ${MAX_MESSAGE_CHARS} characters or fewer.`
+                    : `history[${i}].content (assistant) exceeds the maximum allowed length.`,
             };
         }
 
