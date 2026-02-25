@@ -100,8 +100,8 @@ export default async function handler(
     return sendError(res, 400, "BAD_REQUEST", validation.message);
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+  const apiKey = process.env.GROQ_API_KEY;
+  const model = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
   const systemPrompt = process.env.TRG_SYSTEM_PROMPT;
 
   if (!apiKey || !systemPrompt) {
@@ -118,7 +118,7 @@ export default async function handler(
 
   let modelText = "";
   try {
-    modelText = await callGemini({
+    modelText = await callGroq({
       apiKey,
       model,
       systemPrompt,
@@ -312,36 +312,29 @@ function buildUserPrompt(input: ReflectRequest): string {
   ].join("\n");
 }
 
-async function callGemini(input: {
+async function callGroq(input: {
   apiKey: string;
   model: string;
   systemPrompt: string;
   userPrompt: string;
 }): Promise<string> {
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
-    input.model,
-  )}:generateContent?key=${encodeURIComponent(input.apiKey)}`;
+  const endpoint = "https://api.groq.com/openai/v1/chat/completions";
 
   const response = await fetch(endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      "Authorization": `Bearer ${input.apiKey}`,
     },
     body: JSON.stringify({
-      systemInstruction: {
-        parts: [{ text: input.systemPrompt }],
-      },
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: input.userPrompt }],
-        },
+      model: input.model,
+      messages: [
+        { role: "system", content: input.systemPrompt },
+        { role: "user", content: input.userPrompt },
       ],
-      generationConfig: {
-        temperature: 0.4,
-        maxOutputTokens: 350,
-        responseMimeType: "application/json",
-      },
+      temperature: 0.4,
+      max_tokens: 500,
+      response_format: { type: "json_object" },
     }),
   });
 
@@ -353,9 +346,9 @@ async function callGemini(input: {
   }
 
   const data = (await response.json()) as {
-    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+    choices?: Array<{ message?: { content?: string } }>;
   };
-  const text = data.candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("").trim();
+  const text = data.choices?.[0]?.message?.content?.trim();
 
   if (!text) {
     throw {

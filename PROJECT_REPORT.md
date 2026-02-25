@@ -397,6 +397,7 @@ The project has undergone several significant User Experience (UX) and content u
 ### 14.11 Assistant UI-to-API Integration (Feb 23)
 
 - **API-First Reflection Calls:** The Results assistant now posts mode/context payloads from `app.js` to `/api/reflect` using `fetch` (`POST`, JSON), with no frontend exposure of secrets.
+- **No Free-Text UI (Yet):** The backend supports an optional `user_question` field, but the current UI does not expose a text input. Users can only interact via the six mode buttons; any free-form question would require a UI addition in `app.js` and a small request payload update.
 - **Preserved UX States:** Existing loading state (`Thinking thoughtfully...`), mode-button disabling, history rendering, and 5-message counter behavior were preserved during integration.
 - **Controlled Fallback Rule:** Local deterministic generation is retained as a fallback only when the API returns `UPSTREAM_ERROR` (including missing backend configuration), maintaining continuity without weakening boundaries.
 - **Retry-Safe Error Handling:** For network failures and non-upstream API errors (`RATE_LIMITED`, `BAD_REQUEST`), the assistant shows friendly errors, does not decrement messages, and allows immediate retry by selecting a mode again.
