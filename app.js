@@ -38,20 +38,14 @@ const ASSISTANT_API_TIMEOUT_MS = 15_000;
 const ASSISTANT_MODES = [
   "Result Summary",
   "Strengths in Action",
-  "Watch-outs & Reframes",
-  "7-Day Reflection Plan",
   "Communication Prep",
-  "Journaling Prompts",
 ];
 
 /** Starter prompts shown when a quick-start chip is clicked. */
 const ASSISTANT_MODE_STARTERS = {
   "Result Summary": "Can you summarise what my temperament result means?",
   "Strengths in Action": "What are my key strengths and how can I use them?",
-  "Watch-outs & Reframes": "What are my main watch-outs and how can I reframe them?",
-  "7-Day Reflection Plan": "Can you give me a 7-day reflection plan based on my result?",
   "Communication Prep": "How does my temperament affect how I communicate with others?",
-  "Journaling Prompts": "Give me some journaling prompts tailored to my temperament.",
 };
 
 const TEMPERAMENTS = ["Sanguine", "Choleric", "Melancholic", "Phlegmatic"];
