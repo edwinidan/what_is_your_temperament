@@ -2,6 +2,9 @@
     "functions": {
         "api/reflect.ts": {
             "maxDuration": 30
+        },
+        "api/chat.ts": {
+            "maxDuration": 30
         }
     }
 }

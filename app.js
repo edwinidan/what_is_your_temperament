@@ -29,11 +29,12 @@ const ANALYTICS_EVENTS = {
   assessmentAbandoned: "assessment_abandoned",
   detailViewOpened: "detail_view_opened",
 };
-const ASSISTANT_MAX_MESSAGES = 5;
-const ASSISTANT_RESPONSE_WORD_MIN = 150;
-const ASSISTANT_RESPONSE_WORD_MAX = 200;
+const ASSISTANT_MAX_MESSAGES = 10;
+const ASSISTANT_RESPONSE_WORD_MIN = 100;
+const ASSISTANT_RESPONSE_WORD_MAX = 180;
 const ASSISTANT_REFLECT_ENDPOINT = "/api/reflect";
-const ASSISTANT_API_TIMEOUT_MS = 12_000;
+const ASSISTANT_CHAT_ENDPOINT = "/api/chat";
+const ASSISTANT_API_TIMEOUT_MS = 15_000;
 const ASSISTANT_MODES = [
   "Result Summary",
   "Strengths in Action",
@@ -42,6 +43,16 @@ const ASSISTANT_MODES = [
   "Communication Prep",
   "Journaling Prompts",
 ];
+
+/** Starter prompts shown when a quick-start chip is clicked. */
+const ASSISTANT_MODE_STARTERS = {
+  "Result Summary": "Can you summarise what my temperament result means?",
+  "Strengths in Action": "What are my key strengths and how can I use them?",
+  "Watch-outs & Reframes": "What are my main watch-outs and how can I reframe them?",
+  "7-Day Reflection Plan": "Can you give me a 7-day reflection plan based on my result?",
+  "Communication Prep": "How does my temperament affect how I communicate with others?",
+  "Journaling Prompts": "Give me some journaling prompts tailored to my temperament.",
+};
 
 const TEMPERAMENTS = ["Sanguine", "Choleric", "Melancholic", "Phlegmatic"];
 const TEMPERAMENT_COLORS = {
@@ -512,6 +523,8 @@ const assistantState = {
   activeMode: null,
   loading: false,
   history: [],
+  /** Multi-turn chat history: array of {role, content} objects sent to /api/chat */
+  chatHistory: [],
 };
 let assistantContext = null;
 let temperamentDonutChart = null;
@@ -578,6 +591,8 @@ const assistantModeButtons = Array.from(
 );
 const assistantLimit = document.getElementById("assistant-limit");
 const assistantHistory = document.getElementById("assistant-history");
+const chatInput = document.getElementById("chat-input");
+const chatSendBtn = document.getElementById("chat-send-btn");
 
 // ==========================================
 // 4. INITIALIZATION & EVENT LISTENERS
@@ -1250,9 +1265,26 @@ function initAssistantUI() {
 
   assistantModeButtons.forEach((button) => {
     button.addEventListener("click", () =>
-      handleModeSelection(button.dataset.mode || ""),
+      prefillChatFromMode(button.dataset.mode || ""),
     );
   });
+
+  if (chatSendBtn) {
+    chatSendBtn.addEventListener("click", () => {
+      const text = chatInput ? chatInput.value.trim() : "";
+      if (text) handleChatSubmit(text);
+    });
+  }
+
+  if (chatInput) {
+    chatInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        const text = chatInput.value.trim();
+        if (text) handleChatSubmit(text);
+      }
+    });
+  }
 
   resetAssistantSession();
 }
@@ -1282,9 +1314,13 @@ function resetAssistantSession() {
   assistantState.activeMode = null;
   assistantState.loading = false;
   assistantState.history = [];
+  assistantState.chatHistory = [];
 
   if (assistantHistory) {
     assistantHistory.innerHTML = "";
+  }
+  if (chatInput) {
+    chatInput.value = "";
   }
   clearAssistantStatus();
   clearAssistantError();
@@ -1317,52 +1353,75 @@ function renderAssistantShell() {
   );
 }
 
-async function handleModeSelection(mode) {
-  if (!ASSISTANT_MODES.includes(mode)) {
-    appendAssistantResponse(buildAssistantBoundaryResponse(mode));
+/**
+ * Pre-fills the chat textarea with a mode-specific starter prompt.
+ * The user can edit it before sending.
+ */
+function prefillChatFromMode(mode) {
+  if (!chatInput) return;
+  const starter = ASSISTANT_MODE_STARTERS[mode] || mode;
+  chatInput.value = starter;
+  chatInput.focus();
+}
+
+/**
+ * Main chat submit handler — called when the user presses Send or Enter.
+ */
+async function handleChatSubmit(text) {
+  if (!text || assistantState.loading || assistantState.messagesUsed >= ASSISTANT_MAX_MESSAGES) {
     return;
   }
-
-  if (assistantState.loading || assistantState.messagesUsed >= ASSISTANT_MAX_MESSAGES) {
-    return;
-  }
-
-  clearAssistantError();
 
   if (!assistantContext) {
     showAssistantError("unexpected");
     return;
   }
 
-  assistantState.activeMode = mode;
-  setAssistantLoading(true, "Thinking thoughtfully...");
+  clearAssistantError();
+
+  // Clear the input immediately
+  if (chatInput) chatInput.value = "";
+
+  // Append the user turn to chatHistory and render it
+  assistantState.chatHistory.push({ role: "user", content: text });
+  renderChatHistory();
+  scrollChatToBottom();
+
+  setAssistantLoading(true, "Thinking…");
 
   try {
-    const apiResult = await postAssistantReflection(mode, assistantContext);
+    const result = await postChatMessage(assistantContext, assistantState.chatHistory);
 
-    if (apiResult.ok) {
-      appendAssistantResponse(apiResult.data);
+    if (result.ok) {
+      const aiContent = result.data.body;
+      assistantState.chatHistory.push({ role: "assistant", content: aiContent });
       assistantState.messagesUsed += 1;
+      renderChatHistory();
+      scrollChatToBottom();
       renderAssistantCounter();
       renderLimitState();
       return;
     }
 
-    if (isFallbackEligible(apiResult.error)) {
-      const fallbackResponse = generateLocalAssistantResponse(mode, assistantContext);
-      appendAssistantResponse(fallbackResponse);
-      assistantState.messagesUsed += 1;
-      renderAssistantCounter();
-      renderLimitState();
-      return;
-    }
-
-    showAssistantError(mapAssistantErrorType(apiResult.error.code));
+    // On API error, roll back the user turn so history stays in sync
+    assistantState.chatHistory.pop();
+    renderChatHistory();
+    showAssistantError(mapAssistantErrorType(result.error.code));
   } catch (_error) {
+    assistantState.chatHistory.pop();
+    renderChatHistory();
     showAssistantError("network");
   } finally {
     setAssistantLoading(false);
   }
+}
+
+/**
+ * Legacy mode-selection handler kept for any residual callers.
+ * Redirects to prefill for consistency.
+ */
+function handleModeSelection(mode) {
+  prefillChatFromMode(mode);
 }
 
 function setAssistantLoading(isLoading, message = "Thinking thoughtfully...") {
@@ -1386,6 +1445,8 @@ function setAssistantButtonsDisabled(disabled) {
   assistantModeButtons.forEach((button) => {
     button.disabled = disabled;
   });
+  if (chatSendBtn) chatSendBtn.disabled = disabled;
+  if (chatInput) chatInput.disabled = disabled;
 }
 
 async function postAssistantReflection(mode, context) {
@@ -1429,6 +1490,39 @@ async function postAssistantReflection(mode, context) {
   }
 }
 
+/**
+ * POST the full conversation history to /api/chat and return the AI reply.
+ */
+async function postChatMessage(context, chatHistory) {
+  const controller =
+    typeof AbortController !== "undefined" ? new AbortController() : null;
+  const timeoutId = controller
+    ? setTimeout(() => controller.abort(), ASSISTANT_API_TIMEOUT_MS)
+    : null;
+
+  try {
+    const response = await fetch(ASSISTANT_CHAT_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ context, history: chatHistory }),
+      signal: controller ? controller.signal : undefined,
+    });
+
+    const payload = await safeReadJson(response);
+
+    if (payload?.ok === true && typeof payload.data?.body === "string") {
+      return { ok: true, data: { body: normalizeSpaces(payload.data.body) } };
+    }
+
+    return {
+      ok: false,
+      error: normalizeAssistantError(response.status, payload),
+    };
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
+}
+
 async function safeReadJson(response) {
   try {
     return await response.json();
@@ -1460,10 +1554,10 @@ function normalizeAssistantSuccess(mode, data) {
   const suggested =
     Array.isArray(data.suggested_next) && data.suggested_next.length
       ? data.suggested_next
-          .filter((item) => typeof item === "string")
-          .map((item) => normalizeSpaces(item))
-          .filter(Boolean)
-          .slice(0, 3)
+        .filter((item) => typeof item === "string")
+        .map((item) => normalizeSpaces(item))
+        .filter(Boolean)
+        .slice(0, 3)
       : [];
 
   return {
@@ -1535,46 +1629,45 @@ function appendAssistantResponse(response) {
 }
 
 function renderAssistantHistory() {
-  if (!assistantHistory) {
-    return;
-  }
+  renderChatHistory();
+}
 
-  if (!assistantState.history.length) {
+/**
+ * Renders the full chat history as conversational bubbles.
+ * User messages on the right, AI messages on the left.
+ */
+function renderChatHistory() {
+  if (!assistantHistory) return;
+
+  if (!assistantState.chatHistory.length) {
     assistantHistory.innerHTML = "";
     return;
   }
 
-  assistantHistory.innerHTML = assistantState.history
-    .map((entry) => {
-      const suggestedHtml = Array.isArray(entry.suggested_next)
-        ? `
-        <p class="assistant-suggested-title">Suggested next</p>
-        <ul class="assistant-suggested-list">
-          ${entry.suggested_next
-          .map((item) => `<li>${escapeHtml(item)}</li>`)
-          .join("")}
-        </ul>`
-        : "";
-
+  assistantHistory.innerHTML = assistantState.chatHistory
+    .map((turn) => {
+      const isUser = turn.role === "user";
       return `
-      <article class="assistant-response-card">
-        <h4 class="assistant-response-title">${escapeHtml(entry.title)}</h4>
-        <p class="assistant-response-body">${escapeHtml(entry.body)}</p>
-        ${suggestedHtml}
-      </article>`;
+        <div class="chat-bubble ${isUser ? "chat-bubble--user" : "chat-bubble--ai"}">
+          <span class="chat-bubble__label">${isUser ? "You" : "Guide"}</span>
+          <p class="chat-bubble__text">${escapeHtml(turn.content)}</p>
+        </div>`;
     })
     .join("");
+}
+
+function scrollChatToBottom() {
+  if (assistantHistory) {
+    assistantHistory.scrollTop = assistantHistory.scrollHeight;
+  }
 }
 
 function renderAssistantCounter() {
   if (!assistantCounter) {
     return;
   }
-  const messagesLeft = Math.max(
-    0,
-    ASSISTANT_MAX_MESSAGES - assistantState.messagesUsed,
-  );
-  assistantCounter.textContent = `Messages left: ${messagesLeft}`;
+  const used = assistantState.messagesUsed;
+  assistantCounter.textContent = `Questions used: ${used} / ${ASSISTANT_MAX_MESSAGES}`;
 }
 
 function showAssistantError(type) {
