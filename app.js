@@ -573,9 +573,12 @@ const downloadCardBtn = document.getElementById("download-card-btn");
 const downloadCardPdfBtn = document.getElementById("download-card-pdf-btn");
 const shareCardNativeBtn = document.getElementById("share-card-native-btn");
 const assistantGuide = document.getElementById("assistant-guide");
-const assistantCollapsed = document.getElementById("assistant-collapsed");
-const assistantExpanded = document.getElementById("assistant-expanded");
 const assistantOpenBtn = document.getElementById("assistant-open-btn");
+const chatModal = document.getElementById("chat-modal");
+const chatModalCloseBtn = document.getElementById("chat-modal-close");
+const chatFab = document.getElementById("chat-fab");
+const chatFabIconChat = chatFab ? chatFab.querySelector(".chat-fab-icon--chat") : null;
+const chatFabIconClose = chatFab ? chatFab.querySelector(".chat-fab-icon--close") : null;
 const assistantCounter = document.getElementById("assistant-counter");
 const assistantStatus = document.getElementById("assistant-status");
 const assistantError = document.getElementById("assistant-error");
@@ -1250,12 +1253,18 @@ function toggleDetailView() {
 }
 
 function initAssistantUI() {
-  if (!assistantGuide) {
+  if (!chatModal) {
     return;
   }
 
+  // Inline CTA "Open Chat" button in results section
   if (assistantOpenBtn) {
-    assistantOpenBtn.addEventListener("click", openAssistant);
+    assistantOpenBtn.addEventListener("click", openChatModal);
+  }
+
+  // Modal close button (✕ in header)
+  if (chatModalCloseBtn) {
+    chatModalCloseBtn.addEventListener("click", closeChatModal);
   }
 
   assistantModeButtons.forEach((button) => {
@@ -1327,17 +1336,27 @@ function openAssistant() {
   renderAssistantShell();
 }
 
+function openChatModal() {
+  assistantState.assistantOpen = true;
+  if (chatModal) chatModal.classList.remove("hidden");
+  if (chatFab) chatFab.classList.add("chat-fab--open");
+  if (chatFabIconChat) chatFabIconChat.classList.add("hidden");
+  if (chatFabIconClose) chatFabIconClose.classList.remove("hidden");
+  renderAssistantShell();
+  // Focus the input for immediate typing
+  if (chatInput) setTimeout(() => chatInput.focus(), 100);
+}
+
+function closeChatModal() {
+  if (chatModal) chatModal.classList.add("hidden");
+  if (chatFab) chatFab.classList.remove("chat-fab--open");
+  if (chatFabIconChat) chatFabIconChat.classList.remove("hidden");
+  if (chatFabIconClose) chatFabIconClose.classList.add("hidden");
+}
+
 function renderAssistantShell() {
-  if (!assistantGuide || !assistantCollapsed || !assistantExpanded) {
+  if (!chatModal) {
     return;
-  }
-
-  const isOpen = assistantState.assistantOpen;
-  assistantCollapsed.classList.toggle("hidden", isOpen);
-  assistantExpanded.classList.toggle("hidden", !isOpen);
-
-  if (assistantOpenBtn) {
-    assistantOpenBtn.setAttribute("aria-expanded", `${isOpen}`);
   }
 
   renderAssistantCounter();
@@ -3031,33 +3050,16 @@ function openPrintableReport() {
 // FLOATING "JUMP TO CHAT" FAB
 // ==========================================
 function initChatFab() {
-  const chatFab = document.getElementById("chat-fab");
-  if (!chatFab || !assistantGuide) return;
+  if (!chatFab || !chatModal) return;
 
-  let resultsPanelVisible = false;
-
-  // Use IntersectionObserver to detect when assistant-guide is already in view
-  const guideObserver = new IntersectionObserver(
-    (entries) => {
-      const isGuideVisible = entries[0].isIntersecting;
-      if (resultsPanelVisible) {
-        chatFab.classList.toggle("hidden", isGuideVisible);
-      }
-    },
-    { threshold: 0.15 },
-  );
-
-  // Use MutationObserver on results panel to detect when it becomes visible
+  // Show FAB only when results panel is visible
   const panelObserver = new MutationObserver(() => {
     const isVisible = !resultsPanel.classList.contains("hidden");
-    resultsPanelVisible = isVisible;
     if (isVisible) {
-      guideObserver.observe(assistantGuide);
-      // Start with FAB visible (guide is below viewport initially)
       chatFab.classList.remove("hidden");
     } else {
-      guideObserver.disconnect();
       chatFab.classList.add("hidden");
+      closeChatModal();
     }
   });
 
@@ -3066,14 +3068,13 @@ function initChatFab() {
     attributeFilter: ["class"],
   });
 
-  // Click: smooth-scroll to chat and auto-open the assistant
+  // Toggle modal on FAB click
   chatFab.addEventListener("click", () => {
-    assistantGuide.scrollIntoView({ behavior: "smooth", block: "start" });
-
-    // Auto-open the assistant panel if it's still collapsed
-    if (!assistantState.assistantOpen && assistantOpenBtn) {
-      // Slight delay so the scroll finishes first
-      setTimeout(() => assistantOpenBtn.click(), 500);
+    const isOpen = !chatModal.classList.contains("hidden");
+    if (isOpen) {
+      closeChatModal();
+    } else {
+      openChatModal();
     }
   });
 }

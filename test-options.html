@@ -408,67 +408,21 @@
         </p>
 
         <section id="assistant-guide" class="panel-card assistant-guide" aria-label="Temperament Reflection Guide">
-          <div id="assistant-collapsed" class="assistant-collapsed">
-            <p class="eyebrow">Optional Reflection Guide</p>
-            <h3 class="assistant-title">Temperament Reflection Guide</h3>
+          <div class="assistant-collapsed">
+            <p class="eyebrow">AI Reflection Guide</p>
+            <h3 class="assistant-title">Chat with our AI</h3>
             <p class="assistant-subtitle">
-              Optional · Educational · Non-diagnostic
+              Ask questions about your temperament results · Educational · Non-diagnostic
             </p>
             <button id="assistant-open-btn" class="btn btn-outline assistant-open-btn" type="button"
-              aria-expanded="false" aria-controls="assistant-expanded">
-              Explore reflections
+              aria-label="Open chat with AI">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+                style="vertical-align: -3px; margin-right: 0.4rem;">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+              Open Chat
             </button>
-          </div>
-
-          <div id="assistant-expanded" class="assistant-expanded hidden">
-            <header class="assistant-header">
-              <h3>Temperament Reflection Guide</h3>
-              <p>Educational reflection based on your results</p>
-            </header>
-
-            <p id="assistant-counter" class="assistant-counter">
-              Questions used: 0 / 10
-            </p>
-
-            <div id="assistant-status" class="assistant-status hidden" aria-live="polite"></div>
-            <div id="assistant-error" class="assistant-error hidden" role="alert"></div>
-
-            <!-- Quick-start chips -->
-            <div id="assistant-mode-group" class="assistant-mode-grid" role="group" aria-label="Quick-start prompts">
-              <p class="assistant-chips-label">Quick starts</p>
-              <button type="button" class="btn btn-outline assistant-mode-btn assistant-chip"
-                data-mode="Result Summary">
-                Result Summary
-              </button>
-              <button type="button" class="btn btn-outline assistant-mode-btn assistant-chip"
-                data-mode="Strengths in Action">
-                Strengths in Action
-              </button>
-              <button type="button" class="btn btn-outline assistant-mode-btn assistant-chip"
-                data-mode="Communication Prep">
-                Communication Prep
-              </button>
-            </div>
-
-            <!-- Chat message window -->
-            <div id="assistant-history" class="assistant-history chat-window" aria-live="polite"
-              aria-label="Chat messages"></div>
-
-            <!-- Chat input row -->
-            <div id="chat-input-row" class="chat-input-row">
-              <textarea id="chat-input" class="chat-input" placeholder="Ask anything about your temperament…" rows="2"
-                maxlength="400" aria-label="Your message"></textarea>
-              <button id="chat-send-btn" class="btn btn-primary chat-send-btn" type="button" aria-label="Send message">
-                Send
-              </button>
-            </div>
-
-            <div id="assistant-limit" class="assistant-limit hidden">
-              <p>
-                You have reached this reflection session limit. You can review
-                your results above or start a new assessment when ready.
-              </p>
-            </div>
           </div>
         </section>
 
@@ -595,14 +549,83 @@
     </div>
   </footer>
 
-  <!-- Floating "Jump to Chat" FAB – visible only on results panel -->
-  <button id="chat-fab" class="chat-fab hidden" type="button" aria-label="Jump to Reflection Guide">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <!-- Floating Chat FAB – visible only on results panel -->
+  <button id="chat-fab" class="chat-fab hidden" type="button" aria-label="Chat with our AI">
+    <!-- Chat icon (shown when modal closed) -->
+    <svg class="chat-fab-icon chat-fab-icon--chat" width="22" height="22" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+    <!-- Close icon (shown when modal open) -->
+    <svg class="chat-fab-icon chat-fab-icon--close hidden" width="22" height="22" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
     </svg>
     <span class="chat-fab-label">Chat with our AI</span>
   </button>
+
+  <!-- Floating Chat Modal -->
+  <div id="chat-modal" class="chat-modal hidden" role="dialog" aria-label="Temperament Reflection Chat">
+    <header class="chat-modal-header">
+      <div>
+        <h3 class="chat-modal-title">Reflection Guide</h3>
+        <p class="chat-modal-subtitle">Educational · Non-diagnostic</p>
+      </div>
+      <button id="chat-modal-close" class="chat-modal-close" type="button" aria-label="Close chat">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </button>
+    </header>
+
+    <div class="chat-modal-body">
+      <p id="assistant-counter" class="assistant-counter">
+        Questions used: 0 / 10
+      </p>
+
+      <div id="assistant-status" class="assistant-status hidden" aria-live="polite"></div>
+      <div id="assistant-error" class="assistant-error hidden" role="alert"></div>
+
+      <!-- Quick-start chips -->
+      <div id="assistant-mode-group" class="assistant-mode-grid" role="group" aria-label="Quick-start prompts">
+        <p class="assistant-chips-label">Quick starts</p>
+        <button type="button" class="btn btn-outline assistant-mode-btn assistant-chip" data-mode="Result Summary">
+          Result Summary
+        </button>
+        <button type="button" class="btn btn-outline assistant-mode-btn assistant-chip" data-mode="Strengths in Action">
+          Strengths in Action
+        </button>
+        <button type="button" class="btn btn-outline assistant-mode-btn assistant-chip" data-mode="Communication Prep">
+          Communication Prep
+        </button>
+      </div>
+
+      <!-- Chat message window -->
+      <div id="assistant-history" class="assistant-history chat-window" aria-live="polite" aria-label="Chat messages">
+      </div>
+
+      <div id="assistant-limit" class="assistant-limit hidden">
+        <p>
+          You have reached this reflection session limit. You can review
+          your results above or start a new assessment when ready.
+        </p>
+      </div>
+    </div>
+
+    <!-- Chat input row (pinned to bottom) -->
+    <div class="chat-modal-footer">
+      <div id="chat-input-row" class="chat-input-row">
+        <textarea id="chat-input" class="chat-input" placeholder="Ask anything about your temperament…" rows="2"
+          maxlength="400" aria-label="Your message"></textarea>
+        <button id="chat-send-btn" class="btn btn-primary chat-send-btn" type="button" aria-label="Send message">
+          Send
+        </button>
+      </div>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>
