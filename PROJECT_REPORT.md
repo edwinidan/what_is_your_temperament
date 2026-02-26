@@ -1,6 +1,6 @@
 # Temperament Insight Project Report
 
-Date: February 24, 2026  
+Date: February 26, 2026 (updated 00:13 UTC)  
 Project type: Static-first educational web app with a Vercel serverless AI proxy (no build step, no database)
 
 ## 1. Executive Summary
@@ -54,8 +54,10 @@ Notable UX update: the intermediate "Pick Your Test Length" hero step was remove
   - Copy-paste-ready strict system prompt for the assistant.
   - Encodes non-clinical guardrails, refusal style, prompt-injection resistance, and response structure rules.
 - `api/reflect.ts`
-  - Vercel serverless endpoint (`POST /api/reflect`) for Gemini-backed reflections.
-  - Validates mode/context/user question payloads, applies soft rate limiting, injects system prompt from env, and returns normalized safe JSON.
+  - Vercel serverless endpoint (`POST /api/reflect`) for Groq-backed structured reflections (JSON).
+- `api/chat.ts`
+  - Vercel serverless endpoint (`POST /api/chat`) for multi-turn free-form chat replies (plain text).
+  - Validates temperament context + chat history, applies soft rate limiting, injects system prompt from env, and returns trimmed plain-text replies.
 - `README.md`
   - Run instructions and high-level scope.
 
@@ -74,6 +76,7 @@ Notable UX update: the intermediate "Pick Your Test Length" hero step was remove
 - `completionTracked`
 - `abandonmentTracked`
 - `resultMeta`
+- `assistantState` (modal chat): `assistantOpen`, `messagesUsed`, `activeMode`, `loading`, `history` (single-turn reflections), `chatHistory` (multi-turn chat transcript)
 
 ### 4.2 Initialization
 
@@ -98,12 +101,19 @@ On load:
 ### 4.4 Serverless Reflection Proxy (`/api/reflect`)
 
 - Runs as a Vercel Node.js serverless function (`runtime = "nodejs"`).
-- Uses environment variables only: `GEMINI_API_KEY`, `GEMINI_MODEL` (default `gemini-2.5-flash`), and `TRG_SYSTEM_PROMPT`.
+- Uses environment variables only: `GROQ_API_KEY`, `GROQ_MODEL` (default `llama-3.3-70b-versatile`), and `TRG_SYSTEM_PROMPT`.
 - Enforces request contract (`mode`, `context`, optional `user_question`) and validates the context schema.
 - Accepts `mix` sum rounding variance (`99-101`) while preserving relative-emphasis use.
 - Applies best-effort in-memory soft rate limiting keyed by a short-lived hashed client identifier.
 - Normalizes model output to `{ title, body, suggested_next }`, including a safe non-JSON fallback path when output can be validated.
 - Stores no user payloads and logs only error category/status metadata.
+
+### 4.5 Serverless Chat Proxy (`/api/chat`)
+
+- Vercel Node.js function that accepts a context payload plus full chat history.
+- Validates up to 20 turns, caps user message length at 400 chars and assistant at 2,000 chars, and enforces total transcript size limits.
+- Uses `GROQ_API_KEY` / `GROQ_MODEL` (`llama-3.3-70b-versatile`), casual system prompt, `temperature: 0.6`, `max_tokens: 200`.
+- Returns plain-text replies (50–80 words target), refuses empty responses, and rate-limits per hashed client IP.
 
 ## 5. Question Delivery and Validation
 
@@ -199,7 +209,7 @@ Results panel includes:
 - Communication style cards
 - Confidence indicator ring
 - Expandable detailed communication explanation
-- Optional guided assistant module ("Temperament Reflection Guide") with collapsed default state, mode-based reflections, and session-only history
+- Optional modal chat-based assistant ("Temperament Reflection Guide") with quick-start prompts, free-text entry, 10-turn cap, and session-only history; opened via inline CTA or floating FAB
 - Bottom-positioned result action controls (copy link, share card, detailed explanation toggle, retake, back home)
 - Educational disclaimer
 
@@ -295,9 +305,10 @@ Implemented:
 - Dominance-first ordering in Mix and Score Breakdown sections
 - Mobile result breakdown optimization (2-column cards and smaller percentage labels)
 - Detailed expandable interpretation
-- Optional Results-page AI reflection UX with mode-based guidance, session-only history, and non-clinical boundaries
-- Vercel serverless Gemini proxy endpoint (`POST /api/reflect`) with strict validation, prompt enforcement, soft rate limiting, and safe output normalization
-- Frontend integration from assistant UI to `/api/reflect` with API-first responses and controlled fallback for upstream errors
+- Optional Results-page AI reflection UX with quick-start prompts + free-text chat, session-only history, 10-message cap, and non-clinical boundaries (modal + FAB)
+- Vercel serverless Groq proxy endpoint (`POST /api/reflect`) with strict validation, prompt enforcement, soft rate limiting, and safe output normalization
+- Vercel serverless Groq chat endpoint (`POST /api/chat`) for multi-turn free-form replies with conversational length limits
+- Frontend integration from assistant UI to `/api/reflect` and `/api/chat` with API-first responses and controlled fallback for upstream errors
 - Responsive redesign and direct-to-selection CTA flow
 - Privacy-friendly product analytics events
 
@@ -315,7 +326,7 @@ Not implemented:
 - Browser support relies on standard modern DOM/CSS features.
 - Ensure Plausible script remains present in both HTML files for analytics continuity.
 - Ensure Chart.js script remains present in `test-options.html` for donut chart rendering.
-- For Vercel deployments using AI reflections, configure `GEMINI_API_KEY`, `GEMINI_MODEL`, and `TRG_SYSTEM_PROMPT`.
+- For Vercel deployments using AI reflections or chat, configure `GROQ_API_KEY`, `GROQ_MODEL`, and `TRG_SYSTEM_PROMPT` (shared by `/api/reflect` and `/api/chat`).
 
 ## 14. Version 2 Updates (Recent Enhancements)
 
@@ -380,30 +391,39 @@ The project has undergone several significant User Experience (UX) and content u
 ### 14.9 Temperament Reflection Guide UX (Feb 23)
 
 - **Optional Assistant Placement:** Implemented an optional assistant panel directly in `test-options.html` Results flow, positioned below the educational disclaimer and above the bottom result action controls.
-- **Guided Mode-Based Interaction:** Added a collapsed-first UX that expands into exactly six reflection modes (`Result Summary`, `Strengths in Action`, `Watch-outs & Reframes`, `7-Day Reflection Plan`, `Communication Prep`, `Journaling Prompts`) with a visible 5-message session counter.
+- **Guided Mode-Based Interaction:** Added a collapsed-first UX that expands into exactly six reflection modes (`Result Summary`, `Strengths in Action`, `Watch-outs & Reframes`, `7-Day Reflection Plan`, `Communication Prep`, `Journaling Prompts`) with a visible 5-message session counter. (Note: trimmed to three quick-start chips on Feb 25—see Version 3 updates.)
 - **Stateful Frontend Logic:** Added dedicated in-memory assistant state (`assistantOpen`, `messagesUsed`, `activeMode`, `loading`, `history`) to control loading, response history, retries, and session limits.
 - **Safety & Boundary Handling:** Added loading, limit, and error states (network unavailable, boundary/refusal, unexpected failure) with calm educational copy and non-clinical positioning.
 - **Spec/Prompt Foundation Added:** Introduced `AI_ASSISTANT_SPEC.md` and `TEMPERAMENT_REFLECTION_GUIDE_SYSTEM_PROMPT.txt` to lock behavior, constraints, and future integration readiness before API wiring.
 
-### 14.10 Vercel Gemini Proxy Hardening (Feb 23)
+### 14.10 Vercel Groq Proxy Hardening (Feb 23)
 
-- **Serverless Endpoint Added:** Created `api/reflect.ts` with `POST /api/reflect` contract for assistant reflections on Vercel.
+- **Serverless Endpoint Added:** Created `api/reflect.ts` with `POST /api/reflect` contract for assistant reflections on Vercel (Groq OpenAI-compatible API).
 - **Vercel Runtime Compatibility:** Updated the handler to use official `@vercel/node` types (`VercelRequest`, `VercelResponse`) and Node runtime configuration.
-- **Cost/Latency Tuning:** Lowered Gemini output budget to `maxOutputTokens: 350` (temperature kept low at `0.4`) for stable 150-200 word targets with lower overhead.
-- **Formatting Resilience:** Kept strict JSON-first parsing while adding a safe fallback path that accepts non-JSON text only when it passes sanitation, word-count validation, and safety boundary checks.
+- **Cost/Latency Tuning:** Groq call now uses `llama-3.3-70b-versatile` defaults with `temperature: 0.4`, `max_tokens: 500` to keep structured answers tight.
+- **Formatting Resilience:** Keeps strict JSON-first parsing while adding a safe fallback path that accepts non-JSON text only when it passes sanitation, word-count validation, and safety boundary checks.
 - **Validation Robustness:** Relaxed `context.mix` sum acceptance to `99-101` to tolerate real-world rounding variance without weakening schema checks.
 - **Privacy-Safe Error Logging:** Logging now records only coarse error category/status; no raw user content, payloads, or model output is logged.
 
 ### 14.11 Assistant UI-to-API Integration (Feb 23)
 
 - **API-First Reflection Calls:** The Results assistant now posts mode/context payloads from `app.js` to `/api/reflect` using `fetch` (`POST`, JSON), with no frontend exposure of secrets.
-- **No Free-Text UI (Yet):** The backend supports an optional `user_question` field, but the current UI does not expose a text input. Users can only interact via the six mode buttons; any free-form question would require a UI addition in `app.js` and a small request payload update.
+- **No Free-Text UI (Yet):** The backend supports an optional `user_question` field, but the current UI does not expose a text input. Users can only interact via the six mode buttons; any free-form question would require a UI addition in `app.js` and a small request payload update. (Superseded Feb 25: textarea chat input added.)
 - **Preserved UX States:** Existing loading state (`Thinking thoughtfully...`), mode-button disabling, history rendering, and 5-message counter behavior were preserved during integration.
 - **Controlled Fallback Rule:** Local deterministic generation is retained as a fallback only when the API returns `UPSTREAM_ERROR` (including missing backend configuration), maintaining continuity without weakening boundaries.
 - **Retry-Safe Error Handling:** For network failures and non-upstream API errors (`RATE_LIMITED`, `BAD_REQUEST`), the assistant shows friendly errors, does not decrement messages, and allows immediate retry by selecting a mode again.
 - **Limit Integrity:** The assistant still transitions to limit state at 5 successful responses (API success and eligible fallback responses count as successful).
 
-## 15. Data & Stats Inventory (Privacy Profile)
+## 15. Version 3 Updates (Feb 25-26, 2026)
+
+- **Groq-backed AI stack:** `/api/reflect` now calls Groq's OpenAI-compatible endpoint (`llama-3.3-70b-versatile`, `max_tokens: 500`, `temperature: 0.4`). Added `/api/chat` for multi-turn conversational replies with the same provider and shared `TRG_SYSTEM_PROMPT`.
+- **Multi-turn chat assistant (10-turn cap):** Frontend now supports free-text chat with running history, 10 assistant replies per session, and 50–80 word casual responses. History is validated and sent to `/api/chat`; errors roll back the last user turn.
+- **Simplified quick-start modes:** Quick-start chips reduced to three (`Result Summary`, `Strengths in Action`, `Communication Prep`). Users can still type anything in the textarea before sending.
+- **Floating FAB + modal chat shell:** The assistant panel now opens as a floating modal launched from an inline "Open Chat" CTA or a bottom-right FAB. FAB toggles between open/closed icons, hides when results are hidden, and swaps label state when the modal is open. Modal includes header, status/error banners, scrollable history, and pinned input row.
+- **Styling & accessibility:** New modal styles (elevated card, slide-in animation, mobile-friendly width), updated z-index for FAB (1010) and modal (1000), refined hover states, and automatic focus on the textarea when opened. Close button uses accessible `aria-label`.
+- **Config hardening:** `vercel.json` now declares both functions with 30s maxDuration. Environment keys standardized to `GROQ_API_KEY` / `GROQ_MODEL` across reflect and chat endpoints.
+
+## 16. Data & Stats Inventory (Privacy Profile)
 
 To maintain trust and production-safety, Temperament Insight operates with strict data minimization principles:
 
@@ -413,36 +433,21 @@ To maintain trust and production-safety, Temperament Insight operates with stric
 - **Is it identifiable?** **No persistent identifiers are collected.** We do not collect names, emails, or user accounts, and there is no backend database. The proxy uses a short-lived in-memory hashed IP key for soft rate limiting only (not persisted or logged as raw IP).
 - **Analytics:** We use **Plausible Analytics**. It is cookie-less, anonymized, and tracks only aggregate events (e.g., `assessment_started`, `assessment_completed`, `report_opened`) to understand broad usage trends without tracking individual users.
 
-## 16. Current Problems and Active Risks (Feb 24, 2026)
+## 17. Current Problems and Active Risks (Feb 26, 2026)
 
-The following issues are currently active and should be prioritized before broader rollout of assistant-powered reflections:
+The following issues are currently active and should be prioritized:
 
-1. **Vercel API local type-check failure (`api/reflect.ts`)**
-- Current local TypeScript check fails with `Cannot find name 'fetch'` in the serverless function.
-- Root cause: local TS configuration/toolchain is incomplete for Node runtime fetch typing.
-- Impact: editor red diagnostics, reduced confidence in local verification, and higher risk of unnoticed type/runtime mismatches.
+1. **Spec drift between docs and implementation**
+- `AI_ASSISTANT_SPEC.md` still describes 6 modes, a 5-message cap, and 150–200 word replies. The live app now exposes 3 quick-start modes, allows free-text chat, uses a 10-message cap, and chat replies are 50–80 words. The spec and system prompt need realignment to avoid QA confusion.
 
-2. **Assistant response contract drift in proxy normalization**
-- `api/reflect.ts` currently accepts body length range `100-250` words in normalization, while spec/system behavior target is `150-200`.
-- Impact: backend may return responses outside intended assistant limits and diverge from documented product boundaries.
+2. **Contract divergence across endpoints**
+- `/api/reflect` returns structured JSON (150–200 word expectation) while `/api/chat` returns plain text (50–80 words). Frontend UI mixes both through shared counters and limit messaging; ensure copy and limits match per-endpoint behavior to prevent user-visible inconsistencies.
 
-3. **Model default/version drift across artifacts**
-- Current local defaults reference `gemini-2.0-flash` in API/env examples, while earlier hardening/docs referenced `gemini-2.5-flash`.
-- Impact: inconsistent behavior/cost/latency across environments and confusion during debugging.
+3. **Static-only local runs still fail assistant calls**
+- Running the site as plain static files (without Vercel functions and env keys `GROQ_API_KEY`, `GROQ_MODEL`, `TRG_SYSTEM_PROMPT`) will surface assistant errors. Need clear local dev instructions or graceful offline stubs.
 
-4. **Environment and deployment config not yet stabilized in git**
-- Local project currently has untracked runtime/config files (`package.json`, `package-lock.json`, `tsconfig.json`, `vercel.json`, `.gitignore`, `.env.example`) plus local modifications to `api/reflect.ts`.
-- Impact: non-reproducible setup for other contributors and potential “works on one machine only” behavior.
+4. **Lack of automated coverage for chat/reflect flows**
+- No integration tests exercise `/api/chat` or `/api/reflect` from `app.js` (success, rate-limit, fallback, limit-reached). Regression risk remains high.
 
-5. **Secret-handling operational risk**
-- Local `.env.local` contains Vercel-generated credentials/tokens and must remain local-only.
-- Impact: accidental exposure risk if copied into logs, commits, or screenshots.
-- Current mitigation: `.env.local` is ignored; operational requirement is strict secret hygiene and token rotation if exposure is suspected.
-
-6. **Local run-path mismatch between static and API-integrated assistant**
-- App assistant now calls `/api/reflect`; running purely as static files without Vercel function support will trigger assistant errors/fallback paths.
-- Impact: local QA can appear unstable unless run with Vercel-compatible local runtime and environment variables.
-
-7. **No automated integration test coverage for assistant API wiring**
-- There are currently no automated tests validating `app.js` assistant flow against `/api/reflect` success/error/fallback/limit behavior.
-- Impact: regression risk remains high for assistant UX and error handling.
+5. **Privacy/key hygiene**
+- `.env.local` contains live provider keys. Reinforce secret handling guidance and avoid accidental commits; consider adding `.env.example` with Groq variables for safer onboarding.
