@@ -1,6 +1,6 @@
 # Temperament Insight Project Report
 
-Date: February 26, 2026 (post assistant spec & analytics updates)  
+Date: February 26, 2026 (post Paystack monetization PRD)  
 Project type: Static-first educational web app with a Vercel serverless AI proxy (no build step, no database)
 
 ## 1. Executive Summary
@@ -53,6 +53,9 @@ Notable UX update: the intermediate "Pick Your Test Length" hero step was remove
 - `TEMPERAMENT_REFLECTION_GUIDE_SYSTEM_PROMPT.txt`
   - Copy-paste-ready strict system prompt for the assistant.
   - Encodes non-clinical guardrails, refusal style, prompt-injection resistance, and response structure rules aligned to the three modes and dual-endpoint behavior.
+- `PAYSTACK_INTEGRATION.md`
+  - Product requirements document for a Paystack-backed premium unlock of the AI assistant.
+  - Describes paywall UX, inline checkout, JWT-gated `/api/reflect` and `/api/chat`, new Vercel verify endpoint, environment variables, and Plausible conversion events.
 - `api/reflect.ts`
   - Vercel serverless endpoint (`POST /api/reflect`) for Groq-backed structured reflections (JSON).
 - `api/chat.ts`
@@ -289,6 +292,12 @@ Tracked events:
 11. `shared_result_viewed`
 12. `retake_test_clicked`
 
+Planned conversion events for the upcoming paywall (not yet wired):
+
+- `paywall_viewed`
+- `checkout_started`
+- `payment_successful`
+
 Abandonment detection:
 
 - Uses `pagehide` while assessment is active and not already completed.
@@ -319,6 +328,7 @@ Implemented:
 - Frontend integration from assistant UI to `/api/reflect` and `/api/chat` with API-first responses and controlled fallback for upstream errors
 - Responsive redesign and direct-to-selection CTA flow
 - Privacy-friendly product analytics events
+- Paystack premium unlock PRD drafted (`PAYSTACK_INTEGRATION.md`); implementation pending
 
 Not implemented:
 
@@ -326,6 +336,7 @@ Not implemented:
 - Historical retake comparison
 - Monetization/premium segmentation
 - Clinical/diagnostic claims or outputs
+- Paystack paywall / JWT-gated assistant endpoints (design only)
 
 ## 13. Operational Notes
 
@@ -432,6 +443,7 @@ The project has undergone several significant User Experience (UX) and content u
 - **Config hardening:** `vercel.json` now declares both functions with 30s maxDuration. Environment keys standardized to `GROQ_API_KEY` / `GROQ_MODEL` across reflect and chat endpoints.
 - **Spec + prompt realignment (Feb 26):** `AI_ASSISTANT_SPEC.md` and `TEMPERAMENT_REFLECTION_GUIDE_SYSTEM_PROMPT.txt` now match live behavior: three quick-start modes, `/api/reflect` vs `/api/chat` split rules, 10-message cap, and distinct length bands (150–200 words structured; 50–80 words chat). Injection resistance and refusal guidance remain unchanged.
 - **Assistant & sharing telemetry (Feb 26):** Added Plausible event hooks for chat open, prompt sends (quick-start or free-text), limit reached, confidence tooltip views, shared-result hydration, retake clicks, and share-link copies. `assessment_completed` now also records `time_to_complete`.
+- **Premium unlock PRD (Feb 26):** Authored `PAYSTACK_INTEGRATION.md` detailing a Paystack inline checkout flow, JWT issuance/verification via new `/api/verify-payment`, and gating `/api/reflect` + `/api/chat` behind paid unlock. Includes conversion events and rollout plan (test keys → production keys).
 
 ## 16. Data & Stats Inventory (Privacy Profile)
 
@@ -458,3 +470,14 @@ The following issues are currently active and should be prioritized:
 
 4. **Privacy/key hygiene**
 - `.env.local` contains live provider keys. Reinforce secret handling guidance and avoid accidental commits; consider adding `.env.example` with Groq variables for safer onboarding.
+
+5. **Monetization plan unimplemented**
+- Paystack paywall is documented but not built; token security, checkout error handling, and UX guardrails need implementation and testing.
+
+## 18. Premium Paywall PRD (Paystack) – Feb 26, 2026
+
+- **Goal:** One-time Paystack payment to unlock AI reflections/chat per device/session without adding a database.
+- **Flow:** Results CTA → premium modal → Paystack inline checkout → server-side verification (`/api/verify-payment`) → signed JWT saved to `localStorage` → JWT attached to `/api/reflect` and `/api/chat`.
+- **Security model:** JWT signed with `JWT_SECRET`, short expiry; frontend cannot mint tokens. `/api/reflect` and `/api/chat` must reject missing/invalid tokens.
+- **Required env keys:** `PAYSTACK_SECRET_KEY`, `JWT_SECRET` (plus existing Groq keys). New Vercel function `POST /api/verify-payment`.
+- **Analytics (planned):** `paywall_viewed`, `checkout_started`, `payment_successful` to track funnel.
