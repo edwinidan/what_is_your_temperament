@@ -1233,9 +1233,20 @@ function renderResults({ primary, secondary, confidence, ranked }) {
     depth: state.selectedDepth,
     duration_seconds: durationSeconds,
     confidence_level: confidenceLevel,
+    time_to_complete: durationSeconds,
   });
   clearProgress();
   scrollToPanel(resultsPanel, "smooth");
+
+  let confidenceTooltipTracked = false;
+  const trackConfidenceInteraction = () => {
+    if (!confidenceTooltipTracked) {
+      trackEvent("confidence_tooltip_viewed");
+      confidenceTooltipTracked = true;
+    }
+  };
+  confidenceRing.addEventListener("mouseenter", trackConfidenceInteraction);
+  confidenceRing.addEventListener("click", trackConfidenceInteraction);
 }
 
 function toggleDetailView() {
@@ -1268,9 +1279,13 @@ function initAssistantUI() {
   }
 
   assistantModeButtons.forEach((button) => {
-    button.addEventListener("click", () =>
-      prefillChatFromMode(button.dataset.mode || ""),
-    );
+    button.addEventListener("click", () => {
+      const mode = button.dataset.mode || "";
+      if (mode) {
+        trackEvent("ai_prompt_sent", { type: "quick_start", mode: mode });
+        prefillChatFromMode(mode);
+      }
+    });
   });
 
   if (chatSendBtn) {
@@ -1343,6 +1358,7 @@ function openChatModal() {
   if (chatFabIconChat) chatFabIconChat.classList.add("hidden");
   if (chatFabIconClose) chatFabIconClose.classList.remove("hidden");
   renderAssistantShell();
+  trackEvent("ai_chat_opened");
   // Focus the input for immediate typing
   if (chatInput) setTimeout(() => chatInput.focus(), 100);
 }
@@ -1400,6 +1416,8 @@ async function handleChatSubmit(text) {
   assistantState.chatHistory.push({ role: "user", content: text });
   renderChatHistory();
   scrollChatToBottom();
+
+  trackEvent("ai_prompt_sent", { type: "free_text" });
 
   setAssistantLoading(true, "Thinking…");
 
@@ -1731,6 +1749,9 @@ function renderLimitState() {
 
   const limitReached = assistantState.messagesUsed >= ASSISTANT_MAX_MESSAGES;
   assistantLimit.classList.toggle("hidden", !limitReached);
+  if (limitReached) {
+    trackEvent("ai_limit_reached");
+  }
   assistantModeGroup.classList.toggle("hidden", limitReached);
 }
 
@@ -1927,6 +1948,7 @@ async function copyShareLink() {
   try {
     await navigator.clipboard.writeText(link);
     showCopiedFeedback(copyLinkBtn, "Copy Share Link");
+    trackEvent("share_link_copied");
   } catch (_err) {
     // Silent failure
   }
@@ -2570,6 +2592,8 @@ function renderSharedResults(payload) {
   assessmentPanel.classList.add("hidden");
   resultsPanel.classList.remove("hidden");
 
+  trackEvent("shared_result_viewed");
+
   const primary = payload.p;
   const secondary = payload.s;
   const confidenceLevelFromPayload = payload.c; // "high", "medium", "low"
@@ -2711,6 +2735,9 @@ function renderSharedResults(payload) {
   const restartButton = document.querySelector(".result-restart");
   if (restartButton) {
     restartButton.href = "test-options.html";
+    restartButton.addEventListener("click", () => {
+      trackEvent("retake_test_clicked");
+    });
     // The regular href cleans the hash simply by reloading cleanly.
   }
 }
