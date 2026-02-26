@@ -1,6 +1,6 @@
 # Temperament Insight Project Report
 
-Date: February 26, 2026 (updated 00:13 UTC)  
+Date: February 26, 2026 (post assistant spec & analytics updates)  
 Project type: Static-first educational web app with a Vercel serverless AI proxy (no build step, no database)
 
 ## 1. Executive Summary
@@ -49,10 +49,10 @@ Notable UX update: the intermediate "Pick Your Test Length" hero step was remove
   - Privacy-friendly analytics event instrumentation.
 - `AI_ASSISTANT_SPEC.md`
   - Product specification for the optional Results-page assistant ("Temperament Reflection Guide").
-  - Defines scope boundaries, allowed modes, forbidden topics, limits, input constraints, and output format.
+  - Defines scope boundaries, three allowed quick-start modes, split endpoint rules (`/api/reflect` vs `/api/chat`), length caps, forbidden topics, limits, input constraints, and output formats.
 - `TEMPERAMENT_REFLECTION_GUIDE_SYSTEM_PROMPT.txt`
   - Copy-paste-ready strict system prompt for the assistant.
-  - Encodes non-clinical guardrails, refusal style, prompt-injection resistance, and response structure rules.
+  - Encodes non-clinical guardrails, refusal style, prompt-injection resistance, and response structure rules aligned to the three modes and dual-endpoint behavior.
 - `api/reflect.ts`
   - Vercel serverless endpoint (`POST /api/reflect`) for Groq-backed structured reflections (JSON).
 - `api/chat.ts`
@@ -275,11 +275,19 @@ Tracked events:
 2. `assessment_page_viewed`
    - `depth`, `page_index`
 3. `assessment_completed`
-   - `depth`, `duration_seconds`, `confidence_level`
+   - `depth`, `duration_seconds`, `time_to_complete`, `confidence_level`
 4. `assessment_abandoned`
    - `depth`, `last_page_index`
 5. `detail_view_opened`
    - `primary_temperament`
+6. `confidence_tooltip_viewed`
+7. `ai_prompt_sent`
+   - `type` (`quick_start` or `free_text`), optional `mode`
+8. `ai_chat_opened`
+9. `ai_limit_reached`
+10. `share_link_copied`
+11. `shared_result_viewed`
+12. `retake_test_clicked`
 
 Abandonment detection:
 
@@ -422,6 +430,8 @@ The project has undergone several significant User Experience (UX) and content u
 - **Floating FAB + modal chat shell:** The assistant panel now opens as a floating modal launched from an inline "Open Chat" CTA or a bottom-right FAB. FAB toggles between open/closed icons, hides when results are hidden, and swaps label state when the modal is open. Modal includes header, status/error banners, scrollable history, and pinned input row.
 - **Styling & accessibility:** New modal styles (elevated card, slide-in animation, mobile-friendly width), updated z-index for FAB (1010) and modal (1000), refined hover states, and automatic focus on the textarea when opened. Close button uses accessible `aria-label`.
 - **Config hardening:** `vercel.json` now declares both functions with 30s maxDuration. Environment keys standardized to `GROQ_API_KEY` / `GROQ_MODEL` across reflect and chat endpoints.
+- **Spec + prompt realignment (Feb 26):** `AI_ASSISTANT_SPEC.md` and `TEMPERAMENT_REFLECTION_GUIDE_SYSTEM_PROMPT.txt` now match live behavior: three quick-start modes, `/api/reflect` vs `/api/chat` split rules, 10-message cap, and distinct length bands (150–200 words structured; 50–80 words chat). Injection resistance and refusal guidance remain unchanged.
+- **Assistant & sharing telemetry (Feb 26):** Added Plausible event hooks for chat open, prompt sends (quick-start or free-text), limit reached, confidence tooltip views, shared-result hydration, retake clicks, and share-link copies. `assessment_completed` now also records `time_to_complete`.
 
 ## 16. Data & Stats Inventory (Privacy Profile)
 
@@ -437,17 +447,14 @@ To maintain trust and production-safety, Temperament Insight operates with stric
 
 The following issues are currently active and should be prioritized:
 
-1. **Spec drift between docs and implementation**
-- `AI_ASSISTANT_SPEC.md` still describes 6 modes, a 5-message cap, and 150–200 word replies. The live app now exposes 3 quick-start modes, allows free-text chat, uses a 10-message cap, and chat replies are 50–80 words. The spec and system prompt need realignment to avoid QA confusion.
-
-2. **Contract divergence across endpoints**
-- `/api/reflect` returns structured JSON (150–200 word expectation) while `/api/chat` returns plain text (50–80 words). Frontend UI mixes both through shared counters and limit messaging; ensure copy and limits match per-endpoint behavior to prevent user-visible inconsistencies.
-
-3. **Static-only local runs still fail assistant calls**
+1. **Static-only local runs still fail assistant calls**
 - Running the site as plain static files (without Vercel functions and env keys `GROQ_API_KEY`, `GROQ_MODEL`, `TRG_SYSTEM_PROMPT`) will surface assistant errors. Need clear local dev instructions or graceful offline stubs.
 
-4. **Lack of automated coverage for chat/reflect flows**
+2. **Lack of automated coverage for chat/reflect flows**
 - No integration tests exercise `/api/chat` or `/api/reflect` from `app.js` (success, rate-limit, fallback, limit-reached). Regression risk remains high.
 
-5. **Privacy/key hygiene**
+3. **Telemetry validation gap**
+- New analytics events (assistant interactions, share flows, confidence tooltip) are unverified in Plausible dashboards; event names and payload shapes need validation to ensure useful reporting.
+
+4. **Privacy/key hygiene**
 - `.env.local` contains live provider keys. Reinforce secret handling guidance and avoid accidental commits; consider adding `.env.example` with Groq variables for safer onboarding.
