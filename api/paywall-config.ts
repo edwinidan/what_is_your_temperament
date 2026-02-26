@@ -23,8 +23,8 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 
-  const amount = Number(process.env.PAYWALL_AMOUNT_KOBO || 500);
-  const currency = process.env.PAYWALL_CURRENCY || "USD";
+  const amount = Number(process.env.PAYWALL_AMOUNT_KOBO || 5000);
+  const currency = process.env.PAYWALL_CURRENCY || "GHS";
 
   return res.status(200).json({
     ok: true,

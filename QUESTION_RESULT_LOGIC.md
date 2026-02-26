@@ -221,3 +221,61 @@ The specific updates that touch upon the assessment flow are primarily UI-focuse
 - **Underlying Likert Scale Unchanged:** Despite the visual change to sliders, the underlying data structure remains a strict 5-point Likert scale (`1` to `5`).
 - **Scoring Translation Unchanged:** The mathematical translation of slider values (`toCenteredValue(value) = value - 3`) and the handling of reverse-scored items function exactly as they did in Version 1.
 - **Detailed Profiles:** While not affecting the calculation logic, the `temperaments.html` page was added to offer much more comprehensive descriptions of the final results calculated by the aforementioned logic.
+
+
+## 14. Paystack Premium Unlock (Version 2.1)
+
+To support the "Premium Unlock" feature, the following changes were implemented:
+
+### 14.1 New Environment Variables
+
+- `PAYSTACK_PUBLIC_KEY`: Paystack public key (test or live).
+- `PAYSTACK_SECRET_KEY`: Paystack secret key (test or live).
+- `JWT_SECRET`: Secret for signing premium JWT tokens.
+- `PAYWALL_AMOUNT_KOBO`: Amount in cents (default: `500` for $5).
+- `PAYWALL_CURRENCY`: Currency code (default: `"USD"`).
+
+### 14.2 Backend API Endpoints
+
+- **`POST /api/verify-payment`**
+  - Verifies a Paystack payment reference via Paystack's API.
+  - Validates that the amount and currency match the expected values.
+  - Returns a signed JWT token and `expires_at` timestamp if verification succeeds.
+  - Returns `401 UNAUTHORIZED` with code `unauthorized` if verification fails.
+
+- **`GET /api/paywall-config`**
+  - Returns public configuration for the paywall modal:
+    - `publicKey`
+    - `amount`
+    - `currency`
+
+- **`GET /api/chat` and `GET /api/reflect`**
+  - Now require a valid `Authorization: Bearer <jwt>` header.
+  - Return `401 UNAUTHORIZED` with code `unauthorized` if no valid token is provided.
+
+### 14.3 Frontend Paywall Modal
+
+- A "Premium Unlock" button is added to the UI.
+- Clicking it opens a modal that:
+  - Displays the Paystack checkout inline.
+  - Calls `startPaystackCheckout()` on button click.
+  - Calls `verifyPayment(reference)` on successful Paystack transaction.
+
+### 14.4 Token Management
+
+- Premium tokens are stored in `localStorage` under the key `temperamentInsight.premiumToken`.
+- Tokens are automatically validated on page load and before accessing premium features.
+- Expired tokens are cleared automatically.
+- The token is valid for **48 hours** from issuance.
+
+### 14.5 Terms and Limitations
+
+- The unlock is **per device/browser** only (no user accounts).
+- Clearing storage or switching devices requires a new unlock.
+- This limitation is documented in `terms.html`.
+
+### 14.6 Plausible Events
+
+- `paywall_viewed`
+- `checkout_started`
+- `payment_successful`

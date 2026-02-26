@@ -17,8 +17,8 @@ export const config = {
   runtime: "nodejs",
 };
 
-const DEFAULT_AMOUNT = Number(process.env.PAYWALL_AMOUNT_KOBO || 500);
-const DEFAULT_CURRENCY = process.env.PAYWALL_CURRENCY || "USD";
+const DEFAULT_AMOUNT = Number(process.env.PAYWALL_AMOUNT_KOBO || 5000);
+const DEFAULT_CURRENCY = process.env.PAYWALL_CURRENCY || "GHS";
 const TOKEN_EXP_SECONDS = 48 * 60 * 60; // 48 hours
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {

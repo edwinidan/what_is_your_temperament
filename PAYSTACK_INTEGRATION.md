@@ -90,14 +90,14 @@ Would you like me to generate the Vercel backend code for the new `/api/verify-p
 
 ## Implementation Notes (USD $5, 48h token)
 
-- **Price/Currency:** $5 USD (`PAYWALL_AMOUNT_KOBO=500`, `PAYWALL_CURRENCY=USD`).
+- **Price/Currency:** 50 GHS (`PAYWALL_AMOUNT_KOBO=5000`, `PAYWALL_CURRENCY=GHS`).
 - **JWT expiry:** 48 hours from issuance.
 - **Env vars (Vercel):**
   - `PAYSTACK_PUBLIC_KEY` (test/live per environment)
   - `PAYSTACK_SECRET_KEY`
   - `JWT_SECRET`
-  - `PAYWALL_AMOUNT_KOBO=500`
-  - `PAYWALL_CURRENCY=USD`
+  - `PAYWALL_AMOUNT_KOBO=5000`
+  - `PAYWALL_CURRENCY=GHS`
 - **Endpoints:**
   - `POST /api/verify-payment` — server-to-server verify reference, amount, currency; returns signed JWT + `expires_at`.
   - `GET /api/paywall-config` — public config: `publicKey`, `amount`, `currency`.

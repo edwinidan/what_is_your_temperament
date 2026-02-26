@@ -35,14 +35,16 @@ const ASSISTANT_RESPONSE_WORD_MAX = 180;
 const ASSISTANT_REFLECT_ENDPOINT = "/api/reflect";
 const ASSISTANT_CHAT_ENDPOINT = "/api/chat";
 const PREMIUM_TOKEN_KEY = "temperamentInsight.premiumToken";
-const PAYWALL_AMOUNT = 500; // cents (USD)
-const PAYWALL_CURRENCY = "USD";
+// Paywall defaults: 50 GHS in kobo/pesewas
+const PAYWALL_AMOUNT_KOBO = 5000;
+const PAYWALL_CURRENCY = "GHS";
 const ASSISTANT_API_TIMEOUT_MS = 15_000;
 const ASSISTANT_MODES = [
   "Result Summary",
   "Strengths in Action",
   "Communication Prep",
 ];
+
 
 /** Starter prompts shown when a quick-start chip is clicked. */
 const ASSISTANT_MODE_STARTERS = {
@@ -1456,7 +1458,7 @@ async function startPaystackCheckout() {
   paystack.newTransaction({
     key: config.publicKey,
     email,
-    amount: config.amount || PAYWALL_AMOUNT,
+    amount: config.amount || PAYWALL_AMOUNT_KOBO,
     currency: config.currency || PAYWALL_CURRENCY,
     metadata: {
       session_id: cryptoRandom(),
