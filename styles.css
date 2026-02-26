@@ -2813,6 +2813,140 @@ main {
   flex-shrink: 0;
 }
 
+/* ─── Paywall Modal ───────────────────────────────────────────────────────── */
+.paywall-modal {
+  position: fixed;
+  bottom: 5.5rem;
+  right: 2rem;
+  z-index: 1100;
+  width: 420px;
+  max-width: calc(100vw - 2rem);
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid rgb(200 183 166 / 40%);
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.16),
+    0 6px 18px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  animation: chatModalSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.paywall-modal.hidden {
+  display: none;
+}
+
+.paywall-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1.2rem 1.25rem;
+  background: linear-gradient(150deg, rgb(200 183 166 / 12%) 0%, #fff 88%);
+  border-bottom: 1px solid rgb(200 183 166 / 30%);
+}
+
+.paywall-subtitle {
+  margin: 0.2rem 0 0;
+  color: var(--gray-500);
+  font-size: 0.9rem;
+}
+
+.paywall-close {
+  border: none;
+  background: transparent;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--gray-500);
+}
+
+.paywall-body {
+  padding: 1.1rem 1.25rem 1.25rem;
+  display: grid;
+  gap: 0.9rem;
+}
+
+.paywall-price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+}
+
+.paywall-amount {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--color-choleric-coral);
+}
+
+.paywall-currency {
+  font-weight: 600;
+  color: var(--gray-600);
+}
+
+.paywall-note {
+  margin: 0;
+  color: var(--gray-500);
+  font-size: 0.9rem;
+}
+
+.paywall-benefits {
+  list-style: none;
+  padding: 0;
+  margin: 0.2rem 0 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.paywall-benefits li::before {
+  content: "•";
+  color: var(--color-phlegmatic-forest);
+  margin-right: 0.4rem;
+}
+
+.paywall-status {
+  padding: 0.75rem 0.9rem;
+  border-radius: 10px;
+  background: var(--primary-50);
+  color: var(--primary-700);
+  font-weight: 600;
+}
+
+.paywall-error {
+  padding: 0.75rem 0.9rem;
+  border-radius: 10px;
+  background: rgb(255 237 237);
+  color: #b3261e;
+  font-weight: 600;
+}
+
+.paywall-status.hidden,
+.paywall-error.hidden {
+  display: none;
+}
+
+.paywall-unlock-btn {
+  width: 100%;
+}
+
+.paywall-spinner {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid rgb(200 183 166 / 50%);
+  border-top-color: var(--color-choleric-coral);
+  margin: 0.25rem auto 0;
+  animation: spin 0.7s linear infinite;
+}
+
+.paywall-spinner.hidden {
+  display: none;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* ─── Chat FAB & Modal Responsive ──────────────────────────────────────── */
 
 @media (max-width: 600px) {

@@ -85,3 +85,26 @@ We will adopt a phased rollout to ensure safety and correctness:
 This document gives you a complete roadmap. You can literally check these items off one by one as you code.
 
 Would you like me to generate the Vercel backend code for the new `/api/verify-payment.ts` endpoint next, or would you prefer to start by building the "Premium Paywall" UI in your HTML/CSS?
+
+---
+
+## Implementation Notes (USD $5, 48h token)
+
+- **Price/Currency:** $5 USD (`PAYWALL_AMOUNT_KOBO=500`, `PAYWALL_CURRENCY=USD`).
+- **JWT expiry:** 48 hours from issuance.
+- **Env vars (Vercel):**
+  - `PAYSTACK_PUBLIC_KEY` (test/live per environment)
+  - `PAYSTACK_SECRET_KEY`
+  - `JWT_SECRET`
+  - `PAYWALL_AMOUNT_KOBO=500`
+  - `PAYWALL_CURRENCY=USD`
+- **Endpoints:**
+  - `POST /api/verify-payment` — server-to-server verify reference, amount, currency; returns signed JWT + `expires_at`.
+  - `GET /api/paywall-config` — public config: `publicKey`, `amount`, `currency`.
+  - `/api/chat` and `/api/reflect` now require `Authorization: Bearer <jwt>`, return `401` with code `UNAUTHORIZED` if missing/invalid.
+- **Frontend flow:**
+  - Paywall modal intercepts chat open and message send when no valid token.
+  - Paystack inline checkout -> on success POST `{reference}` to `/api/verify-payment`.
+  - Token stored defensively in `localStorage` key `temperamentInsight.premiumToken`; expired tokens are cleared automatically.
+  - Plausible events: `paywall_viewed`, `checkout_started`, `payment_successful`.
+- **Limitations:** Unlock is per device/browser (no accounts). Clearing storage or switching devices requires a new unlock; this is stated in `terms.html`.

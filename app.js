@@ -34,6 +34,9 @@ const ASSISTANT_RESPONSE_WORD_MIN = 100;
 const ASSISTANT_RESPONSE_WORD_MAX = 180;
 const ASSISTANT_REFLECT_ENDPOINT = "/api/reflect";
 const ASSISTANT_CHAT_ENDPOINT = "/api/chat";
+const PREMIUM_TOKEN_KEY = "temperamentInsight.premiumToken";
+const PAYWALL_AMOUNT = 500; // cents (USD)
+const PAYWALL_CURRENCY = "USD";
 const ASSISTANT_API_TIMEOUT_MS = 15_000;
 const ASSISTANT_MODES = [
   "Result Summary",
@@ -511,6 +514,10 @@ const state = {
   shareUrl: null,
   sharedView: false,
 };
+const premiumState = {
+  token: null,
+  expiresAt: null,
+};
 const assistantState = {
   assistantOpen: false,
   messagesUsed: 0,
@@ -590,6 +597,12 @@ const assistantLimit = document.getElementById("assistant-limit");
 const assistantHistory = document.getElementById("assistant-history");
 const chatInput = document.getElementById("chat-input");
 const chatSendBtn = document.getElementById("chat-send-btn");
+const paywallModal = document.getElementById("paywall-modal");
+const paywallUnlockBtn = document.getElementById("paywall-unlock-btn");
+const paywallCloseBtn = document.getElementById("paywall-close");
+const paywallStatus = document.getElementById("paywall-status");
+const paywallError = document.getElementById("paywall-error");
+const paywallSpinner = document.getElementById("paywall-spinner");
 
 // ==========================================
 // 4. INITIALIZATION & EVENT LISTENERS
@@ -619,8 +632,10 @@ if (shareCardNativeBtn) {
     shareCardNativeBtn.style.display = "none";
   }
 }
+loadPremiumTokenFromStorage();
 initAssistantUI();
 initChatFab();
+initPaywallUI();
 window.addEventListener("pagehide", handlePageHide);
 
 // Entry point behavior
@@ -1263,6 +1278,15 @@ function toggleDetailView() {
   }
 }
 
+function initPaywallUI() {
+  if (paywallUnlockBtn) {
+    paywallUnlockBtn.addEventListener("click", startPaystackCheckout);
+  }
+  if (paywallCloseBtn) {
+    paywallCloseBtn.addEventListener("click", closePaywallModal);
+  }
+}
+
 function initAssistantUI() {
   if (!chatModal) {
     return;
@@ -1351,7 +1375,156 @@ function openAssistant() {
   renderAssistantShell();
 }
 
+function openPaywallModal() {
+  if (!paywallModal) return;
+  paywallModal.classList.remove("hidden");
+  setPaywallStatus("");
+  clearPaywallError();
+  setPaywallLoading(false);
+  trackEvent("paywall_viewed");
+}
+
+function closePaywallModal() {
+  if (paywallModal) {
+    paywallModal.classList.add("hidden");
+  }
+}
+
+function setPaywallStatus(message, isLoading = false) {
+  if (!paywallStatus) return;
+  if (message) {
+    paywallStatus.textContent = message;
+    paywallStatus.classList.remove("hidden");
+  } else {
+    paywallStatus.textContent = "";
+    paywallStatus.classList.add("hidden");
+  }
+  setPaywallLoading(isLoading);
+}
+
+function setPaywallLoading(isLoading) {
+  if (paywallSpinner) {
+    paywallSpinner.classList.toggle("hidden", !isLoading);
+  }
+  if (paywallUnlockBtn) {
+    paywallUnlockBtn.disabled = isLoading;
+    paywallUnlockBtn.textContent = isLoading ? "Processing…" : "Unlock now";
+  }
+}
+
+function showPaywallError(message) {
+  if (!paywallError) return;
+  paywallError.textContent = message;
+  paywallError.classList.remove("hidden");
+}
+
+function clearPaywallError() {
+  if (!paywallError) return;
+  paywallError.textContent = "";
+  paywallError.classList.add("hidden");
+}
+
+async function startPaystackCheckout() {
+  clearPaywallError();
+  setPaywallStatus("Preparing secure checkout…", true);
+
+  let config;
+  try {
+    const response = await fetch("/api/paywall-config");
+    const json = await response.json();
+    if (!response.ok || json?.ok !== true) {
+      throw new Error("config");
+    }
+    config = json.data;
+  } catch (_error) {
+    setPaywallStatus("", false);
+    showPaywallError("Could not load payment config. Please try again.");
+    return;
+  }
+
+  if (typeof window === "undefined" || !window.PaystackPop) {
+    setPaywallStatus("", false);
+    showPaywallError("Paystack script not loaded. Check your connection and retry.");
+    return;
+  }
+
+  setPaywallStatus("", false);
+  trackEvent("checkout_started");
+
+  const email = state.resultMeta?.email || "guest@temperament.app";
+  const paystack = new window.PaystackPop();
+  paystack.newTransaction({
+    key: config.publicKey,
+    email,
+    amount: config.amount || PAYWALL_AMOUNT,
+    currency: config.currency || PAYWALL_CURRENCY,
+    metadata: {
+      session_id: cryptoRandom(),
+    },
+    onSuccess: (res) => {
+      verifyPaymentReference(res.reference);
+    },
+    onCancel: () => {
+      setPaywallStatus("", false);
+      showPaywallError("Payment was cancelled. You can try again anytime.");
+    },
+  });
+}
+
+async function verifyPaymentReference(reference) {
+  setPaywallStatus("Verifying payment…", true);
+  clearPaywallError();
+  try {
+    const response = await fetch("/api/verify-payment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reference }),
+    });
+    const json = await safeReadJson(response);
+    if (json?.ok === true && typeof json.token === "string") {
+      savePremiumToken(json.token, json.expires_at);
+      setPaywallStatus("Payment confirmed! Unlocking chat…", false);
+      trackEvent("payment_successful");
+      closePaywallModal();
+      openChatModalUnlocked();
+      return;
+    }
+    const message =
+      (json && json.error && json.error.message) ||
+      "We could not verify this payment. Please try again.";
+    showPaywallError(message);
+  } catch (_error) {
+    showPaywallError("Network error verifying payment. Please retry.");
+  } finally {
+    setPaywallLoading(false);
+  }
+}
+
+function cryptoRandom() {
+  try {
+    if (window.crypto && window.crypto.randomUUID) {
+      return window.crypto.randomUUID();
+    }
+    if (window.crypto && window.crypto.getRandomValues) {
+      const buf = new Uint32Array(4);
+      window.crypto.getRandomValues(buf);
+      return Array.from(buf).map((b) => b.toString(16)).join("-");
+    }
+  } catch (_error) {
+    // ignore
+  }
+  return String(Date.now());
+}
+
 function openChatModal() {
+  if (!hasPremiumAccess()) {
+    openPaywallModal();
+    return;
+  }
+  openChatModalUnlocked();
+}
+
+function openChatModalUnlocked() {
   assistantState.assistantOpen = true;
   if (chatModal) chatModal.classList.remove("hidden");
   if (chatFab) chatFab.classList.add("chat-fab--open");
@@ -1399,6 +1572,11 @@ function prefillChatFromMode(mode) {
  */
 async function handleChatSubmit(text) {
   if (!text || assistantState.loading || assistantState.messagesUsed >= ASSISTANT_MAX_MESSAGES) {
+    return;
+  }
+
+  if (!hasPremiumAccess()) {
+    openPaywallModal();
     return;
   }
 
@@ -1491,7 +1669,10 @@ async function postAssistantReflection(mode, context) {
   try {
     const response = await fetch(ASSISTANT_REFLECT_ENDPOINT, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(premiumState.token ? { Authorization: `Bearer ${premiumState.token}` } : {}),
+      },
       body: JSON.stringify({ mode, context }),
       signal: controller ? controller.signal : undefined,
     });
@@ -1535,7 +1716,10 @@ async function postChatMessage(context, chatHistory) {
   try {
     const response = await fetch(ASSISTANT_CHAT_ENDPOINT, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(premiumState.token ? { Authorization: `Bearer ${premiumState.token}` } : {}),
+      },
       body: JSON.stringify({ context, history: chatHistory }),
       signal: controller ? controller.signal : undefined,
     });
@@ -1622,12 +1806,20 @@ function normalizeAssistantError(status, payload) {
   if (status === 400 || status === 405) {
     return { code: "BAD_REQUEST", message: "" };
   }
+  if (status === 401) {
+    return { code: "UNAUTHORIZED", message: "" };
+  }
 
   return { code: "UPSTREAM_ERROR", message: "" };
 }
 
 function normalizeAssistantErrorCode(code) {
-  if (code === "BAD_REQUEST" || code === "RATE_LIMITED" || code === "UPSTREAM_ERROR") {
+  if (
+    code === "BAD_REQUEST" ||
+    code === "RATE_LIMITED" ||
+    code === "UPSTREAM_ERROR" ||
+    code === "UNAUTHORIZED"
+  ) {
     return code;
   }
   return "UPSTREAM_ERROR";
@@ -1643,6 +1835,9 @@ function mapAssistantErrorType(code) {
   }
   if (code === "BAD_REQUEST") {
     return "bad_request";
+  }
+  if (code === "UNAUTHORIZED") {
+    return "unauthorized";
   }
   return "unexpected";
 }
@@ -1714,6 +1909,8 @@ function showAssistantError(type) {
       "You have reached a temporary reflection request limit. Please pause briefly and try again.",
     bad_request:
       "We couldn't process this reflection request. Please try again.",
+    unauthorized:
+      "Premium unlock required. Please complete the payment to continue.",
     unexpected:
       "Something went wrong while generating this reflection. No data was lost.",
   };
@@ -1723,6 +1920,11 @@ function showAssistantError(type) {
   clearAssistantStatus();
   assistantState.loading = false;
   setAssistantButtonsDisabled(assistantState.messagesUsed >= ASSISTANT_MAX_MESSAGES);
+
+  if (type === "unauthorized") {
+    clearPremiumToken();
+    openPaywallModal();
+  }
 }
 
 function clearAssistantError() {
@@ -2503,6 +2705,70 @@ function trackEvent(name, props = {}) {
   } catch (_error) {
     // Silent failure by design (ad blockers or script loading failures).
   }
+}
+
+// ─── Premium Token Helpers ────────────────────────────────────────────────
+
+function loadPremiumTokenFromStorage() {
+  try {
+    const raw = localStorage.getItem(PREMIUM_TOKEN_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed.token === "string") {
+      premiumState.token = parsed.token;
+      premiumState.expiresAt = parsed.expires_at || null;
+    }
+  } catch (_error) {
+    // ignore parse errors
+  }
+}
+
+function savePremiumToken(token, expiresAt) {
+  premiumState.token = token;
+  premiumState.expiresAt = expiresAt || null;
+  try {
+    localStorage.setItem(
+      PREMIUM_TOKEN_KEY,
+      JSON.stringify({ token, expires_at: expiresAt }),
+    );
+  } catch (_error) {
+    // storage can fail in private mode; keep in-memory fallback
+  }
+}
+
+function clearPremiumToken() {
+  premiumState.token = null;
+  premiumState.expiresAt = null;
+  try {
+    localStorage.removeItem(PREMIUM_TOKEN_KEY);
+  } catch (_error) {
+    // ignore
+  }
+}
+
+function isPremiumTokenValid(token) {
+  if (!token) return false;
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return false;
+    const payloadJson = atob(parts[1].replace(/-/g, "+").replace(/_/g, "/"));
+    const payload = JSON.parse(payloadJson);
+    const exp = typeof payload.exp === "number" ? payload.exp : null;
+    if (!exp) return false;
+    const now = Math.floor(Date.now() / 1000);
+    return exp > now;
+  } catch (_error) {
+    return false;
+  }
+}
+
+function hasPremiumAccess() {
+  if (!premiumState.token) return false;
+  if (!isPremiumTokenValid(premiumState.token)) {
+    clearPremiumToken();
+    return false;
+  }
+  return true;
 }
 
 // --- Shareable Result URL Feature Utilities ---

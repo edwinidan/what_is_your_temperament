@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { requirePremiumAuth } from "./_lib/auth";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -68,6 +69,22 @@ export default async function handler(
 
     if (req.method !== "POST") {
         return sendError(res, 405, "BAD_REQUEST", "Use POST for this endpoint.");
+    }
+
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+        logError("missing_env_configuration", 500);
+        return sendError(
+            res,
+            500,
+            "UPSTREAM_ERROR",
+            "Chat service is not configured yet. Please try again later.",
+        );
+    }
+
+    const auth = requirePremiumAuth(req, res, jwtSecret);
+    if (auth.ok === false) {
+        return;
     }
 
     const clientIp = getClientIp(req);
