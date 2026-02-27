@@ -849,6 +849,7 @@ main {
 .selection-actions {
   margin-top: 1.8rem;
   text-align: center;
+  width: 100%;
 }
 
 .selection-actions-row {
