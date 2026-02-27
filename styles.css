@@ -849,22 +849,13 @@ main {
 .selection-actions {
   margin-top: 1.8rem;
   text-align: center;
-  width: 100%;
 }
 
 .selection-actions-row {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: inline-flex;
   align-items: center;
-  width: 100%;
-}
-
-.selection-actions-row .btn-start {
-  justify-self: center;
-}
-
-.selection-actions-row .back-home-btn {
-  justify-self: end;
+  justify-content: center;
+  gap: 0.75rem;
 }
 
 .btn-start {
