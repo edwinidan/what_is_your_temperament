@@ -799,8 +799,8 @@ main {
   border-radius: 1rem;
   border: 1px solid var(--gray-200);
   background: #fff;
-  padding: 1.35rem;
-  min-height: 180px;
+  padding: 1rem 1.15rem;
+  min-height: 126px;
   transition: all 0.2s ease;
 }
 
@@ -873,13 +873,15 @@ main {
   justify-content: center;
   font-size: 1.1rem;
   line-height: 1;
+  background: #f3f4f6;
+  color: #374151;
   transition: background-color 150ms ease, transform 150ms ease;
   vertical-align: middle;
 }
 .back-home-btn:hover,
 .back-home-btn:focus-visible {
-  background: var(--gray-100);
-  transform: scale(1.04);
+  background: #e5e7eb;
+  transform: scale(1.05);
 }
 
 .quiz-stage,
