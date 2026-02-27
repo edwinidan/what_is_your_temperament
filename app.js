@@ -599,6 +599,7 @@ const assistantLimit = document.getElementById("assistant-limit");
 const assistantHistory = document.getElementById("assistant-history");
 const chatInput = document.getElementById("chat-input");
 const chatSendBtn = document.getElementById("chat-send-btn");
+const paywallOverlay = document.getElementById("paywall-overlay");
 const paywallModal = document.getElementById("paywall-modal");
 const paywallUnlockBtn = document.getElementById("paywall-unlock-btn");
 const paywallCloseBtn = document.getElementById("paywall-close");
@@ -1287,6 +1288,13 @@ function initPaywallUI() {
   if (paywallCloseBtn) {
     paywallCloseBtn.addEventListener("click", closePaywallModal);
   }
+  if (paywallOverlay) {
+    paywallOverlay.addEventListener("click", (event) => {
+      if (event.target === paywallOverlay) {
+        closePaywallModal();
+      }
+    });
+  }
 }
 
 function initAssistantUI() {
@@ -1378,8 +1386,12 @@ function openAssistant() {
 }
 
 function openPaywallModal() {
-  if (!paywallModal) return;
-  paywallModal.classList.remove("hidden");
+  if (paywallOverlay) {
+    paywallOverlay.classList.remove("hidden");
+  }
+  if (paywallModal) {
+    paywallModal.classList.remove("hidden");
+  }
   setPaywallStatus("");
   clearPaywallError();
   setPaywallLoading(false);
@@ -1387,9 +1399,8 @@ function openPaywallModal() {
 }
 
 function closePaywallModal() {
-  if (paywallModal) {
-    paywallModal.classList.add("hidden");
-  }
+  if (paywallModal) paywallModal.classList.add("hidden");
+  if (paywallOverlay) paywallOverlay.classList.add("hidden");
 }
 
 function setPaywallStatus(message, isLoading = false) {

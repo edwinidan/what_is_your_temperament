@@ -2833,13 +2833,26 @@ main {
 }
 
 /* ─── Paywall Modal ───────────────────────────────────────────────────────── */
-.paywall-modal {
+.modal-overlay {
   position: fixed;
-  bottom: 5.5rem;
-  right: 2rem;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.35);
   z-index: 1100;
+  padding: 1.25rem;
+}
+
+.modal-overlay.hidden {
+  display: none;
+}
+
+.paywall-modal {
+  position: relative;
+  z-index: 1;
   width: 420px;
-  max-width: calc(100vw - 2rem);
+  max-width: min(480px, 100%);
   border-radius: 16px;
   background: #fff;
   border: 1px solid rgb(200 183 166 / 40%);
