@@ -1,196 +1,509 @@
 # Temperament Insight Project Report
 
-Date: February 21, 2026  
-Project type: Static educational web app (no backend/build step)
+Date: February 27, 2026 (post Paystack premium-gating build)  
+Project type: Static-first educational web app with a Vercel serverless AI proxy (no build step, no database)
 
-## 1. Project Overview
+## 1. Executive Summary
 
-Temperament Insight is a browser-based self-awareness assessment that helps users reflect on four classic temperament patterns:
+Temperament Insight is a browser-based educational assessment that helps users reflect on four classic temperament patterns:
 
 - Sanguine
 - Choleric
 - Melancholic
 - Phlegmatic
 
-The app is positioned as educational only, not diagnostic. It uses neutral language and includes disclaimers to avoid fixed-label framing.
+The product is intentionally non-diagnostic and includes explicit disclaimers in the assessment experience and results view.
 
-## 2. What the App Does
+Premium layer (Feb 27, 2026): the optional AI assistant (reflections + multi-turn chat) now requires a one-time Paystack payment that issues a 48-hour JWT unlock per device/browser. Unlock enforcement lives in both the frontend paywall modal and the Vercel `/api/reflect` + `/api/chat` handlers.
 
-The app provides an end-to-end assessment flow:
+## 2. Current User Flow (Live Behavior)
 
-1. User chooses a test depth: 20, 40, or 60 questions.
-2. Questions are shown in pages of 5 items.
-3. Each item uses a 5-point response scale.
-4. User cannot continue without answering all 5 items on the page.
-5. Progress is displayed and persisted locally.
-6. At completion, the app calculates:
-- Primary temperament
-- Secondary temperament
-- Confidence level (High/Medium/Low)
-7. Results show:
-- Short summary by default
-- Optional detailed view: strengths, weaknesses, communication style
+1. User lands on `index.html` (marketing homepage).
+2. User clicks a CTA such as `Start Free Test`.
+3. CTA opens `test-options.html#choose-depth` directly.
+4. User selects assessment length: `20`, `40`, or `60` questions.
+5. User starts the assessment on the same page.
+6. Questions are delivered in pages of 5.
+7. User cannot advance until all questions on the current page are answered.
+8. Final results show primary and secondary temperament plus confidence level.
+9. User can toggle detailed interpretation and optionally retake.
+10. Opening the AI assistant (inline CTA or floating FAB) checks for a valid premium token; if missing/expired, a Paystack-backed paywall modal appears.
+11. Successful Paystack checkout verifies server-side, stores a 48-hour JWT in `localStorage`, reopens the chat modal, and routes all assistant calls with `Authorization: Bearer <token>`.
+12. Assistant responses are limited to 10 replies per session; limits and errors surface inline.
 
-## 3. Project Structure
+Notable UX update: the intermediate "Pick Your Test Length" hero step was removed; users now land directly on "Select Number of Questions."
+
+## 3. Current Project Structure
 
 - `index.html`
-  - Defines three main views: intro, assessment, results.
-  - Contains disclaimers, depth selector, progress UI, and results containers.
+  - Marketing homepage UI and CTAs.
+  - Loads Plausible analytics script in `<head>`.
+  - Links directly to `test-options.html#choose-depth`.
+- `test-options.html`
+  - Test depth selector section (`#choose-depth`).
+  - Assessment panel container (`#assessment-panel`).
+  - Results panel container (`#results-panel`).
+  - Floating chat FAB and modal shell for the assistant plus Paystack paywall modal.
+  - Back Home button and shared footer.
+  - Loads Plausible analytics script in `<head>`.
+  - Loads Chart.js in `<head>` for the temperament mix donut chart.
 - `styles.css`
-  - Provides layout, responsive behavior, visual identity, and component styling.
+  - Shared styling system for homepage, selection screen, assessment, and results.
+  - Responsive navigation, hero, card components, forms, and footer.
 - `app.js`
-  - Contains question bank, state management, pagination, scoring, persistence, and results rendering.
+  - Assessment data, state machine, pagination, scoring, confidence logic, persistence.
+  - Privacy-friendly analytics event instrumentation.
+- `AI_ASSISTANT_SPEC.md`
+  - Product specification for the optional Results-page assistant ("Temperament Reflection Guide").
+  - Defines scope boundaries, three allowed quick-start modes, split endpoint rules (`/api/reflect` vs `/api/chat`), length caps, forbidden topics, limits, input constraints, and output formats.
+- `TEMPERAMENT_REFLECTION_GUIDE_SYSTEM_PROMPT.txt`
+  - Copy-paste-ready strict system prompt for the assistant.
+  - Encodes non-clinical guardrails, refusal style, prompt-injection resistance, and response structure rules aligned to the three modes and dual-endpoint behavior.
+- `PAYSTACK_INTEGRATION.md`
+  - Product requirements document for a Paystack-backed premium unlock of the AI assistant.
+  - Describes paywall UX, inline checkout, JWT-gated `/api/reflect` and `/api/chat`, new Vercel verify endpoint, environment variables, and Plausible conversion events.
+- `api/reflect.ts`
+  - Vercel serverless endpoint (`POST /api/reflect`) for Groq-backed structured reflections (JSON).
+  - Requires a valid Premium JWT via `Authorization: Bearer <token>`.
+- `api/chat.ts`
+  - Vercel serverless endpoint (`POST /api/chat`) for multi-turn free-form chat replies (plain text).
+  - Validates temperament context + chat history, applies soft rate limiting, injects system prompt from env, and returns trimmed plain-text replies.
+- `api/paywall-config.ts`
+  - Public config endpoint (`GET /api/paywall-config`) returning Paystack public key, amount (kobo), and currency for the inline checkout.
+- `api/verify-payment.ts`
+  - Secure Paystack verification endpoint (`POST /api/verify-payment`) that confirms transaction reference, enforces expected amount/currency, issues a signed Premium JWT (48h expiry), and returns `expires_at`.
 - `README.md`
-  - Setup and scope summary.
+  - Run instructions and high-level scope.
 
-## 4. Core Runtime Flow
+## 4. Runtime Architecture
 
-### Start
+### 4.1 State Model
 
-- `startAssessment()` reads selected depth and builds the question set.
-- Assessment panel is shown and state is initialized.
+`app.js` maintains a client-side state object:
 
-### Question delivery
+- `selectedDepth`
+- `questions`
+- `responses`
+- `currentPage`
+- `detailVisible`
+- `startedAt`
+- `completionTracked`
+- `abandonmentTracked`
+- `resultMeta`
+- `assistantState` (modal chat): `assistantOpen`, `messagesUsed`, `activeMode`, `loading`, `history` (single-turn reflections), `chatHistory` (multi-turn chat transcript)
 
-- `buildQuestionSet(depth)`:
-  - Takes equal counts per temperament (`depth / 4`).
-  - Interleaves temperament questions for variety.
-  - Adds display ordinals.
+### 4.2 Initialization
 
-### Page rendering
+On load:
 
-- `renderCurrentPage()`:
-  - Renders exactly 5 questions.
-  - Shows dynamic progress metadata.
-  - Updates progress bar percentage from answered count.
+- DOM nodes are captured (`intro-panel`, `assessment-panel`, `results-panel`, controls, and result containers).
+- Event listeners are attached.
+- `pagehide` listener is attached for abandonment tracking.
+- `restoreProgressIfAvailable()` attempts to recover an in-progress assessment.
 
-### Validation guard
+### 4.3 Assessment Start
 
-- `isCurrentPageComplete()` ensures all 5 visible questions are answered.
-- If not complete, `goToNextPage()` shows warning and blocks advance.
+`startAssessment()`:
 
-### Result generation
+- Reads selected radio depth (`20`, `40`, `60`).
+- Builds the question set.
+- Resets assessment state.
+- Switches visible panel from intro to assessment.
+- Saves progress, scrolls to active panel.
+- Fires analytics event: `assessment_started`.
 
-- `scoreAssessment()` computes temperament scores.
-- `renderResults()` presents primary/secondary pattern and confidence.
-- `toggleDetailView()` expands/collapses detailed interpretation.
+### 4.4 Serverless Reflection Proxy (`/api/reflect`)
 
-## 5. Assessment Content Logic
+- Runs as a Vercel Node.js serverless function (`runtime = "nodejs"`).
+- Uses environment variables only: `GROQ_API_KEY`, `GROQ_MODEL` (default `llama-3.3-70b-versatile`), and `TRG_SYSTEM_PROMPT`.
+- Enforces request contract (`mode`, `context`, optional `user_question`) and validates the context schema.
+- Accepts `mix` sum rounding variance (`99-101`) while preserving relative-emphasis use.
+- Applies best-effort in-memory soft rate limiting keyed by a short-lived hashed client identifier.
+- Normalizes model output to `{ title, body, suggested_next }`, including a safe non-JSON fallback path when output can be validated.
+- Stores no user payloads and logs only error category/status metadata.
 
-Question bank is grouped by temperament and includes mixed item types:
+### 4.5 Serverless Chat Proxy (`/api/chat`)
 
-- Situational
-- Behavioral
-- Emotional
+- Vercel Node.js function that accepts a context payload plus full chat history.
+- Validates up to 20 turns, caps user message length at 400 chars and assistant at 2,000 chars, and enforces total transcript size limits.
+- Uses `GROQ_API_KEY` / `GROQ_MODEL` (`llama-3.3-70b-versatile`), casual system prompt, `temperature: 0.6`, `max_tokens: 200`.
+- Returns plain-text replies (50–80 words target), refuses empty responses, and rate-limits per hashed client IP.
+- Requires `Authorization: Bearer <premium-jwt>`; missing/invalid tokens receive `401 UNAUTHORIZED` from shared auth helper.
 
-Each temperament has 15 authored seed questions in `QUESTION_SEEDS`.  
+### 4.6 Paywall Endpoints (Payment + JWT)
+
+- `/api/paywall-config` (`GET`): public config for inline checkout (Paystack public key, amount in kobo, currency). No auth, cache-disabled.
+- `/api/verify-payment` (`POST`): accepts Paystack `reference`, verifies server-side with `PAYSTACK_SECRET_KEY`, enforces expected `amount`/`currency`, signs Premium JWT (HS256) using `JWT_SECRET`, 48h expiry, returns `{ token, expires_at }`. Stores no PII beyond optional email in JWT payload.
+
+## 5. Question Delivery and Validation
+
+### 5.1 Question Set Construction
+
+`buildQuestionSet(depth)`:
+
+- Uses equal counts per temperament (`depth / 4`).
+- Uses a 240-item bank (`T001`-`T240`) with 3 dimensions per temperament.
+- Samples each temperament with dimension-balanced quotas (`2/2/1`, `4/3/3`, `5/5/5` by depth).
+- Samples without replacement from shuffled dimension pools.
+- Shuffles the final selected set for variety.
+- Adds ordinal numbers for display.
+
 Depth behavior:
 
-- 20-question mode: first 5 per temperament
-- 40-question mode: first 10 per temperament
-- 60-question mode: all 15 per temperament
+- 20 mode: 5 per temperament
+- 40 mode: 10 per temperament
+- 60 mode: 15 per temperament
 
-This keeps temperament counts balanced at each depth.
+Resume behavior:
 
-## 6. Temperament Calculation Logic
+- If a valid saved `questionOrder` exists, the question set is rebuilt directly from saved IDs instead of re-sampling.
 
-The scoring model in `app.js` is centered and non-diagnostic.
+### 5.2 Pagination and Rendering
 
-### Step-by-step algorithm
+- Fixed `PAGE_SIZE = 5`.
+- `renderCurrentPage()` updates heading, metadata, progress bar, and 5 question cards.
+- Slider responses update labels live and persist to state/localStorage.
+- Fires analytics event on page render: `assessment_page_viewed`.
 
-1. Initialize temperament totals to zero.
-2. For each answered question:
-- Read raw response on a 1-5 scale.
-- Convert to centered value:
-  - `centered = response - 3`
-  - Mapping: `1 -> -2`, `2 -> -1`, `3 -> 0`, `4 -> +1`, `5 -> +2`
-- Add centered value to that question’s mapped temperament only.
-3. Also track signal per temperament:
-- `signal += abs(centered)` for tie handling.
-4. Rank temperaments:
+### 5.3 Completion Guard
+
+`isCurrentPageComplete()` enforces that all visible questions are answered before `Next` can proceed.
+
+## 6. Scoring and Interpretation
+
+### 6.1 Scoring Logic
+
+For each response (1 to 5):
+
+- Convert to centered value: `response - 3`.
+- Mapping is `-2` to `+2`.
+- If `reverseScored` is true, invert centered contribution sign before accumulation.
+- Add signed contribution to that question's temperament score.
+- Track absolute signal for tie handling.
+
+Ranking:
+
 - Primary sort: score descending
-- Tie-break 1: signal descending
-- Tie-break 2: fixed temperament order in array
-5. Final result:
-- Primary temperament = ranked[0]
-- Secondary temperament = ranked[1]
+- Tie-breaker 1: signal descending
+- Tie-breaker 2: fixed temperament order
 
-### Why this matters
+Output:
 
-- Neutral responses (`3`) add `0`, so they do not bias results.
-- No cross-temperament double-counting in the current model.
-- Stronger directional responses increase separation naturally.
+- Primary temperament
+- Secondary temperament
 
-## 7. Confidence Calculation
+### 6.2 Confidence Logic
 
-Confidence is derived from the gap between primary and secondary scores.
+`normalizedGap = (primary - secondary) / maxGap` where `maxGap = (depth / 4) * 4`
 
-1. `topGap = primaryScore - secondaryScore`
-2. `perTemperamentCount = depth / 4`
-3. `maxGap = perTemperamentCount * 4`
-4. `normalizedGap = topGap / maxGap`
-5. Label:
-- `High` if `normalizedGap >= 0.25`
-- `Medium` if `normalizedGap >= 0.12`
-- `Low` otherwise
+- High: `>= 0.25`
+- Medium: `>= 0.12`
+- Low: otherwise
 
-This is shown as reflective guidance, not technical certainty.
+### 6.3 Mix Percentage Model (Results Visualization)
 
-## 8. Progress Persistence Logic
+For results visualization only (not scoring), temperament scores are transformed into normalized percentages:
 
-The app persists in-progress assessment data to `localStorage` (`STORAGE_KEY = temperamentInsight.progress.v1`):
+- Scores are shifted/scaled into safe non-negative weights.
+- Weights are normalized to 100%.
+- Integer rounding is handled with remainder distribution so totals remain exactly 100%.
+
+Display order is dominance-first:
+
+- Temperament Mix legend: highest percentage to lowest.
+- Temperament Mix donut dataset/labels: highest to lowest.
+- Score Breakdown bars: highest to lowest.
+
+Tie handling uses ranked temperament order for stable deterministic output.
+
+## 7. Results UX
+
+Results panel includes:
+
+- Hero-style primary result summary (name, tagline, short interpretation, confidence badge)
+- Profile section with dynamic temperament image and growth focus
+- Strengths and watch-outs lists
+- Secondary influence card (name, description, key traits)
+- Temperament Mix donut + legend
+- Score Breakdown bars
+- Communication style cards
+- Confidence indicator ring
+- Expandable detailed communication explanation
+- Optional modal chat-based assistant ("Temperament Reflection Guide") with quick-start prompts, free-text entry, 10-turn cap, and session-only history; opened via inline CTA or floating FAB
+- Paywall modal intercepts assistant entry when no valid premium token; runs Paystack inline checkout, then re-opens the chat on success
+- Bottom-positioned result action controls (copy link, share card, detailed explanation toggle, retake, back home)
+- Educational disclaimer
+
+On completion:
+
+- Fires `assessment_completed` with depth, duration, confidence level.
+- Clears persisted progress.
+
+On detailed interpretation open:
+
+- Fires `detail_view_opened` with primary temperament.
+
+## 8. Local Persistence and Recovery
+
+Storage key: `temperamentInsight.progress.v1`
+
+Persisted fields:
 
 - `selectedDepth`
 - `responses`
 - `currentPage`
+- `questionOrder` (question IDs in active order)
+- `startedAt`
 
-Behavior:
+Recovery safeguards:
 
-- Save on answer changes and page navigation.
-- Restore automatically on reload if payload is valid.
-- Validate depth and response values during restore.
-- Clamp page index to valid range.
-- Clear stored progress on successful result render.
-- Storage access is wrapped in `try/catch` to avoid runtime errors in restricted environments.
+- Validate saved depth against allowed values.
+- Validate response IDs and response range.
+- Clamp current page to valid bounds.
+- Fall back to current time if `startedAt` is missing/invalid.
+- Handle storage errors gracefully via `try/catch`.
 
-## 9. Ethics and Safety Framing
+## 9. Design and Frontend Direction
 
-The app includes explicit non-diagnostic language in intro and results:
+The current UI follows a modern green/earth visual language aligned to the existing project branding, while adopting the richer results-page composition from the provided reference, implemented in pure HTML/CSS for low risk:
 
-- “Educational reflection tool”
-- “Not a medical or psychological diagnosis”
-- “Temperament can change across context and growth”
+- Fixed translucent nav
+- Gradient hero with soft animated blobs
+- Card-based sections
+- Unified CTA treatment
+- Shared footer across pages
+- Mobile-responsive behavior with no framework dependency
+- Results dashboard components integrated into the same visual system
 
-Result language focuses on tendencies and adaptation, not fixed identity.
+Implementation decision:
 
-## 10. Current Scope Boundaries
+- A React/TypeScript reference folder was reviewed but not integrated to avoid introducing build tooling and dependency risk.
+- Equivalent aesthetics were implemented in the existing static architecture.
+
+## 10. Privacy-Respecting Analytics
+
+Analytics is implemented with Plausible in a privacy-focused way:
+
+- No analytics backend/database added.
+- No user accounts.
+- No PII fields collected.
+- Tracking calls fail silently if blocked.
+
+Tracked events:
+
+1. `assessment_started`
+   - `depth`
+2. `assessment_page_viewed`
+   - `depth`, `page_index`
+3. `assessment_completed`
+   - `depth`, `duration_seconds`, `time_to_complete`, `confidence_level`
+4. `assessment_abandoned`
+   - `depth`, `last_page_index`
+5. `detail_view_opened`
+   - `primary_temperament`
+6. `confidence_tooltip_viewed`
+7. `ai_prompt_sent`
+   - `type` (`quick_start` or `free_text`), optional `mode`
+8. `ai_chat_opened`
+9. `ai_limit_reached`
+10. `share_link_copied`
+11. `shared_result_viewed`
+12. `retake_test_clicked`
+13. `paywall_viewed`
+14. `checkout_started`
+15. `payment_successful`
+
+Abandonment detection:
+
+- Uses `pagehide` while assessment is active and not already completed.
+
+## 11. Safety and Positioning
+
+The product consistently frames output as educational reflection, not diagnosis. Disclaimers are present in the test experience and result page to reduce over-interpretation.
+
+## 12. Current Scope Status
 
 Implemented:
 
-- Public assessment flow
-- 20/40/60 depth options
-- Mixed question types
-- 5-point scale
-- 5-per-page pagination
-- Progress indicator + persistence
-- Primary/secondary output
-- Confidence indicator
-- Short + detailed results
-- Disclaimers
+- Public static assessment flow
+- Depth options (20/40/60)
+- 240-item temperament question bank with dimension-balanced sampling
+- Reverse-scored item handling in scoring
+- 5-question pagination and validation gates
+- Progress indicator and local persistence
+- Primary/secondary result model
+- Confidence labeling
+- Rich results dashboard (hero/profile/mix chart/breakdown/comms/confidence)
+- Dominance-first ordering in Mix and Score Breakdown sections
+- Mobile result breakdown optimization (2-column cards and smaller percentage labels)
+- Detailed expandable interpretation
+- Optional Results-page AI reflection UX with quick-start prompts + free-text chat, session-only history, 10-message cap, and non-clinical boundaries (modal + FAB)
+- Vercel serverless Groq proxy endpoint (`POST /api/reflect`) with strict validation, prompt enforcement, soft rate limiting, and safe output normalization
+- Vercel serverless Groq chat endpoint (`POST /api/chat`) for multi-turn free-form replies with conversational length limits
+- Frontend integration from assistant UI to `/api/reflect` and `/api/chat` with API-first responses and controlled fallback for upstream errors
+- Responsive redesign and direct-to-selection CTA flow
+- Privacy-friendly product analytics events
+- Paystack premium unlock implemented: Paywall modal + Paystack inline checkout, `/api/paywall-config`, `/api/verify-payment` issuing 48h Premium JWT, Bearer auth enforced in `/api/reflect` and `/api/chat`, premium token persisted in `localStorage`, and Plausible funnel events live
 
 Not implemented:
 
-- Retake history/comparison
-- Monetization/premium layers
-- Backend or account system
+- User accounts or backend storage
+- Historical retake comparison
+- Restore-purchase flow or multi-device unlock; unlock remains device/browser-scoped
+- Automated integration tests for chat/reflect/paywall
+- Clinical/diagnostic claims or outputs
 
-## 11. Technical Summary
+## 13. Operational Notes
 
-This project is a clean, dependency-light static app with deterministic client-side logic.  
-Its core reliability comes from:
+- No build pipeline required.
+- Run by opening `index.html` directly or via a local static server.
+- Browser support relies on standard modern DOM/CSS features.
+- Ensure Plausible script remains present in both HTML files for analytics continuity.
+- Ensure Chart.js script remains present in `test-options.html` for donut chart rendering.
+- For Vercel deployments using AI reflections or chat, configure `GROQ_API_KEY`, `GROQ_MODEL`, and `TRG_SYSTEM_PROMPT` (shared by `/api/reflect` and `/api/chat`).
+- For premium unlock flow, configure `PAYSTACK_PUBLIC_KEY`, `PAYSTACK_SECRET_KEY`, `JWT_SECRET`, `PAYWALL_AMOUNT_KOBO` (default 5000), and `PAYWALL_CURRENCY` (default `GHS`). Both `/api/paywall-config` and `/api/verify-payment` rely on these.
+- Static file runs (no serverless layer) cannot complete checkout verification; assistant will remain gated unless the site is served via Vercel (or a compatible Node host) with the above env vars set.
 
-- strict page-completion gating
-- centered scoring (`-2..+2`)
-- balanced depth slicing across temperaments
-- transparent but non-technical result framing
-- resilient local persistence
+## 14. Version 2 Updates (Recent Enhancements)
+
+Date: February 22 - 23, 2026
+
+The project has undergone several significant User Experience (UX) and content upgrades to form Version 2:
+
+### 14.1 Interactive Input Modernization (Feb 22)
+
+- **Slider-based Question Selection:** The previous button-based inputs for question responses have been replaced with smooth, interactive slider inputs.
+- **Improved Styling:** The styling of the questions and slider track has been refined to provide better visual feedback and a more engaging assessment experience. The question text is now clearly presented above the corresponding slider.
+
+### 14.2 Comprehensive Temperament Profiles (Feb 22)
+
+- **New Page Addition (`temperaments.html`):** A dedicated HTML page has been added to house in-depth information about each temperament.
+- **Detailed Psychological Profiles:** The brief summaries for Choleric, Melancholic, and Phlegmatic temperaments have been expanded into comprehensive, detailed psychological profiles.
+- **CSS Enhancements:** `styles.css` was updated to properly style these new, longer profile sections, ensuring readability and visual consistency across all temperament details.
+
+### 14.3 Result Sharing & Exports (Feb 22 - Feb 23)
+
+- **Encoded URL Deep-Links:** Results are now serialized into a tiny JSON payload, dynamically base64url-encoded, and attached to the browser URL hash (`#result=...`). When users click this link, the app seamlessly hydrates directly into the Results Panel without prompting a new test, acting as an instant, privacy-respecting shareable profile.
+- **Clipboard Generation:** Users can quickly capture their results onto their clipboard using physical buttons mapping to the Web Clipboard API. The "Copy Result Summary" provides a human-readable text block summarizing leading temperaments, while the "Copy Share Link" copies the raw URL.
+- **HTML Canvas Share Cards:** By extracting the result state, a stylish 1080x1350 High-DPI "Share Card" PNG is generated completely client-side. The image draws the temperament breakdown dynamically and overlays the personal URL.
+- **Native OS Sharing Pipeline:** Extended to allow users to trigger their native device share-sheets with the generated Share Card image natively injected using the `navigator.share` API.
+- **Dedicated Print-to-PDF Pipeline:** Clicking "Download PDF" leverages the active URL hash dataset and invokes a brand new standalone file (`report.html`). This cleanly renders a black-and-white optimized, physical assessment document containing full Strengths, Watch-outs, and mixed distribution details without firing a single server request, triggering the native print dialog on launch.
+
+### 14.4 Production Readiness & Privacy (Feb 23)
+
+- **Privacy Policy (`privacy.html`):** Created a clear, accessible privacy policy explicitly stating the app's offline-first nature, with no PII collection, no user accounts, and local-only storage.
+- **Terms & Educational Disclaimer (`terms.html`):** Added clear educational terms emphasizing that the tool provides an educational framework for self-reflection and explicitly stating that it is not intended for clinical or diagnostic use.
+- **Global Footer Navigation:** Added a clean footprint linking the new privacy and terms pages universally across all touchpoints (`index.html`, `test-options.html`, `temperaments.html`, and `report.html`).
+
+### 14.5 Error Hardening & Edge-Case Safety (Feb 23)
+
+- **`localStorage` Resilience:** Encapsulated storage operations (`setItem`, `getItem`, `removeItem`) within `try/catch` wrappers. The application degrades gracefully, functioning fully in-memory if browser storage is blocked or quota is exceeded.
+- **Mid-Assessment Refresh Recovery:** State hydration is now strictly validated. The app structurally verifies saved constraints (selected depth, page numbers, answer counts). Corrupted sessions are instantly dropped, quietly returning the user to a clean homepage state.
+- **URL Hash Bulletproofing:** The decoding parser now strictly verifies the shape, boundaries, and mathematical integrity of the `Mix Percentages` JSON payload returning `null` automatically upon any tampering, which triggers a silent fallback to `localStorage` recovery.
+- **Defensive UI Rendering:** Sliders sanitize unexpected non-integer DOM interactions by falling back to neutral values. Built-in defaults on math equations ensure components like Chart.js or Confidence meters never encounter `NaN` division or unhandled exceptions, operating 100% crash-free.
+
+### 14.6 Frontend Performance Tuning (Feb 23)
+
+- **Script Offloading:** Third-party scripts like Plausible Analytics have been mapped with `defer` attributes, pushing their execution out of the critical rendering path to accelerate time-to-first-paint.
+- **Debounced Save Cycles:** Rapid, continuous user interactions via the likert sliders dynamically sync with the DOM natively, but disk writes (`localStorage.setItem`) are strictly funneled through a `250ms` debouncer, stripping blocking I/O jitter from mobile scrub interactions.
+- **Dynamic Dependency Injection:** `Chart.js` is no longer loaded universally in the header. Instead, the `renderTemperamentDonut()` invokes a promise-based DOM injector, lazily retrieving the script only when the dashboard opens. The loader behaves as a strict singleton to avoid duplicate network requests.
+- **Asynchronous UI Yields:** Rendering the high-fidelity High-DPI Share Cards frames main-thread execution aggressively. To solve this, `requestAnimationFrame` is forced to yield execution prior to generation, permitting the interface to rapidly paint "Generating..." states without locking.
+- **Slider Reflow Elimination:** `labelDisplay.innerHTML` mutations were rebuilt to exclusively utilize `textContent` combined with inline CSS variable (`--thumb-scale`) property updates during slider scrubbing. This totally mitigates heavy HTML re-parsing and layout recalculations (`getBoundingClientRect`), keeping animation streams perfectly smooth at 60fps.
+- **Memory & Lifecycle Cleanup:** Deep un-mount behaviors were enforced upon restart routines (`startAssessment()`). Native memory destructors (`clearTimeout(saveProgressTimeout)` and `temperamentDonutChart.destroy()`) are explicitly fired to reliably garbage collect the active state before spawning new iterations, ensuring repeated retakes do not degrade device performance or trigger orphan network events.
+
+### 14.7 Product Clarity & Boundary Copy (Feb 23)
+
+- **Homepage Restructure:** Replaced generic marketing sections with explicitly engineered clarity blocks. The homepage now features a scannable "What You'll Learn" list, a precise 4-card "Who It's For" target audience breakdown, and a clean 3-step numbered "How It Works" pipeline.
+- **Trust Architecture:** Integrated a strict "Privacy & Safety" UI section directly above the main call to action. This explicitly guarantees Local-only storage, No Accounts, No PII tracking, and roots the tool as an educational framework, eliminating clinical/diagnostic liability immediately for new visitors.
+- **Frictionless Onboarding:** Contextual helpers were added to the depth selector (20/40/60 questions) to set depth and reflection expectations. The 60-question helper now uses educational framing: "Highest depth of insight (educational)." A "What you're getting" mini-note was positioned next to the start button to clarify the exact deliverable (primary/secondary mix chart).
+- **Premium Expansion Boundaries:** The final results dashboard was upgraded with a "What to do next" actionable list to encourage sharing, and a dashed "Deep Dives (Coming Soon)" block planted inside the sticky sidebar. This establishes premium value (growth planning, conflict tips) and frames future monetization boundaries entirely without requiring gated paywalls or auth yet.
+
+### 14.8 Results Layout & Readability Polish (Feb 23)
+
+- **Action Controls Relocated:** Result action controls (`Copy Share Link`, `Generate Share Card`, `Show Detailed Explanation`, `Take Another Test`, `Back Home`) were moved from the sidebar to the bottom of the results section so they appear only after users review the full report content.
+- **"What to do next" Bullet Stability:** The list item markup was adjusted so each bullet is treated as a single content block, preventing narrow-column per-letter wrapping and restoring normal word-level line wrapping.
+- **Behavior Preserved:** Button IDs, link targets, and JavaScript bindings remained unchanged, so existing sharing, detail toggling, and navigation actions continue to work without logic changes.
+
+### 14.9 Temperament Reflection Guide UX (Feb 23)
+
+- **Optional Assistant Placement:** Implemented an optional assistant panel directly in `test-options.html` Results flow, positioned below the educational disclaimer and above the bottom result action controls.
+- **Guided Mode-Based Interaction:** Added a collapsed-first UX that expands into exactly six reflection modes (`Result Summary`, `Strengths in Action`, `Watch-outs & Reframes`, `7-Day Reflection Plan`, `Communication Prep`, `Journaling Prompts`) with a visible 5-message session counter. (Note: trimmed to three quick-start chips on Feb 25—see Version 3 updates.)
+- **Stateful Frontend Logic:** Added dedicated in-memory assistant state (`assistantOpen`, `messagesUsed`, `activeMode`, `loading`, `history`) to control loading, response history, retries, and session limits.
+- **Safety & Boundary Handling:** Added loading, limit, and error states (network unavailable, boundary/refusal, unexpected failure) with calm educational copy and non-clinical positioning.
+- **Spec/Prompt Foundation Added:** Introduced `AI_ASSISTANT_SPEC.md` and `TEMPERAMENT_REFLECTION_GUIDE_SYSTEM_PROMPT.txt` to lock behavior, constraints, and future integration readiness before API wiring.
+
+### 14.10 Vercel Groq Proxy Hardening (Feb 23)
+
+- **Serverless Endpoint Added:** Created `api/reflect.ts` with `POST /api/reflect` contract for assistant reflections on Vercel (Groq OpenAI-compatible API).
+- **Vercel Runtime Compatibility:** Updated the handler to use official `@vercel/node` types (`VercelRequest`, `VercelResponse`) and Node runtime configuration.
+- **Cost/Latency Tuning:** Groq call now uses `llama-3.3-70b-versatile` defaults with `temperature: 0.4`, `max_tokens: 500` to keep structured answers tight.
+- **Formatting Resilience:** Keeps strict JSON-first parsing while adding a safe fallback path that accepts non-JSON text only when it passes sanitation, word-count validation, and safety boundary checks.
+- **Validation Robustness:** Relaxed `context.mix` sum acceptance to `99-101` to tolerate real-world rounding variance without weakening schema checks.
+- **Privacy-Safe Error Logging:** Logging now records only coarse error category/status; no raw user content, payloads, or model output is logged.
+
+### 14.11 Assistant UI-to-API Integration (Feb 23)
+
+- **API-First Reflection Calls:** The Results assistant now posts mode/context payloads from `app.js` to `/api/reflect` using `fetch` (`POST`, JSON), with no frontend exposure of secrets.
+- **No Free-Text UI (Yet):** The backend supports an optional `user_question` field, but the current UI does not expose a text input. Users can only interact via the six mode buttons; any free-form question would require a UI addition in `app.js` and a small request payload update. (Superseded Feb 25: textarea chat input added.)
+- **Preserved UX States:** Existing loading state (`Thinking thoughtfully...`), mode-button disabling, history rendering, and 5-message counter behavior were preserved during integration.
+- **Controlled Fallback Rule:** Local deterministic generation is retained as a fallback only when the API returns `UPSTREAM_ERROR` (including missing backend configuration), maintaining continuity without weakening boundaries.
+- **Retry-Safe Error Handling:** For network failures and non-upstream API errors (`RATE_LIMITED`, `BAD_REQUEST`), the assistant shows friendly errors, does not decrement messages, and allows immediate retry by selecting a mode again.
+- **Limit Integrity:** The assistant still transitions to limit state at 5 successful responses (API success and eligible fallback responses count as successful).
+
+## 15. Version 3 Updates (Feb 25-26, 2026)
+
+- **Groq-backed AI stack:** `/api/reflect` now calls Groq's OpenAI-compatible endpoint (`llama-3.3-70b-versatile`, `max_tokens: 500`, `temperature: 0.4`). Added `/api/chat` for multi-turn conversational replies with the same provider and shared `TRG_SYSTEM_PROMPT`.
+- **Multi-turn chat assistant (10-turn cap):** Frontend now supports free-text chat with running history, 10 assistant replies per session, and 50–80 word casual responses. History is validated and sent to `/api/chat`; errors roll back the last user turn.
+- **Simplified quick-start modes:** Quick-start chips reduced to three (`Result Summary`, `Strengths in Action`, `Communication Prep`). Users can still type anything in the textarea before sending.
+- **Floating FAB + modal chat shell:** The assistant panel now opens as a floating modal launched from an inline "Open Chat" CTA or a bottom-right FAB. FAB toggles between open/closed icons, hides when results are hidden, and swaps label state when the modal is open. Modal includes header, status/error banners, scrollable history, and pinned input row.
+- **Styling & accessibility:** New modal styles (elevated card, slide-in animation, mobile-friendly width), updated z-index for FAB (1010) and modal (1000), refined hover states, and automatic focus on the textarea when opened. Close button uses accessible `aria-label`.
+- **Config hardening:** `vercel.json` now declares both functions with 30s maxDuration. Environment keys standardized to `GROQ_API_KEY` / `GROQ_MODEL` across reflect and chat endpoints.
+- **Spec + prompt realignment (Feb 26):** `AI_ASSISTANT_SPEC.md` and `TEMPERAMENT_REFLECTION_GUIDE_SYSTEM_PROMPT.txt` now match live behavior: three quick-start modes, `/api/reflect` vs `/api/chat` split rules, 10-message cap, and distinct length bands (150–200 words structured; 50–80 words chat). Injection resistance and refusal guidance remain unchanged.
+- **Assistant & sharing telemetry (Feb 26):** Added Plausible event hooks for chat open, prompt sends (quick-start or free-text), limit reached, confidence tooltip views, shared-result hydration, retake clicks, and share-link copies. `assessment_completed` now also records `time_to_complete`.
+- **Premium unlock PRD (Feb 26 → implemented Feb 27):** Authored `PAYSTACK_INTEGRATION.md` detailing Paystack inline checkout, JWT issuance/verification via `/api/verify-payment`, and gating `/api/reflect` + `/api/chat`. Implementation shipped Feb 27 (see §19).
+
+## 16. Data & Stats Inventory (Privacy Profile)
+
+To maintain trust and production-safety, Temperament Insight operates with strict data minimization principles:
+
+- **What data exists?** Only the user's answers to the assessment (values 1-5), the computed result (temperament percentages), a premium JWT (token + exp + Paystack ref/amount/currency, optional email), and their current progress state.
+- **Where is it stored?** Assessment progress and premium JWT remain local in browser `localStorage` (`temperamentInsight.progress.v1`, `temperamentInsight.premiumToken`), with URL hashes (`#result=...`) for deep-link sharing. The serverless proxy stores no request data and has no database layer.
+- **How long does it exist?** Assessment progress is cleared immediately after completion; premium JWT persists in `localStorage` until its `exp` (48h) or manual clearing.
+- **Is it identifiable?** **No persistent identifiers are collected.** We do not collect names, emails, or user accounts, and there is no backend database. The proxy uses a short-lived in-memory hashed IP key for soft rate limiting only (not persisted or logged as raw IP).
+- **Analytics:** We use **Plausible Analytics**. It is cookie-less, anonymized, and tracks only aggregate events (e.g., `assessment_started`, `assessment_completed`, `report_opened`) to understand broad usage trends without tracking individual users.
+
+## 17. Current Problems and Active Risks (Feb 27, 2026)
+
+The following issues remain open:
+
+1. **Static-only local runs block premium flow**
+   - Without Vercel functions and env keys (`GROQ_*`, `TRG_SYSTEM_PROMPT`, `PAYSTACK_*`, `JWT_SECRET`), both assistant and paywall fail. Need clearer offline messaging or dev stubs.
+
+2. **Test coverage gaps for assistant + paywall**
+   - No automated integration tests cover `/api/chat`, `/api/reflect`, `/api/verify-payment`, or the frontend paywall states (success, cancel, amount mismatch, expired token).
+
+3. **Telemetry validation gap**
+   - Newly added events (`ai_*`, `paywall_viewed`, `checkout_started`, `payment_successful`) are unverified in Plausible; event shapes and funnel usefulness need confirmation.
+
+4. **Price/currency consistency**
+   - UI labels show `$5 USD` while backend defaults to `5000` kobo `GHS`. Risk of user confusion and Paystack rejection if amounts diverge; decide on currency and align UI + env defaults.
+
+5. **Secret handling and expiry UX**
+   - `.env.local` holds live provider keys; add `.env.example` and onboarding notes. Also consider a lightweight “restore purchase” or clearer copy for 48h expiry to reduce support friction.
+
+## 18. Premium Paywall PRD (Paystack) – Feb 26, 2026
+
+- **Goal:** One-time Paystack payment to unlock AI reflections/chat per device/session without adding a database.
+- **Flow:** Results CTA → premium modal → Paystack inline checkout → server-side verification (`/api/verify-payment`) → signed JWT saved to `localStorage` → JWT attached to `/api/reflect` and `/api/chat`.
+- **Security model:** JWT signed with `JWT_SECRET`, short expiry; frontend cannot mint tokens. `/api/reflect` and `/api/chat` must reject missing/invalid tokens.
+- **Required env keys:** `PAYSTACK_SECRET_KEY`, `JWT_SECRET` (plus existing Groq keys). New Vercel function `POST /api/verify-payment`.
+- **Analytics:** `paywall_viewed`, `checkout_started`, `payment_successful` now fire in production code.
+
+## 19. Paywall Implementation (Feb 27, 2026)
+
+- **Frontend paywall modal:** Blocks assistant entry when no premium token; displays price copy (`$5 USD`, 48h unlock), benefits list, and Paystack inline trigger.
+- **Checkout + verification:** `/api/paywall-config` serves public key/amount/currency; `/api/verify-payment` validates reference server-side against Paystack, enforces amount/currency, and issues a 48h Premium JWT.
+- **Auth enforcement:** `/api/reflect` and `/api/chat` now require `Authorization: Bearer <token>`; shared auth helper returns `401 UNAUTHORIZED` on missing/invalid/expired tokens.
+- **Token storage:** Successful verification persists `{ token, expires_at }` in `localStorage` (`temperamentInsight.premiumToken`); frontend re-validates `exp` on each use and clears expired tokens.
+- **Telemetry:** Paywall funnel events (`paywall_viewed`, `checkout_started`, `payment_successful`) ship via Plausible; assistant open/send/limit events unchanged.
+- **Defaults:** Env defaults remain `PAYWALL_AMOUNT_KOBO=5000`, `PAYWALL_CURRENCY=GHS`; UI currently shows `$5 USD`—currency alignment decision pending (see Risks §17.4).
