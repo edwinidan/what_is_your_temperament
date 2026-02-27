@@ -851,6 +851,21 @@ main {
   text-align: center;
 }
 
+.selection-actions-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  width: 100%;
+}
+
+.selection-actions-row .btn-start {
+  justify-self: center;
+}
+
+.selection-actions-row .back-home-btn {
+  justify-self: end;
+}
+
 .btn-start {
   font-size: 1.02rem;
 }
