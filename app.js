@@ -534,6 +534,7 @@ let temperamentDonutChart = null;
 
 const introPanel = document.getElementById("intro-panel");
 const assessmentPanel = document.getElementById("assessment-panel");
+const loadingPanel = document.getElementById("loading-panel");
 const resultsPanel = document.getElementById("results-panel");
 const startButton = document.getElementById("start-btn");
 const prevButton = document.getElementById("prev-btn");
@@ -1084,7 +1085,7 @@ function simulateAssessmentForResults() {
   saveProgress();
   syncProgressOnly();
   const outcome = scoreAssessment();
-  renderResults(outcome);
+  showLoadingScreenAndRender(outcome);
 }
 
 function goToNextPage() {
@@ -1103,7 +1104,18 @@ function goToNextPage() {
   }
 
   const outcome = scoreAssessment();
-  renderResults(outcome);
+  showLoadingScreenAndRender(outcome);
+}
+
+function showLoadingScreenAndRender(outcome) {
+  assessmentPanel.classList.add("hidden");
+  loadingPanel.classList.remove("hidden");
+  scrollToPanel(loadingPanel, "smooth");
+
+  setTimeout(() => {
+    loadingPanel.classList.add("hidden");
+    renderResults(outcome);
+  }, 2500);
 }
 
 function isCurrentPageComplete() {
