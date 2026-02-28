@@ -1060,7 +1060,7 @@ function unlockNextQuestion() {
       card.classList.add("unlocked", "unlock-animate");
       if (input) input.disabled = false;
       if (!scrolled && ordinal === unlockUntil) {
-        card.scrollIntoView({ behavior: "smooth", block: "start" });
+        card.scrollIntoView({ behavior: "smooth", block: "center" });
         scrolled = true;
       }
       setTimeout(() => card.classList.remove("unlock-animate"), 400);
@@ -1073,7 +1073,7 @@ function scrollToFirstUnanswered() {
     '.question-card input[data-answered="false"], .question-card.locked',
   );
   if (target && typeof target.scrollIntoView === "function") {
-    target.scrollIntoView({ behavior: "smooth", block: "start" });
+    target.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 }
 
