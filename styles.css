@@ -849,17 +849,20 @@ main {
 .selection-actions {
   margin-top: 1.8rem;
   text-align: center;
+  width: 100%;
 }
 
 .selection-actions-row {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
+  position: relative;
+  width: 100%;
+  text-align: center;
 }
 
 .btn-start {
   font-size: 1.02rem;
+  display: inline-block;
+  position: relative;
+  z-index: 1;
 }
 
 .selection-note {
@@ -884,7 +887,12 @@ main {
   color: #374151;
   transition: background-color 150ms ease, transform 150ms ease;
   vertical-align: middle;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: auto;
 }
+
 .back-home-btn:hover,
 .back-home-btn:focus-visible {
   background: #e5e7eb;
