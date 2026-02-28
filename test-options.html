@@ -172,20 +172,15 @@
             <div class="progress-fill" id="progress-fill"></div>
           </div>
 
-          <div id="question-page" class="question-page"></div>
-          <p id="page-warning" class="warning hidden" role="alert">
-            Please answer all questions on this page before continuing.
-          </p>
+          <p class="question-helper">Questions unlock one at a time as you answer.</p>
+          <div id="question-page" class="question-page question-list"></div>
 
           <div class="page-controls">
-            <button id="prev-btn" class="btn btn-outline" type="button">
-              Previous
-            </button>
             <button id="simulate-btn" class="btn btn-outline hidden" type="button">
               Auto-fill 20Q
             </button>
-            <button id="next-btn" class="btn btn-primary" type="button">
-              Next
+            <button id="finish-btn" class="btn btn-primary" type="button" disabled>
+              Answer all to view results
             </button>
           </div>
         </div>

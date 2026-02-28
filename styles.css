@@ -1134,16 +1134,38 @@ main {
   gap: 0.85rem;
 }
 
+.question-list {
+  position: relative;
+}
+
 .question-card {
   border: 1px solid var(--gray-200);
   border-radius: 0.9rem;
   background: #fff;
   padding: 0.95rem;
+  transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 #assessment-panel .question-card {
   border-color: rgb(200 183 166 / 40%);
   background: rgb(255 252 249 / 92%);
+}
+
+.question-card.locked {
+  opacity: 0.45;
+  filter: blur(1px);
+  pointer-events: none;
+}
+
+.question-card.unlock-animate {
+  transform: translateY(-4px);
+}
+
+.question-helper {
+  margin-top: 1rem;
+  color: var(--gray-500);
+  font-size: 0.95rem;
+  text-align: center;
 }
 
 .question-top {

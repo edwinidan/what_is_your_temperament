@@ -19,7 +19,6 @@
 // ==========================================
 // 1. CONSTANTS & CONFIGURATION
 // ==========================================
-const PAGE_SIZE = 5;
 const STORAGE_KEY = "temperamentInsight.progress.v1";
 const VALID_DEPTHS = [20, 40, 60];
 const ANALYTICS_EVENTS = {
@@ -537,15 +536,13 @@ const assessmentPanel = document.getElementById("assessment-panel");
 const loadingPanel = document.getElementById("loading-panel");
 const resultsPanel = document.getElementById("results-panel");
 const startButton = document.getElementById("start-btn");
-const prevButton = document.getElementById("prev-btn");
 const simulateButton = document.getElementById("simulate-btn");
-const nextButton = document.getElementById("next-btn");
+const finishButton = document.getElementById("finish-btn");
 const questionPage = document.getElementById("question-page");
 const progressHeading = document.getElementById("progress-heading");
 const progressMeta = document.getElementById("progress-meta");
 const progressFill = document.getElementById("progress-fill");
 const progressTrack = document.querySelector(".progress-track");
-const pageWarning = document.getElementById("page-warning");
 const resultTitle = document.getElementById("result-title");
 const resultName = document.getElementById("result-name");
 const resultTagline = document.getElementById("result-tagline");
@@ -625,12 +622,11 @@ const paywallSpinner = document.getElementById("paywall-spinner");
 // ==========================================
 // 4. INITIALIZATION & EVENT LISTENERS
 // ==========================================
-startButton.addEventListener("click", startAssessment);
-prevButton.addEventListener("click", goToPreviousPage);
+if (startButton) startButton.addEventListener("click", startAssessment);
 if (simulateButton) {
   simulateButton.addEventListener("click", simulateAssessmentForResults);
 }
-nextButton.addEventListener("click", goToNextPage);
+if (finishButton) finishButton.addEventListener("click", finishAssessment);
 
 if (copySummaryBtn) copySummaryBtn.addEventListener("click", copyResultSummary);
 if (copyLinkBtn) copyLinkBtn.addEventListener("click", copyShareLink);
@@ -700,7 +696,7 @@ function startAssessment() {
   trackEvent(ANALYTICS_EVENTS.assessmentStarted, {
     depth: state.selectedDepth,
   });
-  renderCurrentPage();
+  renderQuestionList();
   saveProgress();
   scrollToPanel(assessmentPanel, "smooth");
 }
@@ -918,34 +914,30 @@ function shuffleArray(items) {
   return copy;
 }
 
-function renderCurrentPage() {
+function renderQuestionList() {
   const total = state.questions.length;
-  const pageCount = Math.ceil(total / PAGE_SIZE);
-  const startIndex = state.currentPage * PAGE_SIZE;
-  const pageQuestions = state.questions.slice(
-    startIndex,
-    startIndex + PAGE_SIZE,
-  );
   const answered = Object.keys(state.responses).length;
   const percent = Math.round((answered / total) * 100);
-  const pageStart = startIndex + 1;
-  const pageEnd = Math.min(startIndex + PAGE_SIZE, total);
-
-  progressHeading.textContent = `Questions ${pageStart}-${pageEnd} of ${total}`;
-  progressMeta.textContent = `Answered ${answered} of ${total} | Page ${state.currentPage + 1
-    } of ${pageCount}`;
+  progressHeading.textContent = `Answered ${answered} of ${total}`;
+  progressMeta.textContent = `Questions unlock as you answer`;
   progressFill.style.width = `${percent}%`;
   progressTrack.setAttribute("aria-valuenow", `${percent}`);
 
-  questionPage.innerHTML = pageQuestions
+  const unlockUntil = Math.min(total, answered + 1);
+
+  questionPage.innerHTML = state.questions
     .map((question) => {
       const labels = getScaleLabels(question.scoringRule);
       const currentValue = state.responses[question.id] || 3;
-      const hasResponse = !!state.responses[question.id];
+      const hasResponse = Object.prototype.hasOwnProperty.call(
+        state.responses,
+        question.id,
+      );
       const thumbScale = 1 + Math.abs(currentValue - 3) * 0.15;
+      const locked = question.ordinal > unlockUntil && !hasResponse;
 
       return `
-        <article class="question-card">
+        <article class="question-card ${locked ? "locked" : "unlocked"}" data-ordinal="${question.ordinal}">
           <div class="question-top">
             <span class="question-type">${question.dimension}</span>
             <span>Q${question.ordinal}</span>
@@ -966,6 +958,7 @@ function renderCurrentPage() {
                value="${currentValue}"
                data-answered="${hasResponse}"
                style="--thumb-scale: ${thumbScale}"
+               ${locked ? "disabled" : ""}
              />
              <div class="slider-extremes">
                <span>${labels[0]}</span>
@@ -978,16 +971,12 @@ function renderCurrentPage() {
     .join("");
 
   bindQuestionListeners();
-  prevButton.disabled = state.currentPage === 0;
-  nextButton.disabled = false;
-  nextButton.textContent =
-    state.currentPage === pageCount - 1 ? "View Results" : "Next";
   updateSimulationButtonState();
-  pageWarning.classList.add("hidden");
+  updateProgressUI();
 
   trackEvent(ANALYTICS_EVENTS.assessmentPageViewed, {
     depth: state.selectedDepth,
-    page_index: state.currentPage + 1,
+    page_index: 1,
   });
 }
 
@@ -1009,8 +998,8 @@ function bindQuestionListeners() {
       input.value = numVal;
       const scale = 1 + Math.abs(numVal - 3) * 0.15;
       input.style.setProperty("--thumb-scale", scale);
-      pageWarning.classList.add("hidden");
-      syncProgressOnly();
+      updateProgressUI();
+      unlockNextQuestion();
       debounceSaveProgress();
     };
 
@@ -1040,25 +1029,52 @@ function bindQuestionListeners() {
 }
 
 function syncProgressOnly() {
-  const answered = Object.keys(state.responses).length;
-  const total = state.questions.length;
-  const percent = Math.round((answered / total) * 100);
-  progressMeta.textContent = progressMeta.textContent.replace(
-    /Answered \d+ of \d+/,
-    `Answered ${answered} of ${total}`,
-  );
-  progressFill.style.width = `${percent}%`;
-  progressTrack.setAttribute("aria-valuenow", `${percent}`);
+  updateProgressUI();
 }
 
-function goToPreviousPage() {
-  if (state.currentPage === 0) {
-    return;
+function updateProgressUI() {
+  const answered = Object.keys(state.responses).length;
+  const total = state.questions.length;
+  const percent = total ? Math.round((answered / total) * 100) : 0;
+  progressHeading.textContent = `Answered ${answered} of ${total}`;
+  progressMeta.textContent = "Questions unlock as you answer";
+  progressFill.style.width = `${percent}%`;
+  progressTrack.setAttribute("aria-valuenow", `${percent}`);
+  if (finishButton) {
+    finishButton.disabled = answered < total;
+    finishButton.textContent =
+      answered < total ? "Answer all to view results" : "View Results";
   }
-  state.currentPage -= 1;
-  saveProgress();
-  renderCurrentPage();
-  scrollToPanel(assessmentPanel, "smooth");
+}
+
+function unlockNextQuestion() {
+  const answered = Object.keys(state.responses).length;
+  const unlockUntil = Math.min(state.questions.length, answered + 1);
+  let scrolled = false;
+
+  questionPage.querySelectorAll(".question-card").forEach((card) => {
+    const ordinal = Number(card.dataset.ordinal);
+    const input = card.querySelector(".question-range");
+    if (ordinal <= unlockUntil && card.classList.contains("locked")) {
+      card.classList.remove("locked");
+      card.classList.add("unlocked", "unlock-animate");
+      if (input) input.disabled = false;
+      if (!scrolled && ordinal === unlockUntil) {
+        card.scrollIntoView({ behavior: "smooth", block: "start" });
+        scrolled = true;
+      }
+      setTimeout(() => card.classList.remove("unlock-animate"), 400);
+    }
+  });
+}
+
+function scrollToFirstUnanswered() {
+  const target = questionPage.querySelector(
+    '.question-card input[data-answered="false"], .question-card.locked',
+  );
+  if (target && typeof target.scrollIntoView === "function") {
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 }
 
 function simulateAssessmentForResults() {
@@ -1088,18 +1104,11 @@ function simulateAssessmentForResults() {
   showLoadingScreenAndRender(outcome);
 }
 
-function goToNextPage() {
-  if (!isCurrentPageComplete()) {
-    pageWarning.classList.remove("hidden");
-    return;
-  }
-
-  const totalPages = Math.ceil(state.questions.length / PAGE_SIZE);
-  if (state.currentPage < totalPages - 1) {
-    state.currentPage += 1;
-    saveProgress();
-    renderCurrentPage();
-    scrollToPanel(assessmentPanel, "smooth");
+function finishAssessment() {
+  const total = state.questions.length;
+  const answered = Object.keys(state.responses).length;
+  if (answered < total) {
+    scrollToFirstUnanswered();
     return;
   }
 
@@ -1116,15 +1125,6 @@ function showLoadingScreenAndRender(outcome) {
     loadingPanel.classList.add("hidden");
     renderResults(outcome);
   }, 1000);
-}
-
-function isCurrentPageComplete() {
-  const startIndex = state.currentPage * PAGE_SIZE;
-  const pageQuestions = state.questions.slice(
-    startIndex,
-    startIndex + PAGE_SIZE,
-  );
-  return pageQuestions.every((question) => state.responses[question.id]);
 }
 
 // ==========================================
@@ -2356,17 +2356,10 @@ function restoreProgressIfAvailable() {
     });
   }
 
-  const totalPages = Math.ceil(questions.length / PAGE_SIZE);
-  const cp = Number(saved.currentPage);
-  if (Number.isNaN(cp) || cp < 0 || cp >= totalPages) {
-    clearProgress();
-    return;
-  }
-
   state.selectedDepth = saved.selectedDepth;
   state.questions = questions;
   state.responses = restoredResponses;
-  state.currentPage = cp;
+  state.currentPage = 0;
 
   state.startedAt =
     Number.isFinite(saved.startedAt) && saved.startedAt > 0
@@ -2387,7 +2380,9 @@ function restoreProgressIfAvailable() {
   resultsPanel.classList.add("hidden");
   assessmentPanel.classList.remove("hidden");
   saveProgress();
-  renderCurrentPage();
+  renderQuestionList();
+  unlockNextQuestion();
+  updateProgressUI();
   scrollToPanel(assessmentPanel, "auto");
 }
 
@@ -2466,7 +2461,7 @@ function handlePageHide() {
   state.abandonmentTracked = true;
   trackEvent(ANALYTICS_EVENTS.assessmentAbandoned, {
     depth: state.selectedDepth,
-    last_page_index: state.currentPage + 1,
+    last_page_index: Object.keys(state.responses).length,
   });
 }
 
