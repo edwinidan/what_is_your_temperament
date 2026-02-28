@@ -563,6 +563,23 @@ const commsPreferred = document.getElementById("comms-preferred");
 const commsListener = document.getElementById("comms-listener");
 const commsExpression = document.getElementById("comms-expression");
 const commsPressure = document.getElementById("comms-pressure");
+const scenarioPanels = [
+  {
+    card: document.getElementById("scenario-card-1"),
+    title: document.getElementById("scenario-title-1"),
+    body: document.getElementById("scenario-body-1"),
+  },
+  {
+    card: document.getElementById("scenario-card-2"),
+    title: document.getElementById("scenario-title-2"),
+    body: document.getElementById("scenario-body-2"),
+  },
+  {
+    card: document.getElementById("scenario-card-3"),
+    title: document.getElementById("scenario-title-3"),
+    body: document.getElementById("scenario-body-3"),
+  },
+];
 const confidenceTitle = document.getElementById("confidence-title");
 const confidenceMessage = document.getElementById("confidence-message");
 const confidencePercent = document.getElementById("confidence-percent");
@@ -1230,6 +1247,7 @@ function renderResults({ primary, secondary, confidence, ranked }) {
   renderTemperamentLegend(mixPercentages, mixDisplayOrder);
   renderTemperamentDonut(mixPercentages, mixDisplayOrder);
   renderScoreBars(mixPercentages, ranked);
+  renderScenarioPanels(primary, secondary);
   setAssistantContext({
     primary,
     secondary,
@@ -2695,6 +2713,39 @@ function renderScoreBars(percentages, ranked) {
         bar.style.height = `${percent}%`;
       });
     }
+  });
+}
+
+function renderScenarioPanels(primary, secondary) {
+  if (!scenarioPanels.length || !scenarioPanels[0].card) return;
+
+  const primaryLower = primary.toLowerCase();
+  const secondaryLower = secondary.toLowerCase();
+
+  const beats = [
+    {
+      title: "Tension",
+      body: `A team discussion drifts; your ${primaryLower} side spots the stall and wants momentum back.`,
+      temp: primary,
+    },
+    {
+      title: "Your Move",
+      body: `You lean on your ${secondaryLower} side to propose one clear next step everyone can own.`,
+      temp: secondary,
+    },
+    {
+      title: "Result",
+      body: `The group leaves aligned, shaped by your ${primaryLower}-${secondaryLower} mix balancing pace and care.`,
+      temp: primary,
+    },
+  ];
+
+  scenarioPanels.forEach((panel, index) => {
+    const beat = beats[index];
+    if (!panel.card || !panel.title || !panel.body || !beat) return;
+    panel.card.dataset.temp = beat.temp;
+    panel.title.textContent = beat.title;
+    panel.body.textContent = beat.body;
   });
 }
 
