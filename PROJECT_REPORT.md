@@ -1,6 +1,6 @@
 # Temperament Insight Project Report
 
-Date: February 26, 2026 (post Paystack monetization PRD)  
+Date: February 28, 2026 (post Paystack monetization PRD)  
 Project type: Static-first educational web app with a Vercel serverless AI proxy (no build step, no database)
 
 ## 1. Executive Summary
@@ -24,7 +24,7 @@ The product is intentionally non-diagnostic and includes explicit disclaimers in
 6. Questions are delivered in pages of 5.
 7. User cannot advance until all questions on the current page are answered.
 8. Final results show primary and secondary temperament plus confidence level.
-9. User can toggle detailed interpretation and optionally retake.
+9. User sees results, can retake, open the AI assistant, or (if premium) use sharing actions. The previous detailed-interpretation toggle has been removed.
 
 Notable UX update: the intermediate "Pick Your Test Length" hero step was removed; users now land directly on "Select Number of Questions."
 
@@ -208,12 +208,11 @@ Results panel includes:
 - Strengths and watch-outs lists
 - Secondary influence card (name, description, key traits)
 - Temperament Mix donut + legend
-- Score Breakdown bars
+- Scenario Snapshot strip (3-panel “mini comic”) rotating between work, relationships, and personal growth sets per page load
 - Communication style cards
 - Confidence indicator ring
-- Expandable detailed communication explanation
 - Optional modal chat-based assistant ("Temperament Reflection Guide") with quick-start prompts, free-text entry, 10-turn cap, and session-only history; opened via inline CTA or floating FAB
-- Bottom-positioned result action controls (copy link, share card, detailed explanation toggle, retake, back home)
+- Bottom-positioned result action controls (Copy Share Link, Generate Share Card, retake, back home) — share actions are now premium-gated
 - Educational disclaimer
 
 On completion:
@@ -318,10 +317,10 @@ Implemented:
 - Progress indicator and local persistence
 - Primary/secondary result model
 - Confidence labeling
-- Rich results dashboard (hero/profile/mix chart/breakdown/comms/confidence)
-- Dominance-first ordering in Mix and Score Breakdown sections
+- Rich results dashboard (hero/profile/mix chart/scenario snapshot/comms/confidence)
+- Dominance-first ordering in Mix legend/donut
 - Mobile result breakdown optimization (2-column cards and smaller percentage labels)
-- Detailed expandable interpretation
+- (Detail panel exists but the toggle button has been removed from the UI)
 - Optional Results-page AI reflection UX with quick-start prompts + free-text chat, session-only history, 10-message cap, and non-clinical boundaries (modal + FAB)
 - Vercel serverless Groq proxy endpoint (`POST /api/reflect`) with strict validation, prompt enforcement, soft rate limiting, and safe output normalization
 - Vercel serverless Groq chat endpoint (`POST /api/chat`) for multi-turn free-form replies with conversational length limits
@@ -329,6 +328,9 @@ Implemented:
 - Responsive redesign and direct-to-selection CTA flow
 - Privacy-friendly product analytics events
 - Paystack premium unlock PRD drafted (`PAYSTACK_INTEGRATION.md`); implementation pending
+- Site-wide emblem branding (new logo in nav/footer/hero), favicon and Apple-touch icons, and OG/Twitter share images
+- Scenario Snapshot strip with rotating scenario sets (work, relationships, personal growth) in place of the removed Score Breakdown bars
+- Share actions (Copy Share Link, Generate Share Card) are premium-gated in UI and logic; premium-lock styling added
 
 Not implemented:
 
@@ -473,6 +475,9 @@ The following issues are currently active and should be prioritized:
 
 5. **Monetization plan unimplemented**
 - Paystack paywall is documented but not built; token security, checkout error handling, and UX guardrails need implementation and testing.
+
+6. **Premium gating without paywall**
+- Share actions are now blocked by `hasPremiumAccess()`, but no live payment/unlock path exists yet. Users cannot share unless premium is enabled; risk of confusion.
 
 ## 18. Premium Paywall PRD (Paystack) – Feb 26, 2026
 
