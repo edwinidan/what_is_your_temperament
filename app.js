@@ -2722,26 +2722,68 @@ function renderScenarioPanels(primary, secondary) {
   const primaryLower = primary.toLowerCase();
   const secondaryLower = secondary.toLowerCase();
 
-  const beats = [
-    {
-      title: "Tension",
-      body: `A team discussion drifts; your ${primaryLower} side spots the stall and wants momentum back.`,
-      temp: primary,
-    },
-    {
-      title: "Your Move",
-      body: `You lean on your ${secondaryLower} side to propose one clear next step everyone can own.`,
-      temp: secondary,
-    },
-    {
-      title: "Result",
-      body: `The group leaves aligned, shaped by your ${primaryLower}-${secondaryLower} mix balancing pace and care.`,
-      temp: primary,
-    },
+  const scenarioSets = [
+    // Work: stalled meeting, deadline crunch, handoff clarity
+    [
+      {
+        title: "Tension",
+        body: `A meeting drifts; your ${primaryLower} side names the stall and refocuses the room.`,
+        temp: primary,
+      },
+      {
+        title: "Your Move",
+        body: `You use your ${secondaryLower} side to suggest one clear next step and owner.`,
+        temp: secondary,
+      },
+      {
+        title: "Result",
+        body: `Momentum returns; people align around your ${primaryLower}-${secondaryLower} mix of pace and care.`,
+        temp: primary,
+      },
+    ],
+    // Relationships: weekend plan conflict, support, compromise
+    [
+      {
+        title: "Tension",
+        body: `Weekend plans clash; your ${primaryLower} side senses rising stress and slows the heat.`,
+        temp: primary,
+      },
+      {
+        title: "Your Move",
+        body: `You tap your ${secondaryLower} side to ask what matters most and offer a swap.`,
+        temp: secondary,
+      },
+      {
+        title: "Result",
+        body: `You land a compromise shaped by your ${primaryLower}-${secondaryLower} balance of warmth and clarity.`,
+        temp: primary,
+      },
+    ],
+    // Personal growth: new habit, feedback, learning
+    [
+      {
+        title: "Tension",
+        body: `Starting a new habit feels wobbly; your ${primaryLower} side craves progress without overwhelm.`,
+        temp: primary,
+      },
+      {
+        title: "Your Move",
+        body: `Your ${secondaryLower} side breaks it into one tiny daily action and a friendly reminder.`,
+        temp: secondary,
+      },
+      {
+        title: "Result",
+        body: `You stick with it; your ${primaryLower}-${secondaryLower} mix turns small reps into steady growth.`,
+        temp: primary,
+      },
+    ],
   ];
 
+  const chosen =
+    scenarioSets[Math.floor(Math.random() * scenarioSets.length)] || scenarioSets[0];
+
   scenarioPanels.forEach((panel, index) => {
-    const beat = beats[index];
+    const beat = chosen[index];
     if (!panel.card || !panel.title || !panel.body || !beat) return;
     panel.card.dataset.temp = beat.temp;
     panel.title.textContent = beat.title;
