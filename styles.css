@@ -809,6 +809,46 @@ main {
   pointer-events: none;
 }
 
+/* ===============================
+   PREMIUM LOCK STYLES
+   =============================== */
+.premium-locked {
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+  cursor: pointer;
+}
+
+.premium-locked>* {
+  filter: blur(8px) grayscale(40%);
+  opacity: 0.6;
+  pointer-events: none;
+  transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
+.premium-locked::after {
+  content: "Premium Content \A Click to Unlock";
+  white-space: pre-wrap;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--gray-900);
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(2px);
+  z-index: 10;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.premium-locked:hover::after {
+  background: rgba(255, 255, 255, 0.6);
+  transform: scale(1.02);
+}
+
 .depth-content {
   display: block;
   border-radius: 1rem;
@@ -2075,12 +2115,15 @@ main {
 .scenario-panel[data-temp="Sanguine"] {
   border-left-color: var(--color-sanguine-mustard);
 }
+
 .scenario-panel[data-temp="Choleric"] {
   border-left-color: var(--color-choleric-terracotta);
 }
+
 .scenario-panel[data-temp="Melancholic"] {
   border-left-color: var(--color-melancholic-slate);
 }
+
 .scenario-panel[data-temp="Phlegmatic"] {
   border-left-color: var(--color-phlegmatic-green);
 }
