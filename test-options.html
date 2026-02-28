@@ -30,40 +30,15 @@
   <script src="https://js.paystack.co/v2/inline.js"></script>
   <!-- Chart.js will be dynamically loaded via app.js -->
   <link rel="stylesheet" href="styles.css" />
-  <link
-    rel="icon"
-    type="image/png"
-    sizes="16x16"
-    href="favicon-16.png"
-  />
-  <link
-    rel="icon"
-    type="image/png"
-    sizes="32x32"
-    href="favicon-32.png"
-  />
-  <link
-    rel="icon"
-    type="image/png"
-    sizes="48x48"
-    href="assets/logo/temperament-emblem-48.png"
-  />
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="assets/logo/temperament-emblem-48.png" />
   <link rel="shortcut icon" href="favicon.ico" />
-  <link
-    rel="apple-touch-icon"
-    sizes="180x180"
-    href="assets/logo/apple-touch-icon.png"
-  />
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/logo/apple-touch-icon.png" />
   <meta name="theme-color" content="#468254" />
-  <meta
-    property="og:image"
-    content="https://whatismytemperament.com/assets/logo/temperament-emblem-1200.png"
-  />
+  <meta property="og:image" content="https://whatismytemperament.com/assets/logo/temperament-emblem-1200.png" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta
-    name="twitter:image"
-    content="https://whatismytemperament.com/assets/logo/temperament-emblem-1200.png"
-  />
+  <meta name="twitter:image" content="https://whatismytemperament.com/assets/logo/temperament-emblem-1200.png" />
 </head>
 
 <body class="site-selection">
@@ -75,11 +50,7 @@
       <!-- Brand Logo / Name -->
       <a class="brand" href="index.html">
         <span class="brand-mark" aria-hidden="true">
-          <img
-            class="brand-mark-img"
-            src="assets/logo/temperament-emblem-48.png"
-            alt=""
-          />
+          <img class="brand-mark-img" src="assets/logo/temperament-emblem-48.png" alt="" />
         </span>
         <span class="brand-text">Temperament<span>Test</span></span>
       </a>
@@ -276,12 +247,7 @@
               <p id="result-growth"></p>
             </div>
 
-            <div id="result-detail" class="detail hidden">
-              <article>
-                <h3>Detailed Communication Insight</h3>
-                <p id="detail-communication"></p>
-              </article>
-            </div>
+
 
             <div class="growth-note" style="
                   background: var(--beige-50);
@@ -317,7 +283,7 @@
           </article>
 
           <!-- Sticky Sidebar Data -->
-          <aside class="result-sidebar">
+          <aside class="result-sidebar" data-premium-lock="true">
             <!-- Temperament Mix Donut Chart -->
             <article class="panel-card mix-card">
               <h3>Temperament Mix</h3>
@@ -375,7 +341,7 @@
         </div>
 
         <!-- Scenario Snapshot -->
-        <div class="panel-card scenario-strip">
+        <div class="panel-card scenario-strip" data-premium-lock="true">
           <p class="eyebrow">Scenario Snapshot</p>
           <h3>Your Temperament in Action</h3>
           <div class="scenario-grid">
@@ -395,7 +361,7 @@
         </div>
 
         <!-- Communication Style Grid -->
-        <div class="panel-card comms-card">
+        <div class="panel-card comms-card" data-premium-lock="true">
           <p class="eyebrow">How You Connect</p>
           <h3>Your Communication Style</h3>
           <div class="comms-grid">
@@ -418,7 +384,7 @@
           </div>
         </div>
 
-        <div class="panel-card confidence-card">
+        <div class="panel-card confidence-card" data-premium-lock="true">
           <div class="confidence-copy">
             <h3 id="confidence-title"></h3>
             <p id="confidence-message"></p>
@@ -437,7 +403,8 @@
           be used as a substitute for professional advice.
         </p>
 
-        <section id="assistant-guide" class="panel-card assistant-guide" aria-label="Temperament Reflection Guide">
+        <section id="assistant-guide" class="panel-card assistant-guide" aria-label="Temperament Reflection Guide"
+          data-premium-lock="true">
           <div class="assistant-collapsed">
             <p class="eyebrow">AI Reflection Guide</p>
             <h3 class="assistant-title">Chat with our AI</h3>
@@ -508,9 +475,7 @@
             </div>
           </div>
 
-          <button id="detail-toggle" class="btn btn-outline" type="button">
-            Show Detailed Explanation
-          </button>
+
           <a href="test-options.html" class="btn btn-primary result-restart">
             Take Another Test
             <span aria-hidden="true">-></span>
@@ -530,11 +495,7 @@
       <div class="footer-brand">
         <a class="brand" href="index.html">
           <span class="brand-mark" aria-hidden="true">
-            <img
-              class="brand-mark-img"
-              src="assets/logo/temperament-emblem-48.png"
-              alt=""
-            />
+            <img class="brand-mark-img" src="assets/logo/temperament-emblem-48.png" alt="" />
           </span>
           <span class="brand-text">Temperament<span>Test</span></span>
         </a>

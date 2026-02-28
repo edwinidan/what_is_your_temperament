@@ -508,7 +508,7 @@ const state = {
   questions: [],
   responses: {},
   currentPage: 0,
-  detailVisible: false,
+
   startedAt: null,
   completionTracked: false,
   abandonmentTracked: false,
@@ -585,11 +585,8 @@ const confidenceMessage = document.getElementById("confidence-message");
 const confidencePercent = document.getElementById("confidence-percent");
 const confidenceLabel = document.getElementById("confidence-label");
 const confidenceRing = document.getElementById("confidence-ring");
-const detailToggle = document.getElementById("detail-toggle");
-const resultDetail = document.getElementById("result-detail");
 const detailStrengths = document.getElementById("detail-strengths");
 const detailWeaknesses = document.getElementById("detail-weaknesses");
-const detailCommunication = document.getElementById("detail-communication");
 const copySummaryBtn = document.getElementById("copy-summary-btn");
 const copyLinkBtn = document.getElementById("copy-link-btn");
 const shareCardBtn = document.getElementById("share-card-btn");
@@ -633,7 +630,7 @@ if (simulateButton) {
   simulateButton.addEventListener("click", simulateAssessmentForResults);
 }
 nextButton.addEventListener("click", goToNextPage);
-detailToggle.addEventListener("click", toggleDetailView);
+
 if (copySummaryBtn) copySummaryBtn.addEventListener("click", copyResultSummary);
 if (copyLinkBtn) copyLinkBtn.addEventListener("click", copyShareLink);
 if (shareCardBtn) shareCardBtn.addEventListener("click", generateShareCard);
@@ -685,7 +682,7 @@ function startAssessment() {
   state.questions = buildQuestionSet(state.selectedDepth);
   state.responses = {};
   state.currentPage = 0;
-  state.detailVisible = false;
+
   state.startedAt = Date.now();
   state.completionTracked = false;
   state.abandonmentTracked = false;
@@ -1227,7 +1224,7 @@ function renderResults({ primary, secondary, confidence, ranked }) {
   detailWeaknesses.innerHTML = weaknesses
     .map((item) => `<li>${item}</li>`)
     .join("");
-  detailCommunication.textContent = `${primaryProfile.communication} Secondary ${secondary.toLowerCase()} influence may also shape tone and pace in conversations.`;
+
   secondaryName.textContent = secondary;
   secondaryDesc.textContent = secondaryProfile.short;
   secondaryTraits.textContent = secondaryVisual.traits;
@@ -1260,10 +1257,9 @@ function renderResults({ primary, secondary, confidence, ranked }) {
     },
   });
   resetAssistantSession();
+  applyPremiumLocks();
 
-  state.detailVisible = false;
-  resultDetail.classList.add("hidden");
-  detailToggle.textContent = "Show Detailed Explanation";
+
 
   trackEvent(ANALYTICS_EVENTS.assessmentCompleted, {
     depth: state.selectedDepth,
@@ -1285,19 +1281,7 @@ function renderResults({ primary, secondary, confidence, ranked }) {
   confidenceRing.addEventListener("click", trackConfidenceInteraction);
 }
 
-function toggleDetailView() {
-  state.detailVisible = !state.detailVisible;
-  resultDetail.classList.toggle("hidden", !state.detailVisible);
-  detailToggle.textContent = state.detailVisible
-    ? "Hide Detailed Explanation"
-    : "Show Detailed Explanation";
 
-  if (state.detailVisible && state.resultMeta?.primary) {
-    trackEvent(ANALYTICS_EVENTS.detailViewOpened, {
-      primary_temperament: state.resultMeta.primary,
-    });
-  }
-}
 
 function initPaywallUI() {
   if (paywallUnlockBtn) {
@@ -1517,6 +1501,7 @@ async function verifyPaymentReference(reference) {
       setPaywallStatus("Payment confirmed! Unlocking chat…", false);
       trackEvent("payment_successful");
       closePaywallModal();
+      applyPremiumLocks();
       openChatModalUnlocked();
       return;
     }
@@ -2369,7 +2354,7 @@ function restoreProgressIfAvailable() {
   state.questions = questions;
   state.responses = restoredResponses;
   state.currentPage = cp;
-  state.detailVisible = false;
+
   state.startedAt =
     Number.isFinite(saved.startedAt) && saved.startedAt > 0
       ? saved.startedAt
@@ -2877,6 +2862,34 @@ function hasPremiumAccess() {
   return true;
 }
 
+function applyPremiumLocks() {
+  const lockedSections = document.querySelectorAll(
+    '[data-premium-lock="true"]'
+  );
+
+  const hasAccess = hasPremiumAccess();
+
+  lockedSections.forEach((section) => {
+    const interactables = section.querySelectorAll("button, a");
+    if (hasAccess) {
+      section.classList.remove("premium-locked");
+      section.removeEventListener("click", openPaywallModal);
+      interactables.forEach((el) => {
+        el.removeAttribute("tabindex");
+        el.style.pointerEvents = "auto";
+      });
+    } else {
+      section.classList.add("premium-locked");
+      section.addEventListener("click", openPaywallModal);
+      interactables.forEach((el) => {
+        el.setAttribute("tabindex", "-1");
+        el.style.pointerEvents = "none";
+      });
+    }
+  });
+}
+
+
 // --- Shareable Result URL Feature Utilities ---
 
 /**
@@ -3015,7 +3028,7 @@ function renderSharedResults(payload) {
   detailWeaknesses.innerHTML = weaknesses
     .map((item) => `<li>${item}</li>`)
     .join("");
-  detailCommunication.textContent = `${primaryProfile.communication} Secondary ${secondary.toLowerCase()} influence may also shape tone and pace in conversations.`;
+
   secondaryName.textContent = secondary;
   secondaryDesc.textContent = secondaryProfile.short;
   secondaryTraits.textContent = secondaryVisual.traits;
@@ -3099,9 +3112,7 @@ function renderSharedResults(payload) {
   });
   resetAssistantSession();
 
-  state.detailVisible = false;
-  resultDetail.classList.add("hidden");
-  detailToggle.textContent = "Show Detailed Explanation";
+
 
   // Hide the "Take Another Test" button or modify its behavior to clear hash and restart to avoid taking another test within hash context, we just hide the restart controls natively.
   const restartButton = document.querySelector(".result-restart");
