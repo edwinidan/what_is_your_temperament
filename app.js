@@ -1115,7 +1115,7 @@ function showLoadingScreenAndRender(outcome) {
   setTimeout(() => {
     loadingPanel.classList.add("hidden");
     renderResults(outcome);
-  }, 2500);
+  }, 1000);
 }
 
 function isCurrentPageComplete() {
