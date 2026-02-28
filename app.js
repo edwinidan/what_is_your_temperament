@@ -2161,6 +2161,7 @@ function escapeHtml(value) {
 }
 
 async function copyShareLink() {
+  if (!hasPremiumAccess()) return;
   if (!state.shareUrl) return;
   const link = `${window.location.origin}${window.location.pathname}#result=${state.shareUrl}`;
   try {
@@ -3130,6 +3131,7 @@ function renderSharedResults(payload) {
 // ==========================================
 
 async function generateShareCard() {
+  if (!hasPremiumAccess()) return;
   if (!state.resultMeta || !state.shareUrl || !shareCardCanvas) {
     return;
   }

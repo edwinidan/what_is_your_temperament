@@ -849,6 +849,11 @@ main {
   transform: scale(1.02);
 }
 
+.premium-locked.btn::after {
+  display: none;
+}
+
+
 .depth-content {
   display: block;
   border-radius: 1rem;
