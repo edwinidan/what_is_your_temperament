@@ -2489,6 +2489,7 @@ main {
 .temp-detail-card {
   display: none;
   padding: 2.5rem;
+  scroll-margin-top: 140px;
   animation: fadeIn 0.4s ease-out forwards;
 }
 
