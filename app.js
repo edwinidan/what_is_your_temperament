@@ -20,7 +20,7 @@
 // 1. CONSTANTS & CONFIGURATION
 // ==========================================
 const STORAGE_KEY = "temperamentInsight.progress.v1";
-const VALID_DEPTHS = [20, 40, 60];
+const VALID_DEPTHS = [20, 40, 60, 80];
 const ANALYTICS_EVENTS = {
   assessmentStarted: "assessment_started",
   assessmentPageViewed: "assessment_page_viewed",
