@@ -47,6 +47,17 @@ body {
   line-height: 1.5;
 }
 
+#tsparticles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+  /* Allows visitors to click buttons through the canvas */
+}
+
 a {
   color: inherit;
 }
