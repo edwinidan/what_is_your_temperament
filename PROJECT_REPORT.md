@@ -1,6 +1,6 @@
 # Temperament Insight Project Report
 
-Date: February 28, 2026 (post Paystack monetization PRD)  
+Date: March 2, 2026  
 Project type: Static-first educational web app with a Vercel serverless AI proxy (no build step, no database)
 
 ## 1. Executive Summary
@@ -21,12 +21,15 @@ The product is intentionally non-diagnostic and includes explicit disclaimers in
 3. CTA opens `test-options.html#choose-depth` directly.
 4. User selects assessment length: `20`, `40`, or `60` questions.
 5. User starts the assessment on the same page.
-6. Questions are delivered in pages of 5.
-7. User cannot advance until all questions on the current page are answered.
+6. Questions are presented as a single scrollable list; items unlock one by one as each is answered (no paged blocks).
+7. User cannot unlock the next item until the current one is answered.
 8. Final results show primary and secondary temperament plus confidence level.
-9. User sees results, can retake, open the AI assistant, or (if premium) use sharing actions. The previous detailed-interpretation toggle has been removed.
+9. Results below the hero (profile, sidebar, scenarios, comms, confidence, assistant, share actions) are premium-locked until payment; the hero summary remains free.
+10. Users can retake, open the AI assistant, or (if premium) use sharing actions. The previous detailed-interpretation toggle has been removed.
 
-Notable UX update: the intermediate "Pick Your Test Length" hero step was removed; users now land directly on "Select Number of Questions."
+Notable UX updates:
+- Depth selector now offers 20 / 40 / 60 / 80 questions (20 is default).
+- Question list unlocks sequentially rather than paged groups of 5.
 
 ## 3. Current Project Structure
 
@@ -35,9 +38,9 @@ Notable UX update: the intermediate "Pick Your Test Length" hero step was remove
   - Loads Plausible analytics script in `<head>`.
   - Links directly to `test-options.html#choose-depth`.
 - `test-options.html`
-  - Test depth selector section (`#choose-depth`).
+  - Test depth selector section (`#choose-depth`) with 20 / 40 / 60 / 80 options (20 preselected).
   - Assessment panel container (`#assessment-panel`).
-  - Results panel container (`#results-panel`).
+  - Results panel container (`#results-panel`); all sections below the hero are premium-locked until payment.
   - Back Home button and shared footer.
   - Loads Plausible analytics script in `<head>`.
   - Loads Chart.js in `<head>` for the temperament mix donut chart.
@@ -45,7 +48,9 @@ Notable UX update: the intermediate "Pick Your Test Length" hero step was remove
   - Shared styling system for homepage, selection screen, assessment, and results.
   - Responsive navigation, hero, card components, forms, and footer.
 - `app.js`
-  - Assessment data, state machine, pagination, scoring, confidence logic, persistence.
+  - Assessment data, state machine, sequential unlock rendering, scoring, confidence logic, persistence.
+  - Paywall defaults now 20 GHS (2000 kobo) with currency `GHS`.
+  - Slider UX: values commit on change; a single neutral tap (value 3) commits once; mere touch/press without change no longer auto-commits.
   - Privacy-friendly analytics event instrumentation.
 - `AI_ASSISTANT_SPEC.md`
   - Product specification for the optional Results-page assistant ("Temperament Reflection Guide").
@@ -136,17 +141,17 @@ Depth behavior:
 - 20 mode: 5 per temperament
 - 40 mode: 10 per temperament
 - 60 mode: 15 per temperament
+- 80 mode: 20 per temperament
 
 Resume behavior:
 
 - If a valid saved `questionOrder` exists, the question set is rebuilt directly from saved IDs instead of re-sampling.
 
-### 5.2 Pagination and Rendering
+### 5.2 Rendering and Unlock Flow
 
-- Fixed `PAGE_SIZE = 5`.
-- `renderCurrentPage()` updates heading, metadata, progress bar, and 5 question cards.
-- Slider responses update labels live and persist to state/localStorage.
-- Fires analytics event on page render: `assessment_page_viewed`.
+- Questions render as a single list; items unlock one at a time as each is answered (no fixed page size).
+- Progress UI updates with each answer; slider labels update live and persist to state/localStorage.
+- Analytics event on assessment view: `assessment_page_viewed`.
 
 ### 5.3 Completion Guard
 
