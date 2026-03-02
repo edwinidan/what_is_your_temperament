@@ -1003,6 +1003,7 @@ function bindQuestionListeners() {
       debounceSaveProgress();
     };
 
+    // Only update the label visually while dragging — never commit yet.
     input.addEventListener("input", (event) => {
       const val = event.target.value;
       labelDisplay.textContent = labels[val - 1];
@@ -1010,17 +1011,16 @@ function bindQuestionListeners() {
       input.style.setProperty("--thumb-scale", scale);
     });
 
-    input.addEventListener("change", (event) => {
-      updateValue(event.target.value);
+    // Commit the answer only when the user RELEASES the slider.
+    // touchend covers mobile finger release; mouseup covers desktop mouse.
+    // This prevents the page from scrolling to the next question
+    // while the user is still actively dragging or just touching the slider.
+    input.addEventListener("touchend", () => {
+      updateValue(input.value);
     });
 
-    // Handle taps that don't move the slider (value stays the same, so
-    // no "change" event fires). pointerup fires after release, avoiding
-    // the premature-scroll issue that mousedown/touchstart had.
-    input.addEventListener("pointerup", () => {
-      if (input.getAttribute("data-answered") === "false") {
-        updateValue(input.value);
-      }
+    input.addEventListener("mouseup", () => {
+      updateValue(input.value);
     });
   });
 }
