@@ -1014,13 +1014,10 @@ function bindQuestionListeners() {
       updateValue(event.target.value);
     });
 
-    // Handle clicks/touches that don't trigger "change" if the value stays the same but user intent was to select
-    input.addEventListener("mousedown", () => {
-      if (input.getAttribute("data-answered") === "false") {
-        updateValue(input.value);
-      }
-    });
-    input.addEventListener("touchstart", () => {
+    // Handle taps that don't move the slider (value stays the same, so
+    // no "change" event fires). pointerup fires after release, avoiding
+    // the premature-scroll issue that mousedown/touchstart had.
+    input.addEventListener("pointerup", () => {
       if (input.getAttribute("data-answered") === "false") {
         updateValue(input.value);
       }
