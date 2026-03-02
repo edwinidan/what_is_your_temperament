@@ -34,8 +34,8 @@ const ASSISTANT_RESPONSE_WORD_MAX = 180;
 const ASSISTANT_REFLECT_ENDPOINT = "/api/reflect";
 const ASSISTANT_CHAT_ENDPOINT = "/api/chat";
 const PREMIUM_TOKEN_KEY = "temperamentInsight.premiumToken";
-// Paywall defaults: 50 GHS in kobo/pesewas
-const PAYWALL_AMOUNT_KOBO = 5000;
+// Paywall defaults: 20 GHS in kobo/pesewas
+const PAYWALL_AMOUNT_KOBO = 2000;
 const PAYWALL_CURRENCY = "GHS";
 const ASSISTANT_API_TIMEOUT_MS = 15_000;
 const ASSISTANT_MODES = [
