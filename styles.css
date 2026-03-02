@@ -794,7 +794,7 @@ main {
   border: 0;
   display: grid;
   gap: 1rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .depth-card {
@@ -897,12 +897,16 @@ main {
 
 
 .depth-content {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  aspect-ratio: 1;
   border-radius: 1rem;
   border: 1px solid var(--gray-200);
   background: #fff;
-  padding: 1rem 1.15rem;
-  min-height: 126px;
+  padding: 1.2rem 1rem;
   transition: all 0.2s ease;
 }
 
@@ -925,7 +929,7 @@ main {
 
 .depth-title {
   display: block;
-  font-size: 1.12rem;
+  font-size: 1.25rem;
   font-weight: 800;
   letter-spacing: -0.01em;
 }
@@ -934,7 +938,8 @@ main {
   display: block;
   margin-top: 0.55rem;
   color: var(--gray-500);
-  line-height: 1.55;
+  line-height: 1.4;
+  font-size: 0.85rem;
 }
 
 .depth-meta {
@@ -944,7 +949,7 @@ main {
   padding: 0.4rem 0.7rem;
   background: var(--primary-50);
   color: var(--primary-700);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 
@@ -2312,7 +2317,7 @@ main {
   }
 
   .depth-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .result-profile-grid {
