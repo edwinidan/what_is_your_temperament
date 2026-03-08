@@ -1,25 +1,29 @@
-# Question Generation and Result Logic
+# Question Generation and Result Logic (Current Implementation)
 
-This document explains how the assessment currently works in `app.js`: how questions are generated for each test, and how results are calculated.
+Last updated: March 8, 2026
+
+This document explains how assessment and scoring logic currently work in `app.js`.
 
 ## 1. Core Constants
 
-- `VALID_DEPTHS = [20, 40, 60]`
+- `VALID_DEPTHS = [20, 40, 60, 80]`
 - `TEMPERAMENTS = ["Sanguine", "Choleric", "Melancholic", "Phlegmatic"]`
-- `PAGE_SIZE = 5` (questions shown per page)
+- Question bank size: `240` (`T001` to `T240`)
 
-## 2. Question Source
+There is no paginated `PAGE_SIZE` flow in current implementation. Questions render in one list and unlock sequentially.
 
-Questions are defined in `QUESTION_BANK_CSV` and parsed at startup into `QUESTION_BANK_ROWS`.
+## 2. Question Source and Parsing
 
-Each question has:
+Questions are stored in `QUESTION_BANK_CSV` and parsed into `QUESTION_BANK_ROWS`.
 
-- `id` (format: `T001` ... `T240`)
+Each parsed question contains:
+
+- `id`
 - `temperament`
 - `dimension`
-- `text` (from `item_text`)
-- `reverseScored` (boolean)
-- `scoringRule` (`Likert 1-5`)
+- `text`
+- `reverseScored`
+- `scoringRule`
 
 Derived indexes:
 
@@ -29,253 +33,148 @@ Derived indexes:
 
 ## 3. Startup Validation
 
-`validateQuestionBank()` runs at load time and throws on invalid data.
+`validateQuestionBank()` enforces:
 
-It validates:
-
-- total item count is exactly `240`
-- all IDs are unique
-- all expected IDs `T001` through `T240` exist
-- temperament is one of the four supported types
-- `reverseScored` is boolean
-- `scoringRule` is `Likert 1-5`
+- exactly `240` items
+- unique IDs
+- complete ID range `T001..T240`
+- valid temperament values
+- boolean `reverseScored`
+- scoring rule equals `Likert 1-5`
 - each temperament has `60` items
-- each temperament has exactly `3` dimensions with `20` items each
+- each temperament has `3` dimensions with `20` items each
 
-## 4. How Questions Are Generated Per Test
+## 4. Question Set Generation
 
 Function: `buildQuestionSet(depth, questionOrder)`
 
-### 4.1 Resume-first restore behavior
+### 4.1 Resume-first behavior
+If `questionOrder` is valid, questions are restored by saved IDs in saved order.
 
-If `questionOrder` is valid, questions are rebuilt directly by ID in that saved order.
+`questionOrder` validity:
+- array
+- length equals selected depth
+- unique IDs
+- IDs exist in `QUESTION_BY_ID`
 
-`questionOrder` is valid when:
-
-- it is an array
-- length equals `depth`
-- IDs are unique
-- every ID exists in `QUESTION_BY_ID`
-
-This prevents resume breakage when selection is randomized.
-
-### 4.2 Balanced distribution by temperament
-
+### 4.2 Balanced temperament distribution
 `perTemperament = depth / 4`
 
-So:
+- depth 20 -> 5 per temperament
+- depth 40 -> 10 per temperament
+- depth 60 -> 15 per temperament
+- depth 80 -> 20 per temperament
 
-- 20-question test -> 5 per temperament
-- 40-question test -> 10 per temperament
-- 60-question test -> 15 per temperament
+### 4.3 Dimension-balanced sampling
+Within a temperament, `sampleBalancedQuestions()`:
+- shuffles dimension keys
+- assigns base quota + remainder spread
+- samples without replacement from each dimension pool
 
-### 4.3 Balanced sampling by dimension
+Typical splits:
+- 20-depth: `2/2/1`
+- 40-depth: `4/3/3`
+- 60-depth: `5/5/5`
+- 80-depth: typically `7/7/6` (dimension order varies)
 
-Within each temperament:
+### 4.4 Final ordering
+Selected questions are shuffled (Fisher-Yates), then assigned display ordinals.
 
-- dimensions are shuffled
-- `base = floor(perTemperament / 3)`
-- `remainder = perTemperament % 3`
-- each dimension receives `base`
-- the first `remainder` shuffled dimensions receive `+1`
-- items are sampled without replacement from each dimension pool
+## 5. Render and Unlock Flow
 
-Resulting per-temperament dimension splits:
+Questions are rendered as one scrollable list (`#question-page`).
 
-- 20 depth (`5`) -> `2 / 2 / 1` (dimension order varies)
-- 40 depth (`10`) -> `4 / 3 / 3`
-- 60 depth (`15`) -> `5 / 5 / 5`
+Unlock rule:
+- only next unanswered question unlocks
+- answering a question unlocks the next card
 
-### 4.4 Random order on new tests
+Slider commit rule:
+- visual label updates during `input`
+- response is committed to state on `touchend` / `mouseup`
 
-After per-temperament selection, all selected items are shuffled with Fisher-Yates (`shuffleArray`).
+Assessment completion rule:
+- finish button stays disabled until all questions have committed responses
 
-### 4.5 Display ordinal
-
-After ordering, each question is assigned `ordinal: index + 1` for display (`Q1`, `Q2`, etc.).
-
-## 5. Progress Persistence (Resume Behavior)
+## 6. Persistence and Resume
 
 Storage key: `temperamentInsight.progress.v1`
 
-Saved payload includes:
-
+Saved fields:
 - `selectedDepth`
 - `responses`
-- `currentPage`
-- `questionOrder` (array of question IDs like `T001`)
+- `currentPage` (legacy field retained in state/persistence)
+- `questionOrder`
 - `startedAt`
 
-On restore:
+Restore behavior:
+- validates depth against `VALID_DEPTHS`
+- validates question order
+- filters responses to valid IDs and range `1..5`
+- restores question set from saved order when valid
 
-- depth is validated against `VALID_DEPTHS`
-- question set is rebuilt with `buildQuestionSet(savedDepth, savedOrder)`
-- responses are filtered to valid IDs in `1..5`
-- page index is clamped to valid bounds
-
-Legacy saved IDs not present in the new bank are ignored safely.
-
-## 6. Response Model
-
-Each question is answered on a 1..5 slider using Likert labels:
-
-- Strongly disagree
-- Disagree
-- Neutral
-- Agree
-- Strongly agree
-
-Centered score:
-
-- `toCenteredValue(value) = value - 3`
-- mapping:
-  - `1 -> -2`
-  - `2 -> -1`
-  - `3 -> 0`
-  - `4 -> +1`
-  - `5 -> +2`
-
-## 7. Reverse-Scored Contribution
-
-For each response:
-
-- `centered = value - 3`
-- `signed = question.reverseScored ? -centered : centered`
-
-`signed` is used for temperament score accumulation.
-
-## 8. Result Scoring
+## 7. Scoring Logic
 
 Function: `scoreAssessment()`
 
 For each answered question:
 
-1. compute `signed` score (reverse-aware)
-2. add to temperament total (`scores[temperament]`)
-3. add absolute contribution to temperament signal (`signal[temperament]`)
+1. centered value = `response - 3` (`-2..+2`)
+2. if reverse-scored, sign is inverted
+3. signed value accumulates into temperament score
+4. absolute contribution accumulates into temperament signal for tie-breaks
 
-`signal` is used for tie-break strength.
+## 8. Ranking and Confidence
 
-## 9. Ranking Logic
+Ranking order:
+1. score (desc)
+2. signal (desc)
+3. fixed temperament order (desc tie-break fallback)
 
-Temperaments are ranked by:
+Outputs:
+- `primary`
+- `secondary`
+- `ranked`
 
-1. `score` descending
-2. `signal` descending (tie-break 1)
-3. fixed temperament order from `TEMPERAMENTS` (tie-break 2)
+Confidence from normalized top-two gap:
+- High: `>= 0.25`
+- Medium: `>= 0.12`
+- Low: otherwise
 
-Output:
+## 9. Mix Percentages (Visualization)
 
-- `primary` = rank 1 temperament
-- `secondary` = rank 2 temperament
-- full `ranked` array
+Mix percentages are for display/share payloads, not raw score ranking.
 
-## 10. Confidence Logic
+Process:
+- transform signed scores into safe non-negative weights
+- normalize to 100
+- integer rounding with remainder distribution
 
-Function: `getConfidenceLevel(scoreGap, depth)`
+Output totals are deterministic and sum to exactly `100`.
 
-- `scoreGap = ranked[0].score - ranked[1].score`
-- `maxGap = (depth / 4) * 4`
-- `normalizedGap = scoreGap / maxGap`
+## 10. Result and Share Behavior
 
-Thresholds:
+On completion:
+- results render in `#results-panel`
+- share payload may be encoded into URL hash (`#result=...`)
 
-- `High` if `normalizedGap >= 0.25`
-- `Medium` if `normalizedGap >= 0.12`
-- `Low` otherwise
+Shared-link behavior:
+- share hash carries result payload only
+- premium entitlement is not transferred via link
+- premium lock state is applied viewer-side based on local token validity
 
-## 11. Mix Percentage Model (for Result Visuals)
+## 11. Premium + API Touchpoints (As Implemented)
 
-Function: `buildTemperamentMixPercentages(ranked)`
+- `GET /api/paywall-config`: returns public checkout config
+- `POST /api/verify-payment`: verifies payment and returns JWT
+- `POST /api/chat`: premium JWT required
+- `POST /api/reflect`: premium JWT required
 
-This is for chart display only (not core ranking).
+Unauthorized API behavior:
+- `401`
+- error code `UNAUTHORIZED`
 
-Steps:
+## 12. Known Logic Caveats
 
-1. transform each temperament score into a non-negative weight
-2. normalize weights to percentages totaling ~100
-3. floor values
-4. distribute remainder to highest fractional parts
-
-Result: integer percentages summing to exactly `100`.
-
-## 12. Completion Rule
-
-The user cannot move to the next page unless all questions on the current page are answered (`isCurrentPageComplete()`).
-
-When the final page is complete:
-
-1. scoring runs
-2. results are rendered with primary/secondary/confidence
-3. progress storage is cleared
-
-## 13. Version 2 Updates (Recent Enhancements)
-
-Date: February 22, 2026
-
-During the transition to Version 2, the core mathematical models, question generation algorithms, and score ranking logic *remained entirely unchanged*. 
-
-The specific updates that touch upon the assessment flow are primarily UI-focused:
-
-- **Response Model UI (Section 6 Update):** The interface for gathering responses was updated from discrete clickable buttons to interactive **sliders**. 
-- **Underlying Likert Scale Unchanged:** Despite the visual change to sliders, the underlying data structure remains a strict 5-point Likert scale (`1` to `5`).
-- **Scoring Translation Unchanged:** The mathematical translation of slider values (`toCenteredValue(value) = value - 3`) and the handling of reverse-scored items function exactly as they did in Version 1.
-- **Detailed Profiles:** While not affecting the calculation logic, the `temperaments.html` page was added to offer much more comprehensive descriptions of the final results calculated by the aforementioned logic.
-
-
-## 14. Paystack Premium Unlock (Version 2.1)
-
-To support the "Premium Unlock" feature, the following changes were implemented:
-
-### 14.1 New Environment Variables
-
-- `PAYSTACK_PUBLIC_KEY`: Paystack public key (test or live).
-- `PAYSTACK_SECRET_KEY`: Paystack secret key (test or live).
-- `JWT_SECRET`: Secret for signing premium JWT tokens.
-- `PAYWALL_AMOUNT_KOBO`: Amount in cents (default: `500` for $5).
-- `PAYWALL_CURRENCY`: Currency code (default: `"USD"`).
-
-### 14.2 Backend API Endpoints
-
-- **`POST /api/verify-payment`**
-  - Verifies a Paystack payment reference via Paystack's API.
-  - Validates that the amount and currency match the expected values.
-  - Returns a signed JWT token and `expires_at` timestamp if verification succeeds.
-  - Returns `401 UNAUTHORIZED` with code `unauthorized` if verification fails.
-
-- **`GET /api/paywall-config`**
-  - Returns public configuration for the paywall modal:
-    - `publicKey`
-    - `amount`
-    - `currency`
-
-- **`GET /api/chat` and `GET /api/reflect`**
-  - Now require a valid `Authorization: Bearer <jwt>` header.
-  - Return `401 UNAUTHORIZED` with code `unauthorized` if no valid token is provided.
-
-### 14.3 Frontend Paywall Modal
-
-- A "Premium Unlock" button is added to the UI.
-- Clicking it opens a modal that:
-  - Displays the Paystack checkout inline.
-  - Calls `startPaystackCheckout()` on button click.
-  - Calls `verifyPayment(reference)` on successful Paystack transaction.
-
-### 14.4 Token Management
-
-- Premium tokens are stored in `localStorage` under the key `temperamentInsight.premiumToken`.
-- Tokens are automatically validated on page load and before accessing premium features.
-- Expired tokens are cleared automatically.
-- The token is valid for **48 hours** from issuance.
-
-### 14.5 Terms and Limitations
-
-- The unlock is **per device/browser** only (no user accounts).
-- Clearing storage or switching devices requires a new unlock.
-- This limitation is documented in `terms.html`.
-
-### 14.6 Plausible Events
-
-- `paywall_viewed`
-- `checkout_started`
-- `payment_successful`
+- Frontend paywall fallback values in `app.js` are `2000` + `GHS`.
+- Backend API handlers default to `PAYWALL_AMOUNT_KOBO=5000` and `PAYWALL_CURRENCY=GHS` unless env values are set.
+- Keep env configuration explicit to avoid amount drift.

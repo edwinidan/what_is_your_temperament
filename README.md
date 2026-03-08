@@ -1,50 +1,67 @@
-# Temperament Insight MVP
+# Temperament Insight
 
-Educational web app for self-awareness using the four classic temperaments:
+Temperament Insight is a static-first educational web app for self-reflection using four classic temperaments:
 
 - Sanguine
 - Choleric
 - Melancholic
 - Phlegmatic
 
-This MVP is for reflection and learning, not diagnosis.
+It is explicitly non-clinical and not a diagnostic tool.
 
-## Included Features
+## Current Product Behavior
 
-- Public-use assessment flow
-- Test depth options: 20, 40, or 60 questions
-- 240-item question bank (`T001` to `T240`) across 4 temperaments
-- Dimension-based item model (3 dimensions per temperament, 20 items per dimension)
-- Five-point Likert response scale (`Strongly disagree` to `Strongly agree`)
-- Balanced-by-dimension sampling for each run
-- Pagination with 5 questions per page via highly interactive, modern slider inputs
-- Dynamic progress indicator
-- In-progress assessment persistence via `localStorage`
-- Reverse-scored item handling in score accumulation
-- Primary and secondary temperament result output
-- Reflective confidence indicator (High / Medium / Low) based on score gap
-- Comprehensive, dedicated psychological profiles per temperament (`temperaments.html`)
-- Rich data visualization with Temperament Mix donut charts and Score Breakdown bars
-- Encoded URL Deep-Links (`#result=XYZ`) for privacy-respecting instant sharing
-- Integrated Web Clipboard hooks to copy text breakdown summaries or raw share URLs
-- Client-side 1080x1350 High-DPI "Share Card" PNG Generator (HTML Canvas)
-- Native OS Share-Sheet pipeline injection via `navigator.share` API
-- Dedicated single-click Print-to-PDF logic mapped to a raw document engine (`report.html`)
-- Non-diagnostic disclaimers and growth-oriented language
-- Privacy-friendly analytics hooks (Plausible)
+### Assessment flow
+1. User starts from `index.html`.
+2. CTA routes to `test-options.html#choose-depth`.
+3. User selects depth: `20`, `40`, `60`, or `80` questions.
+4. Questions render in one scrollable list.
+5. Items unlock sequentially as answers are committed.
+6. Answer commit occurs on slider release (`touchend` / `mouseup`).
+7. Results render with primary + secondary temperament and confidence.
 
-## Out of Scope (Future Versions)
+### Premium model
+- Deep results sections are marked with `data-premium-lock="true"` and require premium access.
+- Unlock flow uses Paystack checkout plus server-side verification.
+- Successful verification returns a signed JWT stored in local storage (`temperamentInsight.premiumToken`).
+- `/api/chat` and `/api/reflect` require `Authorization: Bearer <jwt>`.
 
-- Retake history and comparison
-- Premium in-depth monetized analysis
-- User Accounts / Backend Databases
+### Shared-link rule (important)
+- Shared URLs (`#result=...`) contain result data only.
+- Premium entitlement is never embedded in the shared link.
+- Premium lock/unlock is always determined by the current viewer's local token.
 
-## Run Locally
+### AI assistant behavior
+- Quick-start chips in UI: `Result Summary`, `Strengths in Action`, `Communication Prep`.
+- Quick-starts currently prefill chat input and submit through `/api/chat`.
+- `/api/reflect` remains implemented and protected, but is not the primary quick-start path in current UI.
+- Session cap: `10` assistant replies.
 
-No build step or backend is required.
+### Sharing and reporting
+- Copy share link
+- Generate share card (canvas PNG)
+- Native share (`navigator.share`)
+- Printable report page (`report.html`)
+- Share/report actions are inside premium-locked results actions.
 
-1. Open `index.html` directly in a browser, or
-2. Run a local static server:
+## Architecture Summary
+
+- Frontend: static HTML/CSS/JS (`index.html`, `test-options.html`, `app.js`)
+- APIs: Vercel serverless Node handlers in `api/`
+- Data storage: browser localStorage only
+- Database: none
+- Analytics: Plausible events (privacy-oriented, no app-side user accounts)
+
+Key backend endpoints:
+- `GET /api/paywall-config`
+- `POST /api/verify-payment`
+- `POST /api/chat` (premium JWT required)
+- `POST /api/reflect` (premium JWT required)
+
+## Local Development
+
+### 1) Static-only preview (no serverless APIs)
+Use for UI checks that do not require payment/chat APIs.
 
 ```bash
 npx serve .
@@ -52,15 +69,51 @@ npx serve .
 python3 -m http.server 8000
 ```
 
-Then visit `http://localhost:8000` or the provided local port.
+### 2) Full local app (includes Vercel APIs)
+Use for premium flow and AI endpoint testing.
 
-## Project Files
+```bash
+npm install
+npm run local
+# equivalent: npx vercel dev
+```
 
-- `index.html` - Marketing-style homepage
-- `test-options.html` - Test-length selection and core assessment/results React-style SPA UI
-- `temperaments.html` - Comprehensive tabbed reference for temperament psychology profiles 
-- `report.html` - Dedicated aesthetic print layout engine for PDF exports
-- `styles.css` - Unified styling system for all pages
-- `app.js` - Questions, assessment flow state-machine, URL decoder, Canvas drawing script
-- `report.js` - Report-specific URL payload hydration logic 
-- `temperament-content.js` - Centralized static text definitions for all reading copy
+## Environment Variables
+
+Create `.env.local` from `.env.example` and fill values.
+
+Required for API-enabled behavior:
+
+- `GROQ_API_KEY`
+- `TRG_SYSTEM_PROMPT`
+- `JWT_SECRET`
+- `PAYSTACK_PUBLIC_KEY`
+- `PAYSTACK_SECRET_KEY`
+
+Optional:
+
+- `GROQ_MODEL` (defaults to `llama-3.3-70b-versatile`)
+- `TRG_CHAT_SYSTEM_PROMPT` (falls back to `TRG_SYSTEM_PROMPT`)
+- `PAYWALL_AMOUNT_KOBO` (API default in code is `5000`; set to `2000` for 20 GHS pricing)
+- `PAYWALL_CURRENCY` (defaults to `GHS`)
+
+## Repo Map
+
+- `index.html`: marketing entry page + test CTAs
+- `test-options.html`: depth selection, assessment flow, results, paywall modal, assistant modal/FAB
+- `app.js`: question logic, scoring, locking, payments, chat calls, sharing
+- `report.html` / `report.js`: printable report from shared payload
+- `api/paywall-config.ts`: public Paystack config
+- `api/verify-payment.ts`: Paystack verification + JWT issue
+- `api/chat.ts`: premium conversational chat endpoint
+- `api/reflect.ts`: premium structured reflection endpoint
+- `api/_lib/auth.ts`: JWT sign/verify + auth guard
+- `PROJECT_REPORT.md`: implementation status and architecture notes
+- `VERCEL_API_DOCUMENTATION.md`: endpoint contracts and ops notes
+
+## Known Limitations
+
+- No user accounts
+- No purchase restore across devices/browsers
+- No database persistence
+- No automated integration test suite for end-to-end API + frontend flows

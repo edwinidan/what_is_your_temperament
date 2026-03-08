@@ -148,6 +148,7 @@ Share/report flow:
 
 - Results can be serialized to URL hash (`#result=...`) using validated payload schema.
 - Shared URLs can hydrate results view directly.
+- Shared payload includes result data only; premium access is evaluated from the current viewer's local token.
 - Share card (canvas PNG), native share, and print report (`report.html`) are generated client-side.
 
 ## 8. Analytics Inventory (Plausible)
@@ -189,7 +190,7 @@ Current environment usage across APIs:
 - `JWT_SECRET`
 - `PAYSTACK_PUBLIC_KEY`
 - `PAYSTACK_SECRET_KEY`
-- `PAYWALL_AMOUNT_KOBO` (set to `2000` for 20 GHS in live pricing)
+- `PAYWALL_AMOUNT_KOBO` (set to `2000` for 20 GHS live pricing)
 - `PAYWALL_CURRENCY` (default `GHS`)
 
 ## 10. Scope Status (As Of March 8, 2026)
@@ -204,6 +205,7 @@ Implemented:
 - Paystack checkout + payment verification + JWT unlock
 - Premium-protected `/api/chat` and `/api/reflect`
 - Share URL, share card generation, native sharing, printable report page
+- Viewer-side premium enforcement for shared links
 - Privacy-oriented Plausible event instrumentation
 
 Not implemented:
@@ -213,28 +215,21 @@ Not implemented:
 - Historical retake comparison
 - Automated integration tests for API + frontend flows
 
-## 11. Gaps and Drift Found During This Report Update
+## 11. Remaining Known Gaps
 
-1. Pricing alignment resolved:
-- UI paywall copy and backend-configured amount now both use `20 GHS` (`2000` kobo).
-- This removes the previously reported amount mismatch risk.
+1. Reflect contract mismatch:
+- `/api/reflect` prompt asks for 150-200 words.
+- Current normalization accepts 100-250 words.
 
-2. Shared-link premium enforcement resolved:
-- `renderSharedResults()` now applies `applyPremiumLocks()`, so lock/unlock is based on the current viewer's token.
-- Shared payloads do not carry premium entitlement.
+2. Quick-start and reflect path divergence:
+- UI quick-start chips currently route via chat-prefill and `/api/chat`.
+- `/api/reflect` supports six modes and remains implemented but not the primary quick-start path.
 
-3. Quick-start/reflection contract drift:
-- Frontend quick-starts use chat-prefill path.
-- `/api/reflect` supports six structured modes and remains available but not primary in current UI.
-
-4. Legacy analytics/config references remain in code comments/constants:
-- `detail_view_opened` constant exists but is not currently emitted.
-
-5. Documentation drift outside this report:
-- Some repo docs still reference older behavior (e.g., 20/40/60 only, paginated questions, Gemini-era API notes).
+3. Documentation consistency risk outside this report:
+- Historical files can still be mistaken for live behavior unless clearly marked superseded.
 
 ## 12. Recommended Next Actions
 
-1. Decide whether to re-wire `/api/reflect` into UI or remove dead frontend reflection code paths.
-2. Refresh README and API docs to remove outdated behavior/provider references.
-3. Add integration tests for payment verification, premium auth, and chat error/limit flows.
+1. Decide whether to re-wire `/api/reflect` into UI quick-start execution or formally de-scope it from frontend quick-start behavior.
+2. Add automated integration tests for payment verification, premium auth, and chat/reflect error paths.
+3. Keep legacy docs clearly marked as historical to prevent future drift.
