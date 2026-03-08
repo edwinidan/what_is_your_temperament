@@ -1948,6 +1948,7 @@ function showAssistantError(type) {
 
   if (type === "unauthorized") {
     clearPremiumToken();
+    applyPremiumLocks();
     openPaywallModal();
   }
 }
@@ -3116,6 +3117,7 @@ function renderSharedResults(payload) {
     },
   });
   resetAssistantSession();
+  applyPremiumLocks();
 
 
 
